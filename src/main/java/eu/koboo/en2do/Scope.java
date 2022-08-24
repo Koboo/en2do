@@ -53,6 +53,46 @@ public class Scope<T, ID> {
         return Filters.not(Filters.exists(field(getter)));
     }
 
+    // Greater Than
+    public <V> Bson gt(TypedPropertyGetter<T, V> getter, V value) {
+        return Filters.gt(field(getter), value);
+    }
+
+    // Not Greater Than
+    public <V> Bson notGt(TypedPropertyGetter<T, V> getter, V value) {
+        return Filters.not(Filters.gt(field(getter), value));
+    }
+
+    // Greater Than Equals
+    public <V> Bson gte(TypedPropertyGetter<T, V> getter, V value) {
+        return Filters.gte(field(getter), value);
+    }
+
+    // Not Greater Than Equals
+    public <V> Bson notGte(TypedPropertyGetter<T, V> getter, V value) {
+        return Filters.not(Filters.gte(field(getter), value));
+    }
+
+    // Lower Than
+    public <V> Bson lt(TypedPropertyGetter<T, V> getter, V value) {
+        return Filters.lt(field(getter), value);
+    }
+
+    // Not Lower Than
+    public <V> Bson notLt(TypedPropertyGetter<T, V> getter, V value) {
+        return Filters.not(Filters.lt(field(getter), value));
+    }
+
+    // Not Lower Than Equals
+    public <V> Bson lte(TypedPropertyGetter<T, V> getter, V value) {
+        return Filters.lte(field(getter), value);
+    }
+
+    // Not Lower Than Equals
+    public <V> Bson notLte(TypedPropertyGetter<T, V> getter, V value) {
+        return Filters.not(Filters.lte(field(getter), value));
+    }
+
     public String field(TypedPropertyGetter<T, ?> getter) {
         return PropertyUtils.getPropertyName(repository.getEntityClass(), getter);
     }
