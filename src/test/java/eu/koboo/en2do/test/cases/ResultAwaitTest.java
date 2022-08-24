@@ -8,14 +8,13 @@ import eu.koboo.en2do.test.customer.CustomerRepository;
 import eu.koboo.en2do.test.customer.CustomerScope;
 import org.bson.conversions.Bson;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static org.junit.Assert.*;
 
 public class ResultAwaitTest {
 

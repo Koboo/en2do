@@ -3,7 +3,6 @@ package eu.koboo.en2do;
 import com.mongodb.client.model.Filters;
 import de.cronn.reflection.util.PropertyUtils;
 import de.cronn.reflection.util.TypedPropertyGetter;
-import eu.koboo.en2do.AbstractRepository;
 import org.bson.conversions.Bson;
 
 import java.util.regex.Pattern;

@@ -1,7 +1,7 @@
 package eu.koboo.en2do.test.cases;
 
-import eu.koboo.en2do.Result;
 import eu.koboo.en2do.MongoManager;
+import eu.koboo.en2do.Result;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepository;

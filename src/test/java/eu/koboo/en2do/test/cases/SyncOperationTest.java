@@ -1,6 +1,5 @@
 package eu.koboo.en2do.test.cases;
 
-import eu.koboo.en2do.FilterScope;
 import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
@@ -8,14 +7,10 @@ import eu.koboo.en2do.test.customer.CustomerRepository;
 import eu.koboo.en2do.test.customer.CustomerScope;
 import org.bson.conversions.Bson;
 import org.junit.AfterClass;
-
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.logging.Filter;
+import static org.junit.Assert.*;
 
 public class SyncOperationTest {
 
