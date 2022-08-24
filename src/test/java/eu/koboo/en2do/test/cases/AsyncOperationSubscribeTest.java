@@ -1,39 +1,35 @@
 package eu.koboo.en2do.test.cases;
 
 import eu.koboo.en2do.MongoManager;
+import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.Result;
+import eu.koboo.en2do.Scope;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
-import eu.koboo.en2do.test.customer.CustomerRepository;
-import eu.koboo.en2do.test.customer.CustomerScope;
 import org.bson.conversions.Bson;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.UUID;
 
 import static org.junit.Assert.*;
 
-public class ResultSubscribeTest {
+public class AsyncOperationSubscribeTest {
 
     static MongoManager manager;
-    static CustomerRepository repository;
-    static CustomerScope scope;
-    static ExecutorService executorService;
+    static Repository<Customer, UUID> repository;
+    static Scope<Customer, UUID> scope;
 
     @BeforeClass
     public static void before() {
-        System.out.println(ResultSubscribeTest.class.getName() + " starting.");
+        System.out.println(AsyncOperationSubscribeTest.class.getName() + " starting.");
         manager = new MongoManager();
         assertNotNull(manager);
-        repository = new CustomerRepository(manager);
+        repository = manager.createRepository();
         assertNotNull(repository);
-        scope = new CustomerScope(repository);
+        scope = repository.createScope();
         assertNotNull(scope);
-        executorService = Executors.newSingleThreadExecutor();
-        assertNotNull(executorService);
         assertNotNull(Const.CUSTOMER);
     }
 
@@ -76,9 +72,8 @@ public class ResultSubscribeTest {
 
     @AfterClass
     public static void after() {
-        System.out.println(ResultSubscribeTest.class.getName() + " ending.");
-        executorService.shutdown();
-        assertTrue(manager.close());
+        System.out.println(AsyncOperationSubscribeTest.class.getName() + " ending.");
         assertTrue(repository.asyncDeleteAll().await());
+        assertTrue(manager.close());
     }
 }

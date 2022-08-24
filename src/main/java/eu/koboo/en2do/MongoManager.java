@@ -19,12 +19,13 @@ import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MongoManager {
 
     MongoClient client;
-    @Getter
     MongoDatabase database;
 
     public MongoManager(MongoConfig config) {
@@ -54,6 +55,10 @@ public class MongoManager {
         this(MongoConfig.readConfig());
     }
 
+    protected MongoDatabase getDatabase() {
+        return database;
+    }
+
     public boolean close() {
         try {
             client.close();
@@ -64,37 +69,11 @@ public class MongoManager {
         }
     }
 
-    public boolean update(String coll, Bson filter, Document document) {
-        MongoCollection<Document> collection = database.getCollection(coll);
-        if (document.isEmpty()) {
-            return delete(coll, filter);
-        }
-        UpdateOptions options = new UpdateOptions()
-                .upsert(true);
-        UpdateResult result = collection.updateOne(filter,
-                new BasicDBObject("$set", document), options);
-        return result.wasAcknowledged();
+    public <T, ID> Repository<T, ID> createRepository(ExecutorService executorService) {
+        return new Repository<>(this, executorService);
     }
 
-    public boolean delete(String coll, Bson filter) {
-        DeleteResult result = database.getCollection(coll).deleteOne(filter);
-        return result.wasAcknowledged();
-    }
-
-    public Document find(String coll, Bson filter) {
-        return database.getCollection(coll).find(filter).first();
-    }
-
-    public List<Document> into(String coll, Bson filter) {
-        return database.getCollection(coll).find(filter).into(new ArrayList<>());
-    }
-
-    public List<Document> all(String coll) {
-        return database.getCollection(coll).find().into(new ArrayList<>());
-    }
-
-    public boolean exists(String coll, Bson filter) {
-        Document document = database.getCollection(coll).find(filter).first();
-        return document != null && !document.isEmpty();
+    public <T, ID> Repository<T, ID> createRepository() {
+        return createRepository(Executors.newSingleThreadExecutor());
     }
 }

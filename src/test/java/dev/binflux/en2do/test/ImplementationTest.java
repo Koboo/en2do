@@ -1,10 +1,11 @@
-package eu.koboo.en2do.test.cases;
+package dev.binflux.en2do.test;
 
 import eu.koboo.en2do.MongoManager;
-import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.Scope;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
+import dev.binflux.en2do.test.impl.CustomerRepository;
+import dev.binflux.en2do.test.impl.CustomerScope;
 import org.bson.conversions.Bson;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -14,20 +15,20 @@ import java.util.UUID;
 
 import static org.junit.Assert.*;
 
-public class SyncOperationTest {
+public class ImplementationTest {
 
     static MongoManager manager;
-    static Repository<Customer, UUID> repository;
+    static CustomerRepository repository;
     static Scope<Customer, UUID> scope;
 
     @BeforeClass
     public static void before() {
-        System.out.println(SyncOperationTest.class.getName() + " starting.");
+        System.out.println(ImplementationTest.class.getName() + " starting.");
         manager = new MongoManager();
         assertNotNull(manager);
-        repository = manager.createRepository();
+        repository = new CustomerRepository(manager);
         assertNotNull(repository);
-        scope = repository.createScope();
+        scope = new CustomerScope(repository);
         assertNotNull(scope);
     }
 
@@ -50,7 +51,7 @@ public class SyncOperationTest {
     
     @AfterClass
     public static void after() {
-        System.out.println(SyncOperationTest.class.getName() + " ending.");
+        System.out.println(ImplementationTest.class.getName() + " ending.");
         assertTrue(repository.deleteAll());
         assertTrue(manager.close());
     }

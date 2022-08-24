@@ -1,7 +1,8 @@
-package eu.koboo.en2do.test.customer;
+package dev.binflux.en2do.test.impl;
 
 import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.MongoManager;
+import eu.koboo.en2do.test.customer.Customer;
 
 import java.util.UUID;
 import java.util.concurrent.Executors;

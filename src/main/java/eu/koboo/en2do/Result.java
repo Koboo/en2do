@@ -31,7 +31,7 @@ public class Result<T> {
         });
     }
 
-    public CompletableFuture<T> future() {
+    public T await(long timeout, TimeUnit unit) {
         CompletableFuture<T> future = new CompletableFuture<>();
         executorService.execute(() -> {
             try {
@@ -41,11 +41,6 @@ public class Result<T> {
                 throw new RuntimeException(e);
             }
         });
-        return future;
-    }
-
-    public T await(long timeout, TimeUnit unit) {
-        CompletableFuture<T> future = future();
         try {
             return future.get(timeout, unit);
         } catch (Exception e) {

@@ -1,7 +1,11 @@
 package eu.koboo.en2do;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 import eu.koboo.en2do.annotation.Entity;
 import eu.koboo.en2do.annotation.Id;
 import eu.koboo.en2do.exception.DuplicateFieldException;
@@ -9,7 +13,6 @@ import eu.koboo.en2do.exception.FinalFieldException;
 import eu.koboo.en2do.exception.NoFieldsException;
 import eu.koboo.en2do.exception.NoUniqueIdException;
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -24,17 +27,15 @@ import java.util.concurrent.ExecutorService;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Repository<T, ID> {
 
-    @Getter
     final MongoManager mongoManager;
     final ExecutorService executorService;
     final Class<T> entityClass;
-    @Getter
     final String entityCollectionName;
     final Set<Field> fieldRegistry;
     Field entityIdField;
 
     @SuppressWarnings("unchecked")
-    public Repository(MongoManager mongoManager, ExecutorService executorService) {
+    protected Repository(MongoManager mongoManager, ExecutorService executorService) {
         this.mongoManager = mongoManager;
         this.executorService = executorService;
         this.entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
@@ -74,12 +75,16 @@ public class Repository<T, ID> {
         fieldNames.clear();
     }
 
-    public MongoCollection<Document> getCollection() {
+    private MongoCollection<Document> getCollection() {
         return mongoManager.getDatabase().getCollection(entityCollectionName);
     }
 
     protected Class<T> getEntityClass() {
         return entityClass;
+    }
+
+    public Scope<T, ID> createScope() {
+        return new Scope<>(this);
     }
 
     public Document toDocument(T entity) {
@@ -138,11 +143,31 @@ public class Repository<T, ID> {
         return new Result<>(executorService, this::deleteAll);
     }
 
+    public boolean delete(Bson filters) {
+        try {
+            DeleteResult result = getCollection().deleteOne(filters);
+            return result.wasAcknowledged();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public Result<Boolean> asyncDelete(Bson filters) {
+        return new Result<>(executorService, () -> delete(filters));
+    }
+
     public boolean save(T entity) {
         try {
             Document document = toDocument(entity);
             ID uniqueId = getIdFromEntity(entity);
-            return mongoManager.update(entityCollectionName, Filters.eq(entityIdField.getName(), uniqueId), document);
+            Bson idFilter = Filters.eq(entityIdField.getName(), uniqueId);
+            if (document.isEmpty()) {
+                return delete(idFilter);
+            }
+            UpdateOptions options = new UpdateOptions().upsert(true);
+            UpdateResult result = getCollection().updateOne(idFilter, new BasicDBObject("$set", document), options);
+            return result.wasAcknowledged();
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -155,7 +180,8 @@ public class Repository<T, ID> {
 
     public boolean exists(Bson filters) {
         try {
-            return mongoManager.exists(entityCollectionName, filters);
+            Document document = getCollection().find(filters).first();
+            return document != null && !document.isEmpty();
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -168,7 +194,7 @@ public class Repository<T, ID> {
 
     public T find(Bson filters) {
         try {
-            Document document = mongoManager.find(entityCollectionName, filters);
+            Document document = getCollection().find(filters).first();
             if (document == null) {
                 return null;
             }
@@ -185,7 +211,7 @@ public class Repository<T, ID> {
 
     public List<T> findAll(Bson filters) {
         try {
-            List<Document> documentList = mongoManager.into(entityCollectionName, filters);
+            List<Document> documentList = getCollection().find(filters).into(new ArrayList<>());
             if (documentList == null || documentList.isEmpty()) {
                 return new ArrayList<>();
             }
@@ -208,16 +234,28 @@ public class Repository<T, ID> {
         return new Result<>(executorService, () -> findAll(filters));
     }
 
-    public boolean delete(Bson filters) {
+    public List<T> all() {
         try {
-            return mongoManager.delete(entityCollectionName, filters);
+            List<Document> documentList = getCollection().find().into(new ArrayList<>());
+            if (documentList == null || documentList.isEmpty()) {
+                return new ArrayList<>();
+            }
+            List<T> entityList = new ArrayList<>();
+            for (Document document : documentList) {
+                T entity = toEntity(document);
+                if (entity == null) {
+                    continue;
+                }
+                entityList.add(entity);
+            }
+            return entityList;
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            return null;
         }
     }
 
-    public Result<Boolean> asyncDelete(Bson filters) {
-        return new Result<>(executorService, () -> delete(filters));
+    public Result<List<T>> asyncAll() {
+        return new Result<>(executorService, this::all);
     }
 }

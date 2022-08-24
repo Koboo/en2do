@@ -11,7 +11,7 @@ public class Scope<T, ID> {
 
     private final Repository<T, ID> repository;
 
-    public Scope(Repository<T, ID> repository) {
+    protected Scope(Repository<T, ID> repository) {
         this.repository = repository;
     }
 

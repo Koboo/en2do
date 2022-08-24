@@ -12,14 +12,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
-@Entity("Customers")
+@Getter // lombok
+@Setter // lombok
+@NoArgsConstructor // lombok
+@FieldDefaults(level = AccessLevel.PRIVATE) // lombok
+@Entity("Customers") // en2do
 public class Customer {
 
-    @Id
+    @Id // en2do
     UUID uniqueId;
 
     int customerId;

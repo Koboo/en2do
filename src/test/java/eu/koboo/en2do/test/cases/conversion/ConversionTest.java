@@ -4,7 +4,7 @@ import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.test.Assertion;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
-import eu.koboo.en2do.test.customer.CustomerRepository;
+import dev.binflux.en2do.test.impl.CustomerRepository;
 import org.bson.Document;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
