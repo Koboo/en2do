@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+}
+
+group 'eu.koboo'
+version '1.0'
+
+repositories {
+    mavenCentral()
+    maven {
+        name 'koboo-public-repo'
+        url 'https://repo.koboo.eu/releases'
+    }
+}
+
+dependencies {
+    implementation "org.mongodb:mongodb-driver:$mongoDbVersion"
+    implementation "eu.koboo:file-config:$fileConfigVersion"
+    implementation 'de.cronn:reflection-util:2.14.0'
+
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+
+
+    testImplementation "junit:junit:$junitVersion"
+
+    testImplementation "org.mongodb:mongodb-driver:$mongoDbVersion"
+    testImplementation "eu.koboo:file-config:$fileConfigVersion"
+    testImplementation 'de.cronn:reflection-util:2.14.0'
+
+    testCompileOnly "org.projectlombok:lombok:$lombokVersion"
+    testAnnotationProcessor "org.projectlombok:lombok:$lombokVersion"
+}
+
+compileJava.options.encoding = 'UTF-8'
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
