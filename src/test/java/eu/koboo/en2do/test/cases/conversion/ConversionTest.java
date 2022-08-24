@@ -1,10 +1,10 @@
 package eu.koboo.en2do.test.cases.conversion;
 
+import dev.binflux.en2do.test.impl.CustomerRepository;
 import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.test.Assertion;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
-import dev.binflux.en2do.test.impl.CustomerRepository;
 import org.bson.Document;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

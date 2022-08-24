@@ -1,11 +1,11 @@
 package dev.binflux.en2do.test;
 
+import dev.binflux.en2do.test.impl.CustomerRepository;
+import dev.binflux.en2do.test.impl.CustomerScope;
 import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.Scope;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
-import dev.binflux.en2do.test.impl.CustomerRepository;
-import dev.binflux.en2do.test.impl.CustomerScope;
 import org.bson.conversions.Bson;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
