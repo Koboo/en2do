@@ -22,7 +22,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AbstractRepository<T, ID> {
+public class Repository<T, ID> {
 
     @Getter
     final MongoManager mongoManager;
@@ -34,7 +34,7 @@ public class AbstractRepository<T, ID> {
     Field entityIdField;
 
     @SuppressWarnings("unchecked")
-    public AbstractRepository(MongoManager mongoManager, ExecutorService executorService) {
+    public Repository(MongoManager mongoManager, ExecutorService executorService) {
         this.mongoManager = mongoManager;
         this.executorService = executorService;
         this.entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];

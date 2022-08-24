@@ -7,11 +7,11 @@ import org.bson.conversions.Bson;
 
 import java.util.regex.Pattern;
 
-public class FilterScope<T, ID> {
+public class Scope<T, ID> {
 
-    private final AbstractRepository<T, ID> repository;
+    private final Repository<T, ID> repository;
 
-    public FilterScope(AbstractRepository<T, ID> repository) {
+    public Scope(Repository<T, ID> repository) {
         this.repository = repository;
     }
 
