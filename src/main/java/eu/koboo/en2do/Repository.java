@@ -17,10 +17,7 @@ import lombok.experimental.FieldDefaults;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 
@@ -38,7 +35,7 @@ public class Repository<T, ID> {
     protected Repository(MongoManager mongoManager, ExecutorService executorService) {
         this.mongoManager = mongoManager;
         this.executorService = executorService;
-        this.entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        this.entityClass = ((Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0]);
         if (!entityClass.isAnnotationPresent(Entity.class)) {
             throw new RuntimeException("No @Entity annotation present at entity " + entityClass.getName() + ". That's important, to create and get collections.");
         }
@@ -139,10 +136,6 @@ public class Repository<T, ID> {
         }
     }
 
-    public Result<Boolean> asyncDeleteAll() {
-        return new Result<>(executorService, this::deleteAll);
-    }
-
     public boolean delete(Bson filters) {
         try {
             DeleteResult result = getCollection().deleteOne(filters);
@@ -151,10 +144,6 @@ public class Repository<T, ID> {
             e.printStackTrace();
             return false;
         }
-    }
-
-    public Result<Boolean> asyncDelete(Bson filters) {
-        return new Result<>(executorService, () -> delete(filters));
     }
 
     public boolean save(T entity) {
@@ -174,10 +163,6 @@ public class Repository<T, ID> {
         }
     }
 
-    public Result<Boolean> asyncSave(T entity) {
-        return new Result<>(executorService, () -> save(entity));
-    }
-
     public boolean exists(Bson filters) {
         try {
             Document document = getCollection().find(filters).first();
@@ -186,10 +171,6 @@ public class Repository<T, ID> {
             e.printStackTrace();
             return false;
         }
-    }
-
-    public Result<Boolean> asyncExists(Bson filters) {
-        return new Result<>(executorService, () -> exists(filters));
     }
 
     public T find(Bson filters) {
@@ -205,54 +186,105 @@ public class Repository<T, ID> {
         }
     }
 
-    public Result<T> asyncFind(Bson filters) {
-        return new Result<>(executorService, () -> find(filters));
+    private List<T> convertDocumentList(List<Document> documentList) throws Exception {
+        if (documentList == null || documentList.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<T> entityList = new LinkedList<>();
+        for (Document document : documentList) {
+            T entity = toEntity(document);
+            if (entity == null) {
+                continue;
+            }
+            entityList.add(entity);
+        }
+        return entityList;
     }
 
     public List<T> findAll(Bson filters) {
         try {
             List<Document> documentList = getCollection().find(filters).into(new ArrayList<>());
-            if (documentList == null || documentList.isEmpty()) {
-                return new ArrayList<>();
-            }
-            List<T> entityList = new ArrayList<>();
-            for (Document document : documentList) {
-                T entity = toEntity(document);
-                if (entity == null) {
-                    continue;
-                }
-                entityList.add(entity);
-            }
-            return entityList;
+            return convertDocumentList(documentList);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public List<T> findSort(Bson filters, Bson sort) {
+        try {
+            List<Document> documentList = getCollection().find(filters).sort(sort).into(new LinkedList<>());
+            return convertDocumentList(documentList);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<T> findLimit(Bson filters, int maxDocuments) {
+        try {
+            List<Document> documentList = getCollection().find(filters).limit(maxDocuments).into(new LinkedList<>());
+            return convertDocumentList(documentList);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<T> findSortLimit(Bson filters, Bson sort, int maxDocuments) {
+        try {
+            List<Document> documentList = getCollection().find(filters).sort(sort).limit(maxDocuments).into(new LinkedList<>());
+            return convertDocumentList(documentList);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<T> all() {
+        try {
+            List<Document> documentList = getCollection().find().into(new ArrayList<>());
+            return convertDocumentList(documentList);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public Result<Boolean> asyncDeleteAll() {
+        return new Result<>(executorService, this::deleteAll);
+    }
+
+    public Result<Boolean> asyncDelete(Bson filters) {
+        return new Result<>(executorService, () -> delete(filters));
+    }
+
+    public Result<Boolean> asyncSave(T entity) {
+        return new Result<>(executorService, () -> save(entity));
+    }
+
+    public Result<Boolean> asyncExists(Bson filters) {
+        return new Result<>(executorService, () -> exists(filters));
+    }
+
+    public Result<T> asyncFind(Bson filters) {
+        return new Result<>(executorService, () -> find(filters));
     }
 
     public Result<List<T>> asyncFindAll(Bson filters) {
         return new Result<>(executorService, () -> findAll(filters));
     }
 
-    public List<T> all() {
-        try {
-            List<Document> documentList = getCollection().find().into(new ArrayList<>());
-            if (documentList == null || documentList.isEmpty()) {
-                return new ArrayList<>();
-            }
-            List<T> entityList = new ArrayList<>();
-            for (Document document : documentList) {
-                T entity = toEntity(document);
-                if (entity == null) {
-                    continue;
-                }
-                entityList.add(entity);
-            }
-            return entityList;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+    public Result<List<T>> asyncFindSort(Bson filters, Bson sort) {
+        return new Result<>(executorService, () -> findSort(filters, sort));
+    }
+
+    public Result<List<T>> asyncFindLimit(Bson filters, int maxDocuments) {
+        return new Result<>(executorService, () -> findLimit(filters, maxDocuments));
+    }
+
+    public Result<List<T>> asyncFindSortLimit(Bson filters, Bson sort, int maxDocuments) {
+        return new Result<>(executorService, () -> findSortLimit(filters, sort, maxDocuments));
     }
 
     public Result<List<T>> asyncAll() {

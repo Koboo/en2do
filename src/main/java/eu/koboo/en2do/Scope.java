@@ -1,5 +1,6 @@
 package eu.koboo.en2do;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.model.Filters;
 import de.cronn.reflection.util.PropertyUtils;
 import de.cronn.reflection.util.TypedPropertyGetter;
@@ -93,7 +94,19 @@ public class Scope<T, ID> {
         return Filters.not(Filters.lte(field(getter), value));
     }
 
-    public String field(TypedPropertyGetter<T, ?> getter) {
+    public <V> Bson sort(TypedPropertyGetter<T, V> getter, boolean ascending) {
+        return new BasicDBObject(field(getter), ascending ? 1 : -1);
+    }
+
+    public <V> Bson sortAsc(TypedPropertyGetter<T, V> getter) {
+        return sort(getter, true);
+    }
+
+    public <V> Bson sortDesc(TypedPropertyGetter<T, V> getter) {
+        return sort(getter, false);
+    }
+
+    private String field(TypedPropertyGetter<T, ?> getter) {
         return PropertyUtils.getPropertyName(repository.getEntityClass(), getter);
     }
 }
