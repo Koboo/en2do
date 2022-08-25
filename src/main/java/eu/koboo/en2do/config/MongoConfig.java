@@ -8,11 +8,11 @@ public record MongoConfig(String username, String password, String host, int por
 
     public static MongoConfig readConfig() {
         FileConfig config = Config.of("mongodb.cfg", c -> {
-            c.init("username", "default");
-            c.init("password", "default");
-            c.init("host", "localhost");
+            c.init("username", "mongodb_user");
+            c.init("password", "mongodb_password");
+            c.init("host", "127.0.0.1");
             c.init("port", 27017);
-            c.init("database", "default");
+            c.init("database", "mongodb_database");
             c.init("useAuthSource", false);
         });
         String username = config.getString("username");
