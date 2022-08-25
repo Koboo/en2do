@@ -1,7 +1,7 @@
-package dev.binflux.en2do.test;
+package eu.koboo.en2do.test.cases;
 
-import dev.binflux.en2do.test.impl.CustomerRepository;
-import dev.binflux.en2do.test.impl.CustomerScope;
+import eu.koboo.en2do.test.customer.CustomerRepository;
+import eu.koboo.en2do.test.customer.CustomerScope;
 import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.Scope;
 import eu.koboo.en2do.test.Const;
@@ -15,15 +15,15 @@ import java.util.UUID;
 
 import static org.junit.Assert.*;
 
-public class ImplementationTest {
+public class BasicOperationTest {
 
     static MongoManager manager;
     static CustomerRepository repository;
-    static Scope<Customer, UUID> scope;
+    static CustomerScope scope;
 
     @BeforeClass
     public static void before() {
-        System.out.println(ImplementationTest.class.getName() + " starting.");
+        System.out.println(BasicOperationTest.class.getName() + " starting.");
         manager = new MongoManager();
         assertNotNull(manager);
         repository = new CustomerRepository(manager);
@@ -34,8 +34,10 @@ public class ImplementationTest {
 
     @Test
     public void operationTest() {
-        assertNotNull(Const.CUSTOMER);
-        assertTrue(repository.save(Const.CUSTOMER));
+        assertTrue(repository.deleteAll());
+        Customer original = Const.createNew();
+        assertNotNull(original);
+        assertTrue(repository.save(original));
 
         Bson bsonFilter = scope.eq(Customer::getUniqueId, Const.UNIQUE_ID);
         assertTrue(repository.exists(bsonFilter));
@@ -51,7 +53,7 @@ public class ImplementationTest {
     
     @AfterClass
     public static void after() {
-        System.out.println(ImplementationTest.class.getName() + " ending.");
+        System.out.println(BasicOperationTest.class.getName() + " ending.");
         assertTrue(repository.deleteAll());
         assertTrue(manager.close());
     }

@@ -1,6 +1,6 @@
-package eu.koboo.en2do.test.cases.conversion;
+package eu.koboo.en2do.test.cases;
 
-import dev.binflux.en2do.test.impl.CustomerRepository;
+import eu.koboo.en2do.test.customer.CustomerRepository;
 import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.test.Assertion;
 import eu.koboo.en2do.test.Const;
@@ -28,8 +28,9 @@ public class ConversionTest {
 
     @Test
     public void conversionTest() throws Exception {
-        assertNotNull(Const.CUSTOMER);
-        Document originalDocument = repository.toDocument(Const.CUSTOMER);
+        Customer original = Const.createNew();
+        assertNotNull(original);
+        Document originalDocument = repository.toDocument(original);
         assertNotNull(originalDocument);
         assertEquals("Rainer", originalDocument.getString("firstName"));
         assertEquals("Zufall", originalDocument.getString("lastName"));

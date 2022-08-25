@@ -6,8 +6,6 @@ import java.util.*;
 
 public class Const {
 
-    public static final Customer CUSTOMER;
-
     public static final UUID UNIQUE_ID = UUID.fromString("2ce67956-7211-4fec-a7ad-b24f2e355b61");
     public static final int CUSTOMER_ID = 1;
     public static final String FIRST_NAME = "Rainer";
@@ -28,20 +26,21 @@ public class Const {
         put("5", "Fifth");
     }};
 
-    static {
-        CUSTOMER = new Customer();
-        CUSTOMER.setUniqueId(UNIQUE_ID);
-        CUSTOMER.setCustomerId(CUSTOMER_ID);
-        CUSTOMER.setFirstName(FIRST_NAME);
-        CUSTOMER.setLastName(LAST_NAME);
-        CUSTOMER.setBirthday(BIRTHDAY);
-        CUSTOMER.setStreet(STREET);
-        CUSTOMER.setHouseNumber(HOUSE_NUMBER);
-        CUSTOMER.setPostalCode(POSTAL_CODE);
-        CUSTOMER.setCity(CITY);
-        CUSTOMER.setPhoneNumber(PHONE_NUMBER);
-        CUSTOMER.setBalance(BALANCE);
-        CUSTOMER.setOrderNumbers(ORDER_NUMBERS);
-        CUSTOMER.setOrderTexts(ORDER_TEXTS);
+    public static Customer createNew() {
+        Customer customer = new Customer();
+        customer.setUniqueId(UNIQUE_ID);
+        customer.setCustomerId(CUSTOMER_ID);
+        customer.setFirstName(FIRST_NAME);
+        customer.setLastName(LAST_NAME);
+        customer.setBirthday(BIRTHDAY);
+        customer.setStreet(STREET);
+        customer.setHouseNumber(HOUSE_NUMBER);
+        customer.setPostalCode(POSTAL_CODE);
+        customer.setCity(CITY);
+        customer.setPhoneNumber(PHONE_NUMBER);
+        customer.setBalance(BALANCE);
+        customer.setOrderNumbers(ORDER_NUMBERS);
+        customer.setOrderTexts(ORDER_TEXTS);
+        return customer;
     }
 }

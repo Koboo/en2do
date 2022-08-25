@@ -2,10 +2,7 @@ package eu.koboo.en2do.test.customer;
 
 import eu.koboo.en2do.annotation.Entity;
 import eu.koboo.en2do.annotation.Id;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
@@ -16,6 +13,7 @@ import java.util.UUID;
 @Setter // lombok
 @NoArgsConstructor // lombok
 @FieldDefaults(level = AccessLevel.PRIVATE) // lombok
+@ToString
 @Entity("Customers") // en2do
 public class Customer {
 

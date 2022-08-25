@@ -1,4 +1,4 @@
-package dev.binflux.en2do.test.impl;
+package eu.koboo.en2do.test.customer;
 
 import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.Repository;

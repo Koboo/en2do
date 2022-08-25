@@ -5,6 +5,8 @@ import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.Scope;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
+import eu.koboo.en2do.test.customer.CustomerRepository;
+import eu.koboo.en2do.test.customer.CustomerScope;
 import org.bson.conversions.Bson;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -17,24 +19,26 @@ import static org.junit.Assert.*;
 public class SyncOperationTest {
 
     static MongoManager manager;
-    static Repository<Customer, UUID> repository;
-    static Scope<Customer, UUID> scope;
+    static CustomerRepository repository;
+    static CustomerScope scope;
 
     @BeforeClass
     public static void before() {
         System.out.println(SyncOperationTest.class.getName() + " starting.");
         manager = new MongoManager();
         assertNotNull(manager);
-        repository = manager.createRepository();
+        repository = new CustomerRepository(manager);
         assertNotNull(repository);
-        scope = repository.createScope();
+        scope = new CustomerScope(repository);
         assertNotNull(scope);
     }
 
     @Test
     public void operationTest() {
-        assertNotNull(Const.CUSTOMER);
-        assertTrue(repository.save(Const.CUSTOMER));
+        assertTrue(repository.deleteAll());
+        Customer original = Const.createNew();
+        assertNotNull(original);
+        assertTrue(repository.save(original));
 
         Bson bsonFilter = scope.eq(Customer::getUniqueId, Const.UNIQUE_ID);
         assertTrue(repository.exists(bsonFilter));
