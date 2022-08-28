@@ -3,15 +3,12 @@ package eu.koboo.en2do.test.cases;
 import eu.koboo.en2do.test.customer.CustomerRepository;
 import eu.koboo.en2do.test.customer.CustomerScope;
 import eu.koboo.en2do.MongoManager;
-import eu.koboo.en2do.Scope;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import org.bson.conversions.Bson;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.util.UUID;
 
 import static org.junit.Assert.*;
 

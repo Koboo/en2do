@@ -1,9 +1,7 @@
 package eu.koboo.en2do.test.cases;
 
 import eu.koboo.en2do.MongoManager;
-import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.Result;
-import eu.koboo.en2do.Scope;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepository;
@@ -13,7 +11,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -40,24 +37,24 @@ public class AsyncOperationAwaitTest {
 
     @Test
     public void operationTest() {
-        Result<Boolean> deleteResult = repository.asyncDeleteAll();
+        Result<Boolean> deleteResult = repository.deleteAllAsync();
         assertNotNull(deleteResult);
         assertTrue(deleteResult.await());
 
         Customer original = Const.createNew();
         assertNotNull(original);
 
-        Result<Boolean> saveResult = repository.asyncSave(original);
+        Result<Boolean> saveResult = repository.saveAsync(original);
         assertNotNull(saveResult);
         assertTrue(saveResult.await());
 
         Bson idFilter = scope.eq(Customer::getUniqueId, Const.UNIQUE_ID);
         assertNotNull(idFilter);
-        Result<Boolean> existsResult = repository.asyncExists(idFilter);
+        Result<Boolean> existsResult = repository.existsAsync(idFilter);
         assertNotNull(existsResult);
         assertTrue(existsResult.await());
 
-        Result<Customer> result = repository.asyncFind(idFilter);
+        Result<Customer> result = repository.findAsync(idFilter);
         assertNotNull(result);
 
         Customer customer = result.await();
@@ -72,7 +69,7 @@ public class AsyncOperationAwaitTest {
     public static void after() {
         System.out.println(AsyncOperationAwaitTest.class.getName() + " ending.");
         executorService.shutdown();
-        assertTrue(repository.asyncDeleteAll().await());
+        assertTrue(repository.deleteAllAsync().await());
         assertTrue(manager.close());
     }
 }
