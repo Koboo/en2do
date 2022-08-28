@@ -1,6 +1,7 @@
 package eu.koboo.en2do;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
@@ -13,33 +14,41 @@ import eu.koboo.en2do.exception.FinalFieldException;
 import eu.koboo.en2do.exception.NoFieldsException;
 import eu.koboo.en2do.exception.NoUniqueIdException;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Repository<T, ID> {
+public class Repository<E, ID> {
 
-    final MongoManager mongoManager;
+    @Getter
+    final Class<E> entityClass;
+
+    @Getter
+    final String collectionName;
+
+    final MongoCollection<Document> collection;
+
     final ExecutorService executorService;
-    final Class<T> entityClass;
-    final String entityCollectionName;
     final Set<Field> fieldRegistry;
     Field entityIdField;
 
     @SuppressWarnings("unchecked")
     protected Repository(MongoManager mongoManager, ExecutorService executorService) {
-        this.mongoManager = mongoManager;
-        this.executorService = executorService;
-        this.entityClass = ((Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0]);
+        this.entityClass = ((Class<E>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0]);
         if (!entityClass.isAnnotationPresent(Entity.class)) {
             throw new RuntimeException("No @Entity annotation present at entity " + entityClass.getName() + ". That's important, to create and get collections.");
         }
-        this.entityCollectionName = entityClass.getAnnotation(Entity.class).value();
+        this.collectionName = entityClass.getAnnotation(Entity.class).value();
+        this.collection = mongoManager.getDatabase().getCollection(collectionName);
+        this.executorService = executorService;
         this.fieldRegistry = new HashSet<>();
         Set<String> fieldNames = new HashSet<>();
         Field[] declaredFields = entityClass.getDeclaredFields();
@@ -72,52 +81,46 @@ public class Repository<T, ID> {
         fieldNames.clear();
     }
 
-    private MongoCollection<Document> getCollection() {
-        return mongoManager.getDatabase().getCollection(entityCollectionName);
+    public void close() {
+        // Remove references of everything possible.
+        fieldRegistry.clear();
+        entityIdField = null;
+        executorService.shutdownNow();
     }
 
-    protected Class<T> getEntityClass() {
-        return entityClass;
-    }
-
-    public Scope<T, ID> createScope() {
-        return new Scope<>(this);
-    }
-
-    public Document toDocument(T entity) {
-        Document document = new Document();
-        ID uniqueId = getIdFromEntity(entity);
-        if (uniqueId == null) {
-            throw new NullPointerException("No uniqueId found in entity of " + entityClass.getSimpleName());
-        }
-        for (Field field : fieldRegistry) {
-            try {
-                document.put(field.getName(), field.get(entity));
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-                return null;
+    public Document toDocument(E entity) {
+        try {
+            Document document = new Document();
+            ID uniqueId = getIdFromEntity(entity);
+            if (uniqueId == null) {
+                throw new NullPointerException("No uniqueId found in entity of " + entityClass.getSimpleName());
             }
+            for (Field field : fieldRegistry) {
+                Object entityValue = field.get(entity);
+                document.put(field.getName(), entityValue);
+            }
+            return document;
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting Entity to Document: ", e);
         }
-        return document;
     }
 
     @SuppressWarnings("unchecked")
-    public T toEntity(Document document) throws InvocationTargetException, InstantiationException, IllegalAccessException {
-        T entity = (T) entityClass.getDeclaredConstructors()[0].newInstance();
-        for (Field field : fieldRegistry) {
-            Object value = document.get(field.getName());
-            try {
+    public E toEntity(Document document) {
+        try {
+            E entity = (E) entityClass.getDeclaredConstructors()[0].newInstance();
+            for (Field field : fieldRegistry) {
+                Object value = document.get(field.getName());
                 field.set(entity, value);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-                return null;
             }
+            return entity;
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting Document to Entity: ", e);
         }
-        return entity;
     }
 
     @SuppressWarnings("unchecked")
-    public ID getIdFromEntity(T entity) {
+    public ID getIdFromEntity(E entity) {
         try {
             return (ID) entityIdField.get(entity);
         } catch (IllegalAccessException e) {
@@ -128,7 +131,7 @@ public class Repository<T, ID> {
 
     public boolean deleteAll() {
         try {
-            getCollection().drop();
+            collection.drop();
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -138,7 +141,7 @@ public class Repository<T, ID> {
 
     public boolean delete(Bson filters) {
         try {
-            DeleteResult result = getCollection().deleteOne(filters);
+            DeleteResult result = collection.deleteOne(filters);
             return result.wasAcknowledged();
         } catch (Exception e) {
             e.printStackTrace();
@@ -146,7 +149,7 @@ public class Repository<T, ID> {
         }
     }
 
-    public boolean save(T entity) {
+    public boolean save(E entity) {
         try {
             Document document = toDocument(entity);
             ID uniqueId = getIdFromEntity(entity);
@@ -155,7 +158,7 @@ public class Repository<T, ID> {
                 return delete(idFilter);
             }
             UpdateOptions options = new UpdateOptions().upsert(true);
-            UpdateResult result = getCollection().updateOne(idFilter, new BasicDBObject("$set", document), options);
+            UpdateResult result = collection.updateOne(idFilter, new BasicDBObject("$set", document), options);
             return result.wasAcknowledged();
         } catch (Exception e) {
             e.printStackTrace();
@@ -163,9 +166,28 @@ public class Repository<T, ID> {
         }
     }
 
+    private List<E> convertDocumentList(List<Document> documentList) {
+        if (documentList == null || documentList.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<E> entityList = new LinkedList<>();
+        for (Document document : documentList) {
+            E entity = toEntity(document);
+            if (entity == null) {
+                continue;
+            }
+            entityList.add(entity);
+        }
+        return entityList;
+    }
+
+    public FindIterable<Document> iterable(Bson filters) {
+        return collection.find(filters);
+    }
+
     public boolean exists(Bson filters) {
         try {
-            Document document = getCollection().find(filters).first();
+            Document document = iterable(filters).first();
             return document != null && !document.isEmpty();
         } catch (Exception e) {
             e.printStackTrace();
@@ -173,9 +195,9 @@ public class Repository<T, ID> {
         }
     }
 
-    public T find(Bson filters) {
+    public E find(Bson filters) {
         try {
-            Document document = getCollection().find(filters).first();
+            Document document = iterable(filters).first();
             if (document == null) {
                 return null;
             }
@@ -186,24 +208,9 @@ public class Repository<T, ID> {
         }
     }
 
-    private List<T> convertDocumentList(List<Document> documentList) throws Exception {
-        if (documentList == null || documentList.isEmpty()) {
-            return new ArrayList<>();
-        }
-        List<T> entityList = new LinkedList<>();
-        for (Document document : documentList) {
-            T entity = toEntity(document);
-            if (entity == null) {
-                continue;
-            }
-            entityList.add(entity);
-        }
-        return entityList;
-    }
-
-    public List<T> findAll(Bson filters) {
+    public List<E> findAll(Bson filters) {
         try {
-            List<Document> documentList = getCollection().find(filters).into(new ArrayList<>());
+            List<Document> documentList = iterable(filters).into(new ArrayList<>());
             return convertDocumentList(documentList);
         } catch (Exception e) {
             e.printStackTrace();
@@ -211,9 +218,9 @@ public class Repository<T, ID> {
         }
     }
 
-    public List<T> findSort(Bson filters, Bson sort) {
+    public List<E> findSort(Bson filters, Bson sort) {
         try {
-            List<Document> documentList = getCollection().find(filters).sort(sort).into(new LinkedList<>());
+            List<Document> documentList = iterable(filters).sort(sort).into(new LinkedList<>());
             return convertDocumentList(documentList);
         } catch (Exception e) {
             e.printStackTrace();
@@ -221,9 +228,9 @@ public class Repository<T, ID> {
         }
     }
 
-    public List<T> findLimit(Bson filters, int maxDocuments) {
+    public List<E> findLimit(Bson filters, int maxDocuments) {
         try {
-            List<Document> documentList = getCollection().find(filters).limit(maxDocuments).into(new LinkedList<>());
+            List<Document> documentList = iterable(filters).limit(maxDocuments).into(new LinkedList<>());
             return convertDocumentList(documentList);
         } catch (Exception e) {
             e.printStackTrace();
@@ -231,9 +238,9 @@ public class Repository<T, ID> {
         }
     }
 
-    public List<T> findSortLimit(Bson filters, Bson sort, int maxDocuments) {
+    public List<E> findSortLimit(Bson filters, Bson sort, int maxDocuments) {
         try {
-            List<Document> documentList = getCollection().find(filters).sort(sort).limit(maxDocuments).into(new LinkedList<>());
+            List<Document> documentList = iterable(filters).sort(sort).limit(maxDocuments).into(new LinkedList<>());
             return convertDocumentList(documentList);
         } catch (Exception e) {
             e.printStackTrace();
@@ -241,9 +248,9 @@ public class Repository<T, ID> {
         }
     }
 
-    public List<T> all() {
+    public List<E> all() {
         try {
-            List<Document> documentList = getCollection().find().into(new ArrayList<>());
+            List<Document> documentList = collection.find().into(new ArrayList<>());
             return convertDocumentList(documentList);
         } catch (Exception e) {
             e.printStackTrace();
@@ -251,43 +258,43 @@ public class Repository<T, ID> {
         }
     }
 
-    public Result<Boolean> asyncDeleteAll() {
+    public Result<Boolean> deleteAllAsync() {
         return new Result<>(executorService, this::deleteAll);
     }
 
-    public Result<Boolean> asyncDelete(Bson filters) {
+    public Result<Boolean> deleteAsync(Bson filters) {
         return new Result<>(executorService, () -> delete(filters));
     }
 
-    public Result<Boolean> asyncSave(T entity) {
+    public Result<Boolean> saveAsync(E entity) {
         return new Result<>(executorService, () -> save(entity));
     }
 
-    public Result<Boolean> asyncExists(Bson filters) {
+    public Result<Boolean> existsAsync(Bson filters) {
         return new Result<>(executorService, () -> exists(filters));
     }
 
-    public Result<T> asyncFind(Bson filters) {
+    public Result<E> findAsync(Bson filters) {
         return new Result<>(executorService, () -> find(filters));
     }
 
-    public Result<List<T>> asyncFindAll(Bson filters) {
+    public Result<List<E>> findAllAsync(Bson filters) {
         return new Result<>(executorService, () -> findAll(filters));
     }
 
-    public Result<List<T>> asyncFindSort(Bson filters, Bson sort) {
+    public Result<List<E>> findSortAsync(Bson filters, Bson sort) {
         return new Result<>(executorService, () -> findSort(filters, sort));
     }
 
-    public Result<List<T>> asyncFindLimit(Bson filters, int maxDocuments) {
+    public Result<List<E>> findLimitAsync(Bson filters, int maxDocuments) {
         return new Result<>(executorService, () -> findLimit(filters, maxDocuments));
     }
 
-    public Result<List<T>> asyncFindSortLimit(Bson filters, Bson sort, int maxDocuments) {
+    public Result<List<E>> findSortLimitAsync(Bson filters, Bson sort, int maxDocuments) {
         return new Result<>(executorService, () -> findSortLimit(filters, sort, maxDocuments));
     }
 
-    public Result<List<T>> asyncAll() {
+    public Result<List<E>> allAsync() {
         return new Result<>(executorService, this::all);
     }
 }
