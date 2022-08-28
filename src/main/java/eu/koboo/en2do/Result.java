@@ -13,7 +13,6 @@ public class Result<T> {
 
     ExecutorService executorService;
     Callable<T> producer;
-    Consumer<T> subscriber;
 
     public Result(ExecutorService executorService, Callable<T> producer) {
         this.executorService = executorService;
