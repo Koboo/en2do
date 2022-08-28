@@ -58,12 +58,4 @@ public class MongoManager {
             return false;
         }
     }
-
-    public <T, ID> Repository<T, ID> createRepository(ExecutorService executorService) {
-        return new Repository<>(this, executorService);
-    }
-
-    public <T, ID> Repository<T, ID> createRepository() {
-        return createRepository(Executors.newSingleThreadExecutor());
-    }
 }
