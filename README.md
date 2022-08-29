@@ -18,6 +18,20 @@ Sync/Async entity framework for mongodb in Java 17
   * [Repository](#)
   * [Scope](#)
 
+## Features
+
+### Implementation
+
+* Simple conversion of pojo entities
+
+### TODO
+
+* Automatic conversion via PojoCodec of MongoDB (https://www.mongodb.com/developer/languages/java/java-mapping-pojos/)
+* Conversion of Enums via Codec
+* Better Syntax for Scope usage (via Repository?)
+* Spring like https://tuhrig.de/implementing-interfaces-and-abstract-classes-on-the-fly/
+  * https://docs.spring.io/spring-data/mongodb/docs/1.2.0.RELEASE/reference/html/mongo.repositories.html
+
 ## Get Started
 
 To make it easier to get started with en2do here is a guide to add it to and use it in your project.

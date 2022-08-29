@@ -8,6 +8,9 @@ import com.mongodb.client.MongoDatabase;
 import eu.koboo.en2do.config.MongoConfig;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.PojoCodecProvider;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,8 +35,12 @@ public class MongoManager {
                             + ":" + config.port() + "/?authSource=admin");
         }
 
+        CodecRegistry pojoCodec = CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).build());
+        CodecRegistry registry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), pojoCodec);
+
         MongoClientSettings clientSettings = MongoClientSettings.builder()
                 .applyConnectionString(connectionString)
+                .codecRegistry(registry)
                 .retryWrites(true)
                 .build();
 
@@ -45,7 +52,7 @@ public class MongoManager {
         this(MongoConfig.readConfig());
     }
 
-    protected MongoDatabase getDatabase() {
+    public MongoDatabase getDatabase() {
         return database;
     }
 
