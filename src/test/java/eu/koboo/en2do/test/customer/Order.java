@@ -8,9 +8,9 @@ import java.util.List;
 @Getter // lombok
 @Setter // lombok
 @NoArgsConstructor // lombok
-@AllArgsConstructor
+@AllArgsConstructor // lombok - not required
 @FieldDefaults(level = AccessLevel.PRIVATE) // lombok
-@ToString
+@ToString // lombok
 public class Order {
 
     String orderText;

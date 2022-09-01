@@ -11,8 +11,7 @@ import java.util.UUID;
 @Setter // lombok
 @NoArgsConstructor // lombok
 @FieldDefaults(level = AccessLevel.PRIVATE) // lombok
-@ToString
-// en2do
+@ToString // lombok
 public class Customer {
 
     @Id // en2do
