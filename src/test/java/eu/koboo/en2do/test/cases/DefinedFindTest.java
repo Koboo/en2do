@@ -44,10 +44,10 @@ public class DefinedFindTest {
         assertTrue(repository.save(two));
         assertTrue(repository.exists(two));
 
-        List<Customer> customerList = repository.findByCustomerIdEqualsOrCustomerIdEquals(one.getCustomerId(), two.getCustomerId());
+        List<Customer> customerList = repository.findByCustomerIdNotEquals(one.getCustomerId());
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());
-        assertEquals(2, customerList.size());
+        assertEquals(1, customerList.size());
 
         for (Customer customer : customerList) {
             assertEquals(Const.FIRST_NAME, customer.getFirstName());
