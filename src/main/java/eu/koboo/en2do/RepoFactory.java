@@ -170,20 +170,43 @@ public class RepoFactory {
         if (expectedField == null) {
             throw new NoFilterException(method, entityClass);
         }
+        expectedField = expectedField.endsWith("Not") ? expectedField.replaceFirst("Not", "") : expectedField;
+        if(operator.endsWith("Has")) {
+            boolean anyFieldFound = false;
+            for (Field field : entityClass.getDeclaredFields()) {
+                if (!field.getName().equalsIgnoreCase(expectedField)) {
+                    continue;
+                }
+                anyFieldFound = true;
+            }
+            if(!anyFieldFound) {
+                throw new InvalidFilterException(method, entityClass);
+            }
+            return;
+        }
+        //TODO: Check here for SortOptions
+        if(method.getParameters().length - 1 < paramIndex) {
+            throw new WrongParametersCountException(method, entityClass);
+        }
         Class<?> paramClass = method.getParameters()[paramIndex].getType();
         if (paramClass == null) {
             throw new WrongParametersCountException(method, entityClass);
         }
         // Name
+        boolean anyFieldFound = false;
         for (Field field : entityClass.getDeclaredFields()) {
             if (!field.getName().equalsIgnoreCase(expectedField)) {
                 continue;
             }
+            anyFieldFound = true;
             Class<?> fieldClass = field.getType();
             if (GenericUtils.isTypeOf(fieldClass, paramClass)) {
                 continue;
             }
             throw new MismatchingParameterException(method, entityClass, fieldClass, paramClass);
+        }
+        if(!anyFieldFound) {
+            throw new InvalidFilterException(method, entityClass);
         }
     }
 }
