@@ -1,12 +1,10 @@
 package eu.koboo.en2do.test.customer;
 
-import eu.koboo.en2do.annotation.Entity;
 import eu.koboo.en2do.annotation.Id;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Getter // lombok
@@ -14,7 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor // lombok
 @FieldDefaults(level = AccessLevel.PRIVATE) // lombok
 @ToString
-@Entity("Customers") // en2do
+// en2do
 public class Customer {
 
     @Id // en2do
@@ -30,6 +28,7 @@ public class Customer {
     String city;
     Long phoneNumber;
     double balance;
-    List<Integer> orderNumbers;
-    Map<String, String> orderTexts;
+    List<Order> orders;
+    //List<Integer> orderNumbers;
+    //Map<String, String> orderTexts;
 }

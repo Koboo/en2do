@@ -1,14 +1,15 @@
 package eu.koboo.en2do.test.customer;
 
-import eu.koboo.en2do.MongoManager;
-import eu.koboo.en2do.Repository;
+import eu.koboo.en2do.annotation.Repository;
+import eu.koboo.en2do.Repo;
 
+import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Executors;
 
-public class CustomerRepository extends Repository<Customer, UUID> {
+@Repository("customer_repository")
+public interface CustomerRepository extends Repo<Customer, UUID> {
 
-    public CustomerRepository(MongoManager mongoManager) {
-        super(mongoManager, Executors.newSingleThreadExecutor());
-    }
+    Customer findByCustomerIdEquals(int customerId);
+
+    List<Customer> findByCustomerIdEqualsOrCustomerIdEquals(int customerId1, int customerId2);
 }

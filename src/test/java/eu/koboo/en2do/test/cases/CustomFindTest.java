@@ -4,29 +4,24 @@ import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepository;
-import eu.koboo.en2do.test.customer.CustomerScope;
-import org.bson.conversions.Bson;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class SyncOperationTest {
+public class CustomFindTest {
 
     static MongoManager manager;
     static CustomerRepository repository;
-    static CustomerScope scope;
 
     @BeforeClass
     public static void before() {
-        System.out.println(SyncOperationTest.class.getName() + " starting.");
+        System.out.println(CustomFindTest.class.getName() + " starting.");
         manager = new MongoManager();
         assertNotNull(manager);
-        repository = new CustomerRepository(manager);
+        repository = manager.create(CustomerRepository.class);
         assertNotNull(repository);
-        scope = new CustomerScope(repository);
-        assertNotNull(scope);
     }
 
     @Test
@@ -36,10 +31,9 @@ public class SyncOperationTest {
         assertNotNull(original);
         assertTrue(repository.save(original));
 
-        Bson bsonFilter = scope.eq(Customer::getUniqueId, Const.UNIQUE_ID);
-        assertTrue(repository.exists(bsonFilter));
+        assertTrue(repository.exists(original));
 
-        Customer customer = repository.find(bsonFilter);
+        Customer customer = repository.findById(original.getUniqueId());
         assertNotNull(customer);
 
         assertEquals(Const.UNIQUE_ID, customer.getUniqueId());
@@ -50,7 +44,7 @@ public class SyncOperationTest {
     
     @AfterClass
     public static void after() {
-        System.out.println(SyncOperationTest.class.getName() + " ending.");
+        System.out.println(CustomFindTest.class.getName() + " ending.");
         assertTrue(repository.deleteAll());
         assertTrue(manager.close());
     }
