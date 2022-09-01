@@ -12,14 +12,12 @@ import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MongoManager {
 
     MongoClient client;
     MongoDatabase database;
+    RepoFactory factory;
 
     public MongoManager(MongoConfig config) {
         ConnectionString connectionString;
@@ -46,14 +44,24 @@ public class MongoManager {
 
         client = MongoClients.create(clientSettings);
         database = client.getDatabase(config.database());
+
+        factory = new RepoFactory(this);
     }
 
     public MongoManager() {
         this(MongoConfig.readConfig());
     }
 
-    public MongoDatabase getDatabase() {
+    protected MongoDatabase getDatabase() {
         return database;
+    }
+
+    public <E, ID, R extends Repo<E, ID>> R create(Class<R> repoClass) {
+        try {
+            return factory.create(repoClass);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public boolean close() {
