@@ -18,14 +18,6 @@ public class Const {
     public static final String CITY = "Zufallsort";
     public static final long PHONE_NUMBER = 4915122334455L;
     public static final double BALANCE = 543.21;
-    public static final List<Integer> ORDER_NUMBERS = Arrays.asList(1, 2, 3, 4, 5);
-    public static final Map<String, String> ORDER_TEXTS = new HashMap<>() {{
-        put("1", "First");
-        put("2", "Second");
-        put("3", "Third");
-        put("4", "Fourth");
-        put("5", "Fifth");
-    }};
     public static final List<Order> ORDERS = Arrays.asList(
             new Order("First", 1.0, Arrays.asList(1, 2, 3, 4)),
             new Order("Second", 2.0, Arrays.asList(1, 2, 3, 4)),
