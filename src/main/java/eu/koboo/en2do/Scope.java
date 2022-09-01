@@ -10,14 +10,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class Scope<T, ID> {
+public class Scope<T> {
 
-    private final Repository<T, ID> repository;
-
-    protected Scope(Repository<T, ID> repository) {
-        this.repository = repository;
-    }
-
+    /*
     public Bson and(Bson... filters) {
         return Filters.and(filters);
     }
@@ -135,4 +130,5 @@ public class Scope<T, ID> {
     private String field(TypedPropertyGetter<T, ?> getter) {
         return PropertyUtils.getPropertyName(repository.getEntityClass(), getter);
     }
+    */
 }

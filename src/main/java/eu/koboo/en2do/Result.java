@@ -2,10 +2,7 @@ package eu.koboo.en2do;
 
 import lombok.RequiredArgsConstructor;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 @RequiredArgsConstructor
@@ -47,6 +44,8 @@ public class Result<T> {
             return null;
         }
     }
+
+
 
     public T await() {
         return await(10, TimeUnit.SECONDS);
