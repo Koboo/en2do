@@ -1,23 +1,10 @@
 package eu.koboo.en2do.exception;
 
+import java.lang.reflect.Field;
+
 public class FinalFieldException extends Exception {
 
-    public FinalFieldException() {
-    }
-
-    public FinalFieldException(String message) {
-        super(message);
-    }
-
-    public FinalFieldException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public FinalFieldException(Throwable cause) {
-        super(cause);
-    }
-
-    public FinalFieldException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
+    public FinalFieldException(Field field, Class<?> entityClass) {
+        super("Field \"" + field.getName() + "\" in " + entityClass.getName() + " is final. That's not allowed!");
     }
 }
