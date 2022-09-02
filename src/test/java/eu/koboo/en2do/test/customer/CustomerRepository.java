@@ -1,5 +1,6 @@
 package eu.koboo.en2do.test.customer;
 
+import eu.koboo.en2do.SortOptions;
 import eu.koboo.en2do.annotation.Repository;
 import eu.koboo.en2do.Repo;
 
@@ -34,7 +35,11 @@ public interface CustomerRepository extends Repo<Customer, UUID> {
 
     Customer findByFirstNameAndBalanceNotBetweenAndCustomerId(String firstName, double from, double to, int customerId);
 
-    List<Customer> findByCustomerIdNot(int customerId);
+    List<Customer> findByCustomerIdNot(int customerId, SortOptions<Customer> sortOptions);
 
     List<Customer> findByCustomerIdOrCustomerId(int customerId1, int customerId2);
+
+    //List<Customer> findByCustomerIdIn(List<Integer> customerIdList);
+
+    List<Customer> findByCustomerIdExists(SortOptions<Customer> sortOptions);
 }
