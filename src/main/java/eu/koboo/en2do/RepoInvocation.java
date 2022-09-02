@@ -7,9 +7,11 @@ import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import eu.koboo.en2do.exception.*;
+import eu.koboo.en2do.misc.FilterType;
 import eu.koboo.en2do.utility.MethodNameUtil;
 import eu.koboo.en2do.utility.GenericUtils;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.bson.conversions.Bson;
 
@@ -21,25 +23,16 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@AllArgsConstructor
 public class RepoInvocation<E, ID> implements InvocationHandler {
 
+    RepoFactory factory;
     String entityCollectionName;
     MongoCollection<E> collection;
     Class<Repo<E, ID>> repoClass;
     Class<E> entityClass;
     Class<ID> entityUniqueIdClass;
     Field entityUniqueIdField;
-
-    public RepoInvocation(String entityCollectionName, MongoCollection<E> collection,
-                          Class<Repo<E, ID>> repoClass, Class<E> entityClass, Class<ID> entityUniqueIdClass,
-                          Field entityUniqueIdField) {
-        this.entityCollectionName = entityCollectionName;
-        this.collection = collection;
-        this.entityClass = entityClass;
-        this.repoClass = repoClass;
-        this.entityUniqueIdClass = entityUniqueIdClass;
-        this.entityUniqueIdField = entityUniqueIdField;
-    }
 
     @Override
     @SuppressWarnings("all")
@@ -118,56 +111,57 @@ public class RepoInvocation<E, ID> implements InvocationHandler {
             Bson idFilter = createIdFilter(uniqueId);
             return collection.find(idFilter).first() != null;
         }
-        if(methodName.startsWith("findBy") || methodName.startsWith("deleteBy")) {
+        if (methodName.startsWith("findBy") || methodName.startsWith("deleteBy")) {
             Class<?> returnTypeClass = method.getReturnType();
-            String fieldFilterName = MethodNameUtil.removeLeadingOperator(methodName);
-            if (fieldFilterName == null) {
-                throw new InvalidMethodOperationException(method, entityClass);
+            String operatorRootString = MethodNameUtil.removeLeadingOperator(methodName);
+            if (operatorRootString == null) {
+                throw new MethodInvalidSignatureException(method, entityClass);
             }
             Bson filter = null;
-            if(fieldFilterName.contains("And")) {
+            if (operatorRootString.contains("And") || operatorRootString.contains("Or")) {
                 List<Bson> filterList = new ArrayList<>();
-                String[] fieldFilterPart = fieldFilterName.split("And");
-                for(int i = 0; i < fieldFilterPart.length; i++) {
-                    String fieldFilterPartIndexed = fieldFilterPart[i];
-                    filterList.add(createBsonFilter(method, args, fieldFilterPartIndexed, i));
+                String[] operatorStringArray = operatorRootString.contains("And") ?
+                        operatorRootString.split("And") : operatorRootString.split("Or");
+                int nextIndex = 0;
+                for (int i = 0; i < operatorStringArray.length; i++) {
+                    String operatorString = operatorStringArray[i];
+                    FilterType filterType = factory.createFilterType(entityClass, repoClass, method, operatorString);
+                    boolean isNot = operatorString.replaceFirst(filterType.field().getName(), "").startsWith("Not");
+                    filterList.add(createBsonFilter(method, filterType, isNot, nextIndex, args));
+                    nextIndex = i + filterType.operator().getExpectedParameterCount();
                 }
-                filter = Filters.and(filterList);
-            } else if(fieldFilterName.contains("Or")) {
-                List<Bson> filterList = new ArrayList<>();
-                String[] fieldFilterPart = fieldFilterName.split("Or");
-                for(int i = 0; i < fieldFilterPart.length; i++) {
-                    String fieldFilterPartIndexed = fieldFilterPart[i];
-                    filterList.add(createBsonFilter(method, args, fieldFilterPartIndexed, i));
+                if(operatorRootString.contains("And")) {
+                    filter = Filters.and(filterList);
+                } else {
+                    filter = Filters.or(filterList);
                 }
-                filter = Filters.or(filterList);
             } else {
-                filter = createBsonFilter(method, args, fieldFilterName, 0);
+                FilterType filterType = factory.createFilterType(entityClass, repoClass, method, operatorRootString);
+                boolean isNot = operatorRootString.replaceFirst(filterType.field().getName(), "").startsWith("Not");
+                filter = createBsonFilter(method, filterType, isNot, 0, args);
             }
-            if (GenericUtils.isTypeOf(List.class, returnTypeClass)) { // Find with List<Entity>
+            System.out.println("[DEBUG] BsonFilter: " + filter);
+            if (GenericUtils.isTypeOf(List.class, returnTypeClass)) {
                 return collection.find(filter).into(new ArrayList<>());
             }
-            if (GenericUtils.isTypeOf(entityClass, returnTypeClass)) { // Find with Entity
+            if (GenericUtils.isTypeOf(entityClass, returnTypeClass)) {
                 return collection.find(filter).first();
             }
-            if (GenericUtils.isTypeOf(Boolean.class, returnTypeClass)) { // Delete with Entity
+            if (GenericUtils.isTypeOf(Boolean.class, returnTypeClass)) {
                 DeleteResult deleteResult = collection.deleteOne(filter);
                 return deleteResult.wasAcknowledged();
             }
         }
-        throw new InvalidMethodCallException(method, entityClass);
+        throw new RepositoryInvalidCallException(method, repoClass);
     }
 
-    private void checkArguments(Method method, Object[] args, int expectedLength) {
-        if(args == null && expectedLength == 0) {
+    private void checkArguments(Method method, Object[] args, int expectedLength) throws Exception {
+        if (args == null && expectedLength == 0) {
             return;
         }
         if (args == null || args.length != expectedLength) {
-            throw new IllegalArgumentException("argument length of method " + method.getName() + " from " +
-                    entityClass.getName() + " not matching! (" +
-                    "expected=" + expectedLength + ", " +
-                    "length=" + (args == null ? "null" : args.length) +
-                    ")");
+            int length = args == null ? -1 : args.length;
+            throw new MethodParameterCountException(method, repoClass, expectedLength, length);
         }
     }
 
@@ -201,71 +195,70 @@ public class RepoInvocation<E, ID> implements InvocationHandler {
         return collection.find(filter);
     }
 
-
-    private Bson createBsonFilter(Method method, Object[] params, String methodFilterPart, int paramIndex) throws Exception {
+    private Bson createBsonFilter(Method method, FilterType filterType, boolean isNot, int paramsIndexAt, Object[] args) throws Exception {
         // NameEqualsIgnoreCase (String name);
         // NumberGreaterThan (String name, Double number);
-        String expectedField = MethodNameUtil.replaceEndingFilter(methodFilterPart);
-        if (expectedField == null) {
-            throw new NoFilterException(method, entityClass);
-        }
-        expectedField = expectedField.endsWith("Not") ? expectedField.replaceFirst("Not", "") : expectedField;
-        Object objectParameter = params[paramIndex];
-        if(objectParameter == null) {
-            throw new MissingParameterException(method, entityClass);
-        }
-        String endingFilter = methodFilterPart.replaceFirst(expectedField, "");
-        if(endingFilter.equalsIgnoreCase("")) {
-            throw new NoFilterException(method, entityClass);
-        }
-        // Name
-        for (Field field : entityClass.getDeclaredFields()) {
-            if (!field.getName().equalsIgnoreCase(expectedField)) {
-                continue;
+        String fieldName = filterType.field().getName();
+        Bson retFilter = null;
+        switch (filterType.operator()) {
+            case EQUALS -> {
+                retFilter = Filters.eq(fieldName, args[paramsIndexAt]);
             }
-            Bson filter = matchBsonByFilterName(method, endingFilter, field.getName(), objectParameter);
-            if(endingFilter.startsWith("Not")) {
-                return Filters.not(filter);
+            case EQUALS_IGNORE_CASE -> {
+                String patternString = "(?i)^" + args[paramsIndexAt] + "$";
+                Pattern pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
+                retFilter = Filters.regex(fieldName, pattern);
             }
-            return filter;
+            case CONTAINS -> {
+                String patternString = ".*" + args[paramsIndexAt] + ".*";
+                Pattern pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
+                retFilter = Filters.regex(fieldName, pattern);
+            }
+            case GREATER_THAN -> {
+                retFilter = Filters.gt(fieldName, args[paramsIndexAt]);
+            }
+            case LESS_THAN -> {
+                retFilter = Filters.lt(fieldName, args[paramsIndexAt]);
+            }
+            case GREATER_EQUALS -> {
+                retFilter = Filters.gte(fieldName, args[paramsIndexAt]);
+            }
+            case LESS_EQUALS -> {
+                retFilter = Filters.lte(fieldName, args[paramsIndexAt]);
+            }
+            case REGEX -> {
+                Object value = args[paramsIndexAt];
+                if (value instanceof String patternString) {
+                    retFilter = Filters.regex(fieldName, patternString);
+                }
+                if (value instanceof Pattern pattern) {
+                    retFilter = Filters.regex(fieldName, pattern);
+                }
+                if (retFilter == null) {
+                    throw new MethodInvalidRegexParameterException(method, repoClass, value.getClass());
+                }
+            }
+            case EXISTS -> {
+                retFilter = Filters.exists(fieldName);
+            }
+            case BETWEEN -> {
+                Object from = args[paramsIndexAt];
+                Object to = args[paramsIndexAt + 1];
+                retFilter = Filters.and(Filters.gt(fieldName, from), Filters.lt(fieldName, to));
+            }
+            case BETWEEN_EQUALS -> {
+                Object from = args[paramsIndexAt];
+                Object to = args[paramsIndexAt + 1];
+                retFilter = Filters.and(Filters.gte(fieldName, from), Filters.lte(fieldName, to));
+            }
+            default -> {
+                throw new MethodUnsupportedFilterException(method, repoClass);
+            }
         }
-        return null;
+        if (isNot) {
+            return Filters.not(retFilter);
+        }
+        return retFilter;
     }
 
-    private Bson matchBsonByFilterName(Method method, String filter, String fieldName, Object value) throws Exception {
-        filter = filter.startsWith("Not") ? filter.replaceFirst("Not", "") : filter;
-        if(filter.equalsIgnoreCase("Equals")) {
-            return Filters.eq(fieldName, value);
-        }
-        if(filter.equalsIgnoreCase("EqualsIgnoreCase")) {
-            String patternString = "(?i)^" + value + "$";
-            Pattern pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
-            return Filters.regex(fieldName, pattern);
-        }
-        if(filter.equalsIgnoreCase("GreaterThan")) {
-            return Filters.gt(fieldName, value);
-        }
-        if(filter.equalsIgnoreCase("LessThan")) {
-            return Filters.lt(fieldName, value);
-        }
-        if(filter.equalsIgnoreCase("Has")) {
-            return Filters.exists(fieldName);
-        }
-        if(filter.equalsIgnoreCase("Regex")) {
-            if(value instanceof String patternString) {
-                return Filters.regex(fieldName, patternString);
-            }
-            if(value instanceof Pattern pattern) {
-                return Filters.regex(fieldName, pattern);
-            }
-            throw new InvalidRegexParameterException(method, entityClass);
-        }
-        if(filter.equalsIgnoreCase("GreaterEquals")) {
-            return Filters.gte(fieldName, value);
-        }
-        if(filter.equalsIgnoreCase("LessEquals")) {
-            return Filters.lte(fieldName, value);
-        }
-        throw new UnsupportedFilterException(method, entityClass);
-    }
 }
