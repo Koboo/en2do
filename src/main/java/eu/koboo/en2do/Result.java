@@ -45,8 +45,6 @@ public class Result<T> {
         }
     }
 
-
-
     public T await() {
         return await(10, TimeUnit.SECONDS);
     }
