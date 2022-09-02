@@ -31,7 +31,7 @@ Sync/Async entity framework for mongodb in Java 17
 ### What should it do (Future implementations)
 
 * Config parsing from different places (resource, file, pojo)
-* Check for 
+* Check for advanced credentials
 * Replace file-config with property reading
 * Repository task flushing? 
 * More Filter operators
@@ -72,30 +72,28 @@ public class Application {
     }
 }
 ````
-If a ``MongoManager`` is created without arguments, a ``MongoConfig`` is automatically created, 
-in which the access data of the MongoDB database must be entered.
+If a ``MongoManager`` is created without arguments, the credentials are read from the following locations:
+1. From Disk: ``{applicationDirectory}/credentials.properties``
+2. From Resource: ``{applicationJar}/credentials.properties``
 
-**_Default ``mongodb.cfg``:_**
-````yaml
-username: mongodb_user
-password: mongodb_password
-host: 127.0.0.1
-port: 27017
-database: mongodb_database
-useAuthSource: false
+**_Default ``credentials.properties``:_**
+````properties
+mongodb.connect=mongodb://<username>:<password>@<host>:<port>/?<options>
+mongodb.database=<database>
 ````
 
-The ``MongoConfig`` can also be created and passed as an instance.
+The credentials can also hardcoded.
 
 **_Code Example:_**
 ````java
 public class Application {
     public static void main(String[] args) {
-        MongoConfig mongoConfig = new MongoConfig("mongodb_user", "mongodb_password", "127.0.0.1", "27017", "mongodb_database", false);
-        MongoManager manager = new MongoManager(mongoConfig);
+        MongoManager manager = new MongoManager("connectString", "databaseName");
     }
 }
 ````
+
+[To get help about the ConnectionString, see MongoDB Manual.](https://www.mongodb.com/docs/manual/reference/connection-string/)
 
 ### Define an Entity class
 
@@ -116,14 +114,14 @@ import eu.koboo.en2do.annotation.*;
 import lombok.*;
 import java.util.*;
 
-@Getter // lombok
-@Setter // lombok
-@NoArgsConstructor // lombok
-@FieldDefaults(level = AccessLevel.PRIVATE) // lombok
-@ToString // lombok
+@Getter // from lombok - required (to access fields)
+@Setter // from lombok - required (to change fields)
+@NoArgsConstructor // from lombok - required (for mongodb, to create instances)
+@FieldDefaults(level = AccessLevel.PRIVATE) // from lombok - optional
+@ToString // from lombok
 public class Customer {
 
-  @Id // en2do
+  @Id // from en2do - unique identifier (can be String, int, long, UUID or any object)
   UUID uniqueId;
 
   int customerId;
@@ -142,7 +140,9 @@ public class Customer {
 
 ### Create the Repository for the Entity
 
-In order to access the database and apply operations to an entity, a repository must be defined/created.
+In order to access the database and apply operations to any entity, a repository must be defined.
+To ensure type safety, the type of the entity and the type of the identifier must be specified 
+as type parameters.
 
 **_Code Example:_**
 ````java

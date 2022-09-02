@@ -5,51 +5,65 @@ import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
-import eu.koboo.en2do.config.MongoConfig;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Properties;
+
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MongoManager {
+
+    private static final String FILE_NAME = "credentials.properties";
 
     MongoClient client;
     MongoDatabase database;
     RepoFactory factory;
 
-    public MongoManager(MongoConfig config) {
-        ConnectionString connectionString;
-        if (!config.useAuthSource()) {
-            connectionString = new ConnectionString(
-                    "mongodb://" + config.username() + ":" + config.password() + "@"
-                            + config.host()
-                            + ":" + config.port() + "/" + config.database());
-        } else {
-            connectionString = new ConnectionString(
-                    "mongodb://" + config.username() + ":" + config.password() + "@"
-                            + config.host()
-                            + ":" + config.port() + "/?authSource=admin");
+    public MongoManager(String connectString, String databaseString) {
+
+        if(connectString == null && databaseString == null) {
+            String[] credentials = readConfig();
+            if(credentials == null) {
+                throw new NullPointerException("No credentials given! Please make sure to provide " +
+                        "working credentials.");
+            }
+            connectString = credentials[0];
+            databaseString = credentials[1];
         }
+        if(connectString == null) {
+            throw new NullPointerException("No connectString given! Please make sure to provide a " +
+                    "working connectString.");
+        }
+        if(databaseString == null) {
+            throw new NullPointerException("No databaseString given! Please make sure to provide a " +
+                    "working databaseString.");
+        }
+        ConnectionString connection = new ConnectionString(connectString);
 
         CodecRegistry pojoCodec = CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).build());
         CodecRegistry registry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), pojoCodec);
 
         MongoClientSettings clientSettings = MongoClientSettings.builder()
-                .applyConnectionString(connectionString)
+                .applyConnectionString(connection)
                 .codecRegistry(registry)
-                .retryWrites(true)
                 .build();
 
         client = MongoClients.create(clientSettings);
-        database = client.getDatabase(config.database());
+        database = client.getDatabase(databaseString);
 
         factory = new RepoFactory(this);
     }
 
     public MongoManager() {
-        this(MongoConfig.readConfig());
+        this(null, null);
     }
 
     protected MongoDatabase getDatabase() {
@@ -72,5 +86,41 @@ public class MongoManager {
             e.printStackTrace();
             return false;
         }
+    }
+
+    private static String[] readConfig() {
+        File diskFile = new File(FILE_NAME);
+        if (diskFile.exists()) {
+            try(InputStream inputStream = new FileInputStream(diskFile)) {
+                return readProperties(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+        Class<MongoManager> managerClass = MongoManager.class;
+        URL resourceFile = managerClass.getResource(FILE_NAME);
+        if (resourceFile != null) {
+            try(InputStream inputStream = managerClass.getResourceAsStream(FILE_NAME)) {
+                return readProperties(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    private static String[] readProperties(InputStream inputStream) {
+        try {
+            Properties properties = new Properties();
+            properties.load(inputStream);
+            return new String[]{
+                    properties.getProperty("mongodb.connect"),
+                    properties.getProperty("mongodb.database")
+            };
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

@@ -1,4 +1,4 @@
 /.gradle/
 /.idea/
 /build/
-/mongodb.cfg
+/credentials.properties
