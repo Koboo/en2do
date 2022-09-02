@@ -1,6 +1,7 @@
 package eu.koboo.en2do.test.cases;
 
 import eu.koboo.en2do.MongoManager;
+import eu.koboo.en2do.SortOptions;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepository;
@@ -10,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class FindByIdTest {

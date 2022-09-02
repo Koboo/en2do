@@ -27,14 +27,13 @@ Sync/Async entity framework for mongodb in Java 17
 * Create filters without implementing them
 * Object creation by proxy classes to simplify usage and method declaration
 * Implemented filters, which can be chained, negated and executed together to get the expected results
+* Load credentials from disk-files, resource-files or insert as hardcoded strings 
 
 ### What should it do (Future implementations)
 
-* Config parsing from different places (resource, file, pojo)
-* Check for advanced credentials
-* Replace file-config with property reading
-* Repository task flushing? 
-* More Filter operators
+* Repository task flushing
+* in/nin Filter operators
+* Implement SortOptions
 
 ## Get Started
 

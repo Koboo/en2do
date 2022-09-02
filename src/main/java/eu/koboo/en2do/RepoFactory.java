@@ -154,10 +154,21 @@ public class RepoFactory {
         int expectedParameters = countExpectedParameters(entityClass, repoClass, method, fieldFilterName);
         System.out.println("[DEBUG] Method: " + method.getName());
         System.out.println("[DEBUG] ExpParams: " + expectedParameters);
-        System.out.println("[DEBUG] ActParams: " + method.getParameterCount());
-        if(expectedParameters != method.getParameterCount()) {
-            // TODO: Check for "additional" SortOptions as last parameter if return type is list
-            throw new MethodParameterCountException(method, repoClass, expectedParameters, method.getParameterCount());
+        int parameterCount = method.getParameterCount();
+        System.out.println("[DEBUG] ActParams: " + parameterCount);
+        if(expectedParameters != parameterCount) {
+            if(parameterCount > 0) {
+                Class<?> lastParam = method.getParameterTypes()[parameterCount - 1];
+                System.out.println("[DEBUG] lastParam: " + lastParam.getName());
+                System.out.println("[DEBUG] AddParam: " + (expectedParameters + 1));
+                System.out.println("[DEBUG] Assignable: " + lastParam.isAssignableFrom(SortOptions.class));
+                if(lastParam.isAssignableFrom(SortOptions.class) && (expectedParameters + 1) != parameterCount) {
+                    throw new MethodParameterCountException(method, repoClass, (expectedParameters + 1), parameterCount);
+                }
+                // TODO: Check for "additional" SortOptions as last parameter if return type is list
+            } else {
+                throw new MethodParameterCountException(method, repoClass, expectedParameters, parameterCount);
+            }
         }
         String[] fieldFilterSplitByType = fieldFilterName.contains("And") ?
                 fieldFilterName.split("And") : fieldFilterName.split("Or");

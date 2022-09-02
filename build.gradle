@@ -15,12 +15,14 @@ repositories {
 
 dependencies {
     implementation "org.mongodb:mongodb-driver:$mongoDbVersion"
+    implementation "de.cronn:reflection-util:$reflectionUtilVersion"
 
     compileOnly "org.projectlombok:lombok:$lombokVersion"
     annotationProcessor "org.projectlombok:lombok:$lombokVersion"
 
     testImplementation "org.junit.jupiter:junit-jupiter-engine:$jupiterVersion"
     testImplementation "org.mongodb:mongodb-driver:$mongoDbVersion"
+    testImplementation "de.cronn:reflection-util:$reflectionUtilVersion"
 
     testCompileOnly "org.projectlombok:lombok:$lombokVersion"
     testAnnotationProcessor "org.projectlombok:lombok:$lombokVersion"

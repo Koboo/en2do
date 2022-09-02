@@ -1,11 +1,13 @@
 package eu.koboo.en2do;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
+import de.cronn.reflection.util.PropertyUtils;
 import eu.koboo.en2do.exception.*;
 import eu.koboo.en2do.misc.FilterType;
 import eu.koboo.en2do.utility.MethodNameUtil;
@@ -20,6 +22,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -130,22 +133,40 @@ public class RepoInvocation<E, ID> implements InvocationHandler {
                     filterList.add(createBsonFilter(method, filterType, isNot, nextIndex, args));
                     nextIndex = i + filterType.operator().getExpectedParameterCount();
                 }
-                if(operatorRootString.contains("And")) {
+                if (operatorRootString.contains("And")) {
                     filter = Filters.and(filterList);
                 } else {
                     filter = Filters.or(filterList);
                 }
             } else {
                 FilterType filterType = factory.createFilterType(entityClass, repoClass, method, operatorRootString);
-                boolean isNot = operatorRootString.replaceFirst(filterType.field().getName(), "").startsWith("Not");
+                boolean isNot = operatorRootString.toLowerCase(Locale.ROOT)
+                        .replaceFirst(filterType.field().getName().toLowerCase(Locale.ROOT), "").startsWith("not");
                 filter = createBsonFilter(method, filterType, isNot, 0, args);
             }
             System.out.println("[DEBUG] BsonFilter: " + filter);
+            Class<?> lastParam = method.getParameterTypes()[method.getParameterCount() - 1];
+            boolean hasSortOptions = lastParam.isAssignableFrom(SortOptions.class);
+            SortOptions<E> sortOptions = null;
+            if (hasSortOptions) {
+                Object lastParamObject = args == null ? null : args[args.length - 1];
+                if (lastParamObject instanceof SortOptions) {
+                    sortOptions = (SortOptions) lastParamObject;
+                }
+            }
             if (GenericUtils.isTypeOf(List.class, returnTypeClass)) {
-                return collection.find(filter).into(new ArrayList<>());
+                FindIterable<E> findIterable = collection.find(filter);
+                if (hasSortOptions && sortOptions != null) {
+                    findIterable = applySortOptions(findIterable, sortOptions);
+                }
+                return findIterable.into(new ArrayList<>());
             }
             if (GenericUtils.isTypeOf(entityClass, returnTypeClass)) {
-                return collection.find(filter).first();
+                FindIterable<E> findIterable = collection.find(filter);
+                if (hasSortOptions && sortOptions != null) {
+                    findIterable = applySortOptions(findIterable, sortOptions);
+                }
+                return findIterable.first();
             }
             if (GenericUtils.isTypeOf(Boolean.class, returnTypeClass)) {
                 DeleteResult deleteResult = collection.deleteOne(filter);
@@ -193,6 +214,18 @@ public class RepoInvocation<E, ID> implements InvocationHandler {
 
     private FindIterable<E> createIterable(Bson filter) {
         return collection.find(filter);
+    }
+
+    private FindIterable<E> applySortOptions(FindIterable<E> findIterable, SortOptions<E> sortOptions) {
+        if(sortOptions.getField() != null) {
+            String fieldName = PropertyUtils.getPropertyName(entityClass, sortOptions.getField());
+            int orderType = sortOptions.isSortAscending() ? 1 : -1;
+            findIterable = findIterable.sort(new BasicDBObject(fieldName, orderType));
+        }
+        if(sortOptions.getLimit() != -1) {
+            findIterable = findIterable.limit(sortOptions.getLimit());
+        }
+        return findIterable;
     }
 
     private Bson createBsonFilter(Method method, FilterType filterType, boolean isNot, int paramsIndexAt, Object[] args) throws Exception {

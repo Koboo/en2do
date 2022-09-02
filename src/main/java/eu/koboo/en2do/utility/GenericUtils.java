@@ -13,25 +13,25 @@ public class GenericUtils {
     }
 
     public static boolean isTypeOf(Class<?> class1, Class<?> class2) {
-        if(isBoolean(class1) && isBoolean(class2)) {
+        if (isBoolean(class1) && isBoolean(class2)) {
             return true;
         }
-        if(isShort(class1) && isShort(class2)) {
+        if (isShort(class1) && isShort(class2)) {
             return true;
         }
-        if(isFloat(class1) && isFloat(class2)) {
+        if (isFloat(class1) && isFloat(class2)) {
             return true;
         }
-        if(isInteger(class1) && isInteger(class2)) {
+        if (isInteger(class1) && isInteger(class2)) {
             return true;
         }
-        if(isLong(class1) && isLong(class2)) {
+        if (isLong(class1) && isLong(class2)) {
             return true;
         }
-        if(isDouble(class1) && isDouble(class2)) {
+        if (isDouble(class1) && isDouble(class2)) {
             return true;
         }
-        if(isChar(class1) && isChar(class2)) {
+        if (isChar(class1) && isChar(class2)) {
             return true;
         }
         return class1.isAssignableFrom(class2);
