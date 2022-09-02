@@ -4,6 +4,8 @@ import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.annotation.Id;
 import eu.koboo.en2do.annotation.Repository;
 import eu.koboo.en2do.exception.*;
+import eu.koboo.en2do.misc.FilterOperator;
+import eu.koboo.en2do.misc.FilterType;
 import eu.koboo.en2do.utility.MethodNameUtil;
 import eu.koboo.en2do.utility.GenericUtils;
 import lombok.AccessLevel;
@@ -11,6 +13,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.regex.Pattern;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RepoFactory {
@@ -39,7 +42,7 @@ public class RepoFactory {
             }
         }
         if (repoGenericTypeParams == null) {
-            throw new InvalidTypeParameterException(repoClass);
+            throw new RepositoryNoTypeException(repoClass);
         }
         String entityClassName = repoGenericTypeParams.getTypeName().split("<")[1].split(",")[0];
         Class<E> entityClass;
@@ -50,16 +53,16 @@ public class RepoFactory {
             entityClass = (Class<E>) Class.forName(entityClassName);
             Field[] declaredFields = entityClass.getDeclaredFields();
             if (declaredFields.length == 0) {
-                throw new NoFieldsException(entityClass);
+                throw new RepositoryNoFieldsException(repoClass);
             }
             for (Field field : declaredFields) {
                 String lowerFieldName = field.getName().toLowerCase(Locale.ROOT);
                 if (entityFieldNameSet.contains(lowerFieldName)) {
-                    throw new DuplicateFieldException(field, entityClass);
+                    throw new RepositoryDuplicatedFieldException(field, repoClass);
                 }
                 entityFieldNameSet.add(lowerFieldName);
                 if (Modifier.isFinal(field.getModifiers())) {
-                    throw new FinalFieldException(field, entityClass);
+                    throw new RepositoryFinalFieldException(field, repoClass);
                 }
                 if (!field.isAnnotationPresent(Id.class)) {
                     continue;
@@ -69,10 +72,10 @@ public class RepoFactory {
                 entityUniqueIdField.setAccessible(true);
             }
             if (entityUniqueIdClass == null) {
-                throw new NoUniqueIdException(entityClass);
+                throw new RepositoryIdNotFoundException(entityClass);
             }
         } catch (ClassNotFoundException e) {
-            throw new EntityClassNotFoundException(repoClass, e);
+            throw new RepositoryEntityNotFoundException(repoClass, e);
         }
 
         // These methods are ignored by our methods processing.
@@ -87,13 +90,13 @@ public class RepoFactory {
                 continue;
             }
             // Check for the return-types of the methods, and their defined names to match our pattern.
-            checkReturnTypes(method, entityClass);
-            checkMethodOperation(method, entityClass);
+            checkReturnTypes(method, entityClass, repoClass);
+            checkMethodOperation(method, entityClass, repoClass);
         }
 
         // Parse predefined collection name and create mongo collection
         if (!repoClass.isAnnotationPresent(Repository.class)) {
-            throw new NoCollectionNameException(repoClass);
+            throw new RepositoryNameNotFoundException(repoClass);
         }
         String entityCollectionName = repoClass.getAnnotation(Repository.class).value();
         MongoCollection<E> entityCollection = manager.getDatabase().getCollection(entityCollectionName, entityClass);
@@ -103,110 +106,130 @@ public class RepoFactory {
         Class<?>[] interfaces = new Class[]{repoClass};
         Class<Repo<E, ID>> actualClass = (Class<Repo<E, ID>>) repoClass;
         Repo<E, ID> repo = (Repo<E, ID>) Proxy.newProxyInstance(repoClassLoader, interfaces,
-                new RepoInvocation<>(entityCollectionName, entityCollection,
+                new RepoInvocation<>(this, entityCollectionName, entityCollection,
                         actualClass, entityClass, entityUniqueIdClass,
                         entityUniqueIdField));
         repoRegistry.put(repoClass, repo);
         return (R) repo;
     }
 
-    private <E> void checkReturnTypes(Method method, Class<E> entityClass) throws Exception {
+    private <E> void checkReturnTypes(Method method, Class<E> entityClass, Class<?> repoClass) throws Exception {
         Class<?> returnTypeClass = method.getReturnType();
         String methodName = method.getName();
-        System.out.println("checkReturnTypes Method: " + methodName);
         if (GenericUtils.isTypeOf(List.class, returnTypeClass)) {
             Class<?> listType = GenericUtils.getGenericTypeOfReturnedList(method);
             if (listType.isAssignableFrom(entityClass)) {
-                if (methodName.startsWith("find")) {
+                if (methodName.startsWith("findBy")) {
                     return;
                 }
-                throw new WrongFindMethodException(method, entityClass);
+                throw new MethodFindReturnTypeException(method, entityClass, repoClass);
             }
-            throw new WrongListTypeException(method, entityClass, listType);
+            throw new MethodFindListTypeException(method, entityClass, listType);
         }
         if (GenericUtils.isTypeOf(entityClass, returnTypeClass)) {
-            if (methodName.startsWith("find")) {
+            if (methodName.startsWith("findBy")) {
                 return;
             }
-            throw new WrongFindMethodException(method, entityClass);
+            throw new MethodFindReturnTypeException(method, entityClass, repoClass);
         }
         if (GenericUtils.isTypeOf(Boolean.class, returnTypeClass)) {
-            if (methodName.startsWith("delete")) {
+            if (methodName.startsWith("deleteBy")) {
                 return;
             }
-            throw new WrongDeleteMethodException(method, entityClass);
+            throw new MethodDeleteReturnTypeException(method, repoClass);
         }
-        throw new InvalidReturnTypeException(returnTypeClass, methodName, entityClass);
+        throw new MethodUnsupportedReturnTypeException(returnTypeClass, methodName, entityClass);
     }
 
-    private <E> void checkMethodOperation(Method method, Class<E> entityClass) throws Exception {
+    // ReturnType already checked.
+    private <E> void checkMethodOperation(Method method, Class<E> entityClass, Class<?> repoClass) throws Exception {
         String methodName = method.getName();
         String fieldFilterName = MethodNameUtil.removeLeadingOperator(methodName);
         if (fieldFilterName == null) {
-            throw new InvalidMethodOperationException(method, entityClass);
-        }
-        if (!MethodNameUtil.containsAnyFilter(methodName)) {
-            throw new NoFilterException(method, entityClass);
+            throw new MethodInvalidSignatureException(method, entityClass);
         }
         if (methodName.contains("And") && methodName.contains("Or")) {
-            throw new DuplicateOperationException(method, entityClass);
+            throw new MethodDuplicatedChainException(method, entityClass);
         }
-        if (!methodName.contains("And") && !methodName.contains("Or")) {
-            checkParamType(method, fieldFilterName, 0, entityClass);
-        } else if (methodName.contains("And") || methodName.contains("Or")) {
-            String[] fieldFilterSplitByType = fieldFilterName.contains("And") ?
-                    fieldFilterName.split("And") : fieldFilterName.split("Or");
-            for (int i = 0; i < fieldFilterSplitByType.length; i++) {
-                String fieldFilterPart = fieldFilterSplitByType[i];
-                checkParamType(method, fieldFilterPart, i, entityClass);
+        int expectedParameters = countExpectedParameters(entityClass, repoClass, method, fieldFilterName);
+        System.out.println("[DEBUG] Method: " + method.getName());
+        System.out.println("[DEBUG] ExpParams: " + expectedParameters);
+        System.out.println("[DEBUG] ActParams: " + method.getParameterCount());
+        if(expectedParameters != method.getParameterCount()) {
+            // TODO: Check for "additional" SortOptions as last parameter if return type is list
+            throw new MethodParameterCountException(method, repoClass, expectedParameters, method.getParameterCount());
+        }
+        String[] fieldFilterSplitByType = fieldFilterName.contains("And") ?
+                fieldFilterName.split("And") : fieldFilterName.split("Or");
+        int nextIndex = 0;
+        for (int i = 0; i < fieldFilterSplitByType.length; i++) {
+            String fieldFilterPart = fieldFilterSplitByType[i];
+            FilterType filterType = createFilterType(entityClass, repoClass, method, fieldFilterPart);
+            checkParameterType(entityClass, method, filterType, nextIndex, repoClass);
+            nextIndex = i + filterType.operator().getExpectedParameterCount();
+        }
+    }
+
+    private <E> int countExpectedParameters(Class<E> entityClass, Class<?> repoClass, Method method, String fieldFilterPart) throws Exception {
+        String methodName = method.getName();
+        if(!methodName.contains("And") && !methodName.contains("Or")) {
+            FilterType filterType = createFilterType(entityClass, repoClass, method, fieldFilterPart);
+            return filterType.operator().getExpectedParameterCount();
+        }
+        String[] fieldFilterPartSplitByType = fieldFilterPart.contains("And") ?
+                fieldFilterPart.split("And") : fieldFilterPart.split("Or");
+        int expectedCount = 0;
+        for (String fieldFilterPartSplit : fieldFilterPartSplitByType) {
+            FilterType filterType = createFilterType(entityClass, repoClass, method, fieldFilterPartSplit);
+            expectedCount += filterType.operator().getExpectedParameterCount();
+        }
+        return expectedCount;
+    }
+
+    private <E> void checkParameterType(Class<E> entityClass, Method method, FilterType filterType, int startIndex, Class<?> repoClass) throws Exception {
+        int expectedParamCount = filterType.operator().getExpectedParameterCount();
+        System.out.println("[DEBUG] Check params for " + filterType.operator().name());
+        for(int i = 0; i < expectedParamCount; i++) {
+            Class<?> paramClass = method.getParameters()[startIndex + i].getType();
+            if (paramClass == null) {
+                throw new MethodParameterNotFoundException(method, repoClass, (startIndex + expectedParamCount),
+                        method.getParameterCount());
+            }
+            // Special check for regex, because it has only String or Pattern parameters
+            if(filterType.operator() == FilterOperator.REGEX) {
+                if(!GenericUtils.isTypeOf(String.class, paramClass) && !GenericUtils.isTypeOf(Pattern.class, paramClass)) {
+                    throw new MethodInvalidRegexParameterException(method, repoClass, paramClass);
+                }
+                return;
+            }
+            Class<?> fieldClass = filterType.field().getType();
+            if(!GenericUtils.isTypeOf(fieldClass, paramClass)) {
+                throw new MethodMismatchingTypeException(method, repoClass, fieldClass, paramClass);
             }
         }
     }
 
-    private <E> void checkParamType(Method method, String operator, int paramIndex, Class<E> entityClass) throws Exception {
-        // NameEqualsIgnoreCase (String name);
-        // NumberGreaterThan (String name, Double number);
-        String expectedField = MethodNameUtil.replaceEndingFilter(operator);
-        if (expectedField == null) {
-            throw new NoFilterException(method, entityClass);
+    protected <E> FilterType createFilterType(Class<E> entityClass, Class<?> repoClass, Method method, String operatorString) throws Exception {
+        FilterOperator filterOperator = FilterOperator.parseFilterEndsWith(operatorString);
+        if(filterOperator == null) {
+            throw new MethodNoOperatorException(method, repoClass);
         }
+        String expectedField = filterOperator.removeOperatorFrom(operatorString);
         expectedField = expectedField.endsWith("Not") ? expectedField.replaceFirst("Not", "") : expectedField;
-        if(operator.endsWith("Has")) {
-            boolean anyFieldFound = false;
-            for (Field field : entityClass.getDeclaredFields()) {
-                if (!field.getName().equalsIgnoreCase(expectedField)) {
-                    continue;
-                }
-                anyFieldFound = true;
-            }
-            if(!anyFieldFound) {
-                throw new InvalidFilterException(method, entityClass);
-            }
-            return;
+        Field field = findExpectedField(entityClass, expectedField);
+        if(field == null) {
+            throw new MethodFieldNotFoundException(expectedField, method, entityClass, repoClass);
         }
-        //TODO: Check here for SortOptions
-        if(method.getParameters().length - 1 < paramIndex) {
-            throw new WrongParametersCountException(method, entityClass);
-        }
-        Class<?> paramClass = method.getParameters()[paramIndex].getType();
-        if (paramClass == null) {
-            throw new WrongParametersCountException(method, entityClass);
-        }
-        // Name
-        boolean anyFieldFound = false;
+        return new FilterType(field, filterOperator);
+    }
+
+    private <E> Field findExpectedField(Class<E> entityClass, String expectedField) {
         for (Field field : entityClass.getDeclaredFields()) {
             if (!field.getName().equalsIgnoreCase(expectedField)) {
                 continue;
             }
-            anyFieldFound = true;
-            Class<?> fieldClass = field.getType();
-            if (GenericUtils.isTypeOf(fieldClass, paramClass)) {
-                continue;
-            }
-            throw new MismatchingParameterException(method, entityClass, fieldClass, paramClass);
+            return field;
         }
-        if(!anyFieldFound) {
-            throw new InvalidFilterException(method, entityClass);
-        }
+        return null;
     }
 }
