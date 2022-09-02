@@ -5,33 +5,36 @@ import eu.koboo.en2do.Repo;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Repository("customer_repository")
 public interface CustomerRepository extends Repo<Customer, UUID> {
 
-    /*
+    Customer findByFirstName(String firstName);
 
-    // Every Operator with Not also works
-    * Eq
-    * EqIgn
-    * GreaterThan
-    * GreaterEq
-    * LessThan
-    * LessEq
-    * Regex
-    * Has
+    Customer findByFirstNameIgn(String firstname);
 
-    * In findByCustomerIdIn(List<Integer> customerId);
+    Customer findByBalanceGreaterThan(double balance);
 
-     */
+    Customer findByBalanceLessThan(double balance);
 
-    Customer findByCustomerIdEquals(int customerId);
+    Customer findByBalanceGreaterEq(double balance);
 
-    Customer findByFirstNameEquals(String test);
+    Customer findByBalanceLessEq(double balance);
 
-    Customer findByFirstNameHas();
+    Customer findByFirstNameRegex(String namePart);
 
-    List<Customer> findByCustomerIdNotEquals(int customerId);
+    Customer findByFirstNameRegex(Pattern pattern);
 
-    List<Customer> findByCustomerIdEqualsOrCustomerIdEquals(int customerId1, int customerId2);
+    Customer findByFirstNameExists();
+
+    Customer findByFirstNameContains(String partOfFirstName);
+
+    List<Customer> findByBalanceBetweenAndCustomerId(double from, double to, int customerId);
+
+    Customer findByFirstNameAndBalanceNotBetweenAndCustomerId(String firstName, double from, double to, int customerId);
+
+    List<Customer> findByCustomerIdNot(int customerId);
+
+    List<Customer> findByCustomerIdOrCustomerId(int customerId1, int customerId2);
 }

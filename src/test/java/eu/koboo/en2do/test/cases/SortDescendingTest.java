@@ -4,13 +4,6 @@ import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepository;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import java.util.UUID;
-
-import static org.junit.Assert.*;
 
 public class SortDescendingTest {
 
@@ -19,6 +12,7 @@ public class SortDescendingTest {
     static MongoManager manager;
     static CustomerRepository repository;
 
+    /*
     @BeforeClass
     public static void before() {
         System.out.println(SortDescendingTest.class.getName() + " starting.");
@@ -63,7 +57,6 @@ public class SortDescendingTest {
             assertEquals(Const.LAST_NAME, customer.getLastName());
         }
 
-         */
     }
     
     @AfterClass
@@ -74,4 +67,5 @@ public class SortDescendingTest {
         assertNotNull(manager);
         assertTrue(manager.close());
     }
+    */
 }

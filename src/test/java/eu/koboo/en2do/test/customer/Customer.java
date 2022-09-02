@@ -28,6 +28,4 @@ public class Customer {
     Long phoneNumber;
     double balance;
     List<Order> orders;
-    //List<Integer> orderNumbers;
-    //Map<String, String> orderTexts;
 }
