@@ -1,36 +1,40 @@
-# _// en2do_
+# _// En2Do_
 
 Sync/Async entity framework for mongodb in Java 17
 
+**_En2Do_** is short for **_Entity-To-Document_**.
+
 ## Overview
-* Tests
-  * [TestUnits](src/test/java/eu/koboo/en2do/test/cases)
-  * [TestEntity](src/test/java/eu/koboo/en2do/test/customer)
+* Features
+  * [What can it do?](#what-can-it-do-current-implementations)
+  * [What should it do?](#what-should-it-do-future-implementations)
 * Get Started
   * [Add as dependency](#add-en2do-as-dependency)
   * [Create MongoManager](#create-an-instance-of-the-mongomanager)
   * [Define Entity](#define-an-entity-class)
   * [Create Repository](#create-the-repository-for-the-entity)
-  * [Create Scope](#create-the-scope-for-the-entity)
   * [Instantiate objects](#create-object-instances)
-* Usages
-  * [MongoManager](#)
-  * [Repository](#)
+* Implementation
+  * [Filter Keywords](#implemented-filter-keywords)
+  * [Methods](#implemented-methods)
   * [Scope](#)
 
 ## Features
 
-### Implementation
+### What can it do (Current implementations)
 
-* Simple conversion of pojo entities
+* MongoDB Conversion of POJO classes (POJOs in POJOs in POJOs)
+* Create filters without implementing them
+* Object creation by proxy classes to simplify usage and method declaration
+* Implemented filters, which can be chained, negated and executed together to get the expected results
 
-### TODO
+### What should it do (Future implementations)
 
-* Automatic conversion via PojoCodec of MongoDB (https://www.mongodb.com/developer/languages/java/java-mapping-pojos/)
-* Conversion of Enums via Codec
-* Better Syntax for Scope usage (via Repository?)
-* Spring like https://tuhrig.de/implementing-interfaces-and-abstract-classes-on-the-fly/
-  * https://docs.spring.io/spring-data/mongodb/docs/1.2.0.RELEASE/reference/html/mongo.repositories.html
+* Config parsing from different places (resource, file, pojo)
+* Check for 
+* Replace file-config with property reading
+* Repository task flushing? 
+* More Filter operators
 
 ## Get Started
 
@@ -112,29 +116,27 @@ import eu.koboo.en2do.annotation.*;
 import lombok.*;
 import java.util.*;
 
-@Getter // generates getter methods (from lombok)
-@Setter // generates setter methods (from lombok)
-@NoArgsConstructor // generates constructor of entity without parameters (from lombok)
-@FieldDefaults(level = AccessLevel.PRIVATE) // Sets the field level to "private" (from lombok)
-@ToString // Creates the "toString()" for the entity (from lombok)
-@Entity("Customers") // Sets the collection name of the entity (from en2do)
+@Getter // lombok
+@Setter // lombok
+@NoArgsConstructor // lombok
+@FieldDefaults(level = AccessLevel.PRIVATE) // lombok
+@ToString // lombok
 public class Customer {
 
-    @Id // Defines the unique identifier of the entity (from en2do)
-    UUID uniqueId;
+  @Id // en2do
+  UUID uniqueId;
 
-    int customerId;
-    String firstName;
-    String lastName;
-    String birthday;
-    String street;
-    int houseNumber;
-    Integer postalCode;
-    String city;
-    Long phoneNumber;
-    double balance;
-    List<Integer> orderNumbers;
-    Map<String, String> orderTexts;
+  int customerId;
+  String firstName;
+  String lastName;
+  String birthday;
+  String street;
+  int houseNumber;
+  Integer postalCode;
+  String city;
+  Long phoneNumber;
+  double balance;
+  List<Order> orders;
 }
 ````
 
@@ -147,30 +149,9 @@ In order to access the database and apply operations to an entity, a repository 
 import eu.koboo.en2do.*;
 import java.util.*;
 
-public class CustomerRepository extends Repository<Customer, UUID> {
+@Repository("customer_repository")
+public interface CustomerRepository extends Repository<Customer, UUID> {
 
-    public CustomerRepository(MongoManager mongoManager) {
-        super(mongoManager, Executors.newSingleThreadExecutor());
-    }
-}
-````
-
-### Create the Scope for the Entity
-
-To simplify the use of the framework, a ``Scope`` object was created, which parses the MongoDB fields from the ``Entity``'s methods.
-
-This ``Scope`` object should be created separately for each ``Entity``/``Repository``.
-
-**_Code Example:_**
-````java
-import eu.koboo.en2do.Scope;
-import java.util.UUID;
-
-public class CustomerScope extends Scope<Customer, UUID> {
-
-    public CustomerScope(CustomerRepository repository) {
-        super(repository);
-    }
 }
 ````
 
@@ -183,13 +164,85 @@ Now all important classes have been created, and you can start instantiating the
 public class Application {
     public static void main(String[] args) {
         MongoManager manager = new MongoManager();
-        
-        CustomerRepository repository = new CustomerRepository(manager);
-        CustomerScope scope = new CustomerScope(scope);
+        CustomerRepository repository = manager.create(CustomerRepository.class);
     }
 }
 ````
 
-## Usages
+## Implementation
 
-**_coming soon.._**
+Here the implementations of the framework are listed and roughly explained.
+If a developer should make a mistake, the biggest issues are caught via exception throwing and output as an error.
+
+### Implemented filter keywords
+
+#### Filter Keyword Cheatsheet
+
+| Keyword      | Example                                                              | Bson equivalent                       |
+|--------------|----------------------------------------------------------------------|---------------------------------------|
+| (No keyword) | ``findByFirstName(String firstName)``                                | ``Filters.eq``                        |
+| Ign          | ``findByFirstNameIgn(String firstName)``                             | ``Filters.regex`` (``(?i)^[value]$``) |
+| Contains     | ``findByFirstNameContains(String part)``                             | ``Filters.regex`` (``.*[value].*``)   |
+| GreaterThan  | ``findByBalanceGreaterThan(double balance)``                         | ``Filters.gt``                        |
+| LessThan     | ``findByBalanceLessThan(double balance)``                            | ``Filters.lt``                        |
+| GreaterEq    | ``findByBalanceGreaterEq(double balance)``                           | ``Filters.gte``                       |
+| LessEq       | ``findByBalanceLessEq(double balance)``                              | ``Filters.lte``                       |
+| Regex        | ``findByFirstNameRegex(String regex)``                               | ``Filters.regex``                     |
+| Regex        | ``findByFirstNameRegex(Pattern pattern)``                            | ``Filters.regex``                     |
+| Exists       | ``findByFirstNameExists()``                                          | ``Filters.exists``                    |
+| Between      | ``findByBalanceBetween(double greater, double lower)``               | ``Filters.gt`` + ``Filters.lt``       |
+| BetweenEq    | ``findByBalanceBetweenEq(double greaterEquals, double lowerEquals)`` | ``Filters.gte`` + ``Filters.lte``     |
+
+You can negate any filter with the keyword ``Not``.
+
+| Keyword         | Example                                                              | Bson equivalent                                         |
+|-----------------|----------------------------------------------------------------------|---------------------------------------------------------|
+| Not(No keyword) | ``findByFirstNameNot(String firstName)``                             | ``Filters.not`` + ``Filters.eq``                        |
+| NotIgn          | ``findByFirstNameNotIgn(String firstName)``                          | ``Filters.not`` + ``Filters.regex`` (``(?i)^[value]$``) |
+| ...             | _This works with every keyword from above_                           | ...                                                     |
+
+Filters can also be chained. For this purpose the keyword ``And`` or the keyword ``Or`` can be used per method.
+
+**_ATTENTION: The keywords ``And`` and ``Or`` must not be used in the same method!_**
+
+| Keyword                     | Example                                                                      | Bson equivalent                                                              |
+|-----------------------------|------------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| Not(No keyword)AndGreaterEq | ``findByFirstNameNotAndBalanceGreaterEq(String firstName, double balance)``  | ``Filters.not`` + ``Filters.eq`` && ``Filters.gte``                          |
+| IgnAndNotRegex              | ``findByFirstNameIgnAndLastNameNotRegex(String firstName, String lastName)`` | ``Filters.regex`` (``(?i)^[value]$``) && ``Filters.not`` + ``Filters.regex`` |
+| ...                         | _This works with every keyword from above_                                   | ...                                                                          |
+
+[Find more examples in CustomerRepository](src/test/java/eu/koboo/en2do/test/customer/CustomerRepository.java)
+
+_Note: If a method is declared incorrectly, an exception is usually thrown describing the error. 
+Due to wrong validation checks, this could also occur unintentionally or not at all if the declaration is incorrect._
+
+### Implemented methods
+
+To explain the implemented methods, the [Customer Entity](src/test/java/eu/koboo/en2do/test/customer/Customer.java)
+from the test units is used as an example.
+
+#### Find
+
+``findBy`` methods can return these two different objects.
+
+1. ``Customer findByFirstName(String firstName);``
+2. ``List<Customer> findByFirstName(String firstName);``
+
+So both a list of the entity and the first entity can be returned. 
+This depends on the developer which one he needs. 
+If a single entity is expected instead of a list of entities, the first entity of the filter is returned.
+
+#### Delete
+
+``deleteBy`` methods can return only one object.
+
+1. ``boolean deleteByFirstName(String firstName);``
+
+A boolean is returned which indicates if the operation was successful.
+
+## References
+
+* [JUnit 5 User Guide](https://junit.org/junit5/docs/current/user-guide/)
+* [JUnit 5 Test-Units](https://www.baeldung.com/junit-5-test-order)
+* [MongoDB POJO](https://www.mongodb.com/developer/languages/java/java-mapping-pojos/)
+* [Spring MongoDB Repositories](https://docs.spring.io/spring-data/mongodb/docs/1.2.0.RELEASE/reference/html/mongo.repositories.html)
