@@ -6,21 +6,20 @@ import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepository;
 import org.junit.jupiter.api.*;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class CountExistsByTest {
+public class DeleteByFirstNameTest {
 
     static MongoManager manager;
     static CustomerRepository repository;
 
     @BeforeAll
     public static void setup() {
-        System.out.println(CountExistsByTest.class.getName() + " START");
+        System.out.println(DeleteByFirstNameTest.class.getName() + " START");
         manager = new MongoManager();
         assertNotNull(manager);
         repository = manager.create(CustomerRepository.class);
@@ -30,7 +29,7 @@ public class CountExistsByTest {
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        assertTrue(repository.deleteAll());
+        assertTrue(repository.drop());
         List<Customer> customerList = repository.findAll();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
@@ -39,35 +38,23 @@ public class CountExistsByTest {
     @Test
     @Order(2)
     public void saveCustomer() {
-        for(int i = 0; i < 30; i++) {
-            Customer customer = Const.createNew();
-            customer.setUniqueId(UUID.randomUUID());
-            customer.setCustomerId(i);
-            assertTrue(repository.save(customer));
-            assertTrue(repository.exists(customer));
-        }
+        Customer customer = Const.createNew();
+        assertTrue(repository.save(customer));
+        assertTrue(repository.exists(customer));
     }
 
     @Test
     @Order(3)
-    public void countCustomer() {
-        long count = repository.countByFirstName("Rainer");
-        assertEquals(30, count);
-    }
-
-    @Test
-    @Order(4)
-    public void existsCustomer() {
-        boolean exists1 = repository.existsByLastName("Zufall");
-        assertTrue(exists1);
-        boolean exists2 = repository.existsByLastNameContains("fal");
-        assertTrue(exists2);
+    public void deleteCustomer() {
+        assertTrue(repository.deleteByFirstName(Const.FIRST_NAME));
+        assertFalse(repository.existsById(Const.UNIQUE_ID));
+        assertEquals(0, repository.countByCustomerId(Const.CUSTOMER_ID));
     }
 
     @AfterAll
     public static void finish() {
-        System.out.println(CountExistsByTest.class.getName() + " END");
-        assertTrue(repository.deleteAll());
+        System.out.println(DeleteByFirstNameTest.class.getName() + " END");
+        assertTrue(repository.drop());
         assertTrue(manager.close());
     }
 }

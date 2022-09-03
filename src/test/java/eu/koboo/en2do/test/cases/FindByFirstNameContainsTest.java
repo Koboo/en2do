@@ -4,22 +4,21 @@ import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepository;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.*;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class FindByCustomerIdTest {
+public class FindByFirstNameContainsTest {
 
     static MongoManager manager;
     static CustomerRepository repository;
 
     @BeforeAll
     public static void setup() {
-        System.out.println(FindByCustomerIdTest.class.getName() + " START");
+        System.out.println(FindByFirstNameContainsTest.class.getName() + " START");
         manager = new MongoManager();
         assertNotNull(manager);
         repository = manager.create(CustomerRepository.class);
@@ -29,7 +28,7 @@ public class FindByCustomerIdTest {
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        assertTrue(repository.deleteAll());
+        assertTrue(repository.drop());
         List<Customer> customerList = repository.findAll();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
@@ -47,8 +46,9 @@ public class FindByCustomerIdTest {
     @Test
     @Order(3)
     public void operationTest() {
-        Customer customer = repository.findByFirstName(Const.FIRST_NAME);
+        Customer customer = repository.findByFirstNameContains("aine");
         assertNotNull(customer);
+        assertEquals(Const.CUSTOMER_ID, customer.getCustomerId());
         assertEquals(Const.FIRST_NAME, customer.getFirstName());
         assertEquals(Const.LAST_NAME, customer.getLastName());
         assertEquals(Const.BIRTHDAY, customer.getBirthday());
@@ -58,8 +58,8 @@ public class FindByCustomerIdTest {
     
     @AfterAll
     public static void finish() {
-        System.out.println(FindByCustomerIdTest.class.getName() + " END");
-        assertTrue(repository.deleteAll());
+        System.out.println(FindByFirstNameContainsTest.class.getName() + " END");
+        assertTrue(repository.drop());
         assertTrue(manager.close());
     }
 }

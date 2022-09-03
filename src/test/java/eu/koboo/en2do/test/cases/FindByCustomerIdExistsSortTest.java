@@ -30,7 +30,7 @@ public class FindByCustomerIdExistsSortTest {
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        assertTrue(repository.deleteAll());
+        assertTrue(repository.drop());
         List<Customer> customerList = repository.findAll();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
@@ -56,9 +56,10 @@ public class FindByCustomerIdExistsSortTest {
         );
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());
+        assertEquals(20, customerList.size());
         for (Customer customer : customerList) {
             assertNotNull(customer);
-            System.out.println(customer);
+            assertNotEquals(17, customer.getCustomerId());
             assertEquals(Const.FIRST_NAME, customer.getFirstName());
             assertEquals(Const.LAST_NAME, customer.getLastName());
             assertEquals(Const.BIRTHDAY, customer.getBirthday());
@@ -70,7 +71,7 @@ public class FindByCustomerIdExistsSortTest {
     @AfterAll
     public static void finish() {
         System.out.println(FindByCustomerIdExistsSortTest.class.getName() + " END");
-        assertTrue(repository.deleteAll());
+        assertTrue(repository.drop());
         assertTrue(manager.close());
     }
 }

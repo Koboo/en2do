@@ -28,8 +28,7 @@ public class FindByBalanceBetweenTest {
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        System.out.println("CleanUp Repository");
-        assertTrue(repository.deleteAll());
+        assertTrue(repository.drop());
         List<Customer> customerList = repository.findAll();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
@@ -38,7 +37,6 @@ public class FindByBalanceBetweenTest {
     @Test
     @Order(2)
     public void saveCustomer() {
-        System.out.println("Save Customer");
         Customer customer = Const.createNew();
         assertNotNull(customer);
         assertTrue(repository.save(customer));
@@ -48,24 +46,24 @@ public class FindByBalanceBetweenTest {
     @Test
     @Order(3)
     public void operationTest() {
-        System.out.println("Test Operation");
         List<Customer> customerList = repository.findByBalanceBetweenAndCustomerId(100, 600, 1);
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());
         assertEquals(1, customerList.size());
-        for (Customer customer : customerList) {
-            assertEquals(Const.FIRST_NAME, customer.getFirstName());
-            assertEquals(Const.LAST_NAME, customer.getLastName());
-            assertEquals(Const.BIRTHDAY, customer.getBirthday());
-            assertEquals(Const.PHONE_NUMBER, customer.getPhoneNumber());
-            assertEquals(Const.ORDERS.size(), customer.getOrders().size());
-        }
+        Customer customer = customerList.get(0);
+        assertNotNull(customer);
+        assertEquals(Const.CUSTOMER_ID, customer.getCustomerId());
+        assertEquals(Const.FIRST_NAME, customer.getFirstName());
+        assertEquals(Const.LAST_NAME, customer.getLastName());
+        assertEquals(Const.BIRTHDAY, customer.getBirthday());
+        assertEquals(Const.PHONE_NUMBER, customer.getPhoneNumber());
+        assertEquals(Const.ORDERS.size(), customer.getOrders().size());
     }
-    
+
     @AfterAll
     public static void finish() {
         System.out.println(FindByBalanceBetweenTest.class.getName() + " END");
-        assertTrue(repository.deleteAll());
+        assertTrue(repository.drop());
         assertTrue(manager.close());
     }
 }

@@ -15,6 +15,8 @@ public interface CustomerRepository extends Repo<Customer, UUID> {
 
     long countByFirstName(String firstName);
 
+    long countByCustomerId(int customerId);
+
     boolean deleteByFirstName(String firstName);
 
     boolean existsByLastName(String lastName);

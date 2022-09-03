@@ -7,18 +7,19 @@ import eu.koboo.en2do.test.customer.CustomerRepository;
 import org.junit.jupiter.api.*;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class FindByContainsTest {
+public class CountByCustomerIdTest {
 
     static MongoManager manager;
     static CustomerRepository repository;
 
     @BeforeAll
     public static void setup() {
-        System.out.println(FindByContainsTest.class.getName() + " START");
+        System.out.println(CountByCustomerIdTest.class.getName() + " START");
         manager = new MongoManager();
         assertNotNull(manager);
         repository = manager.create(CustomerRepository.class);
@@ -28,8 +29,7 @@ public class FindByContainsTest {
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        System.out.println("CleanUp Repository");
-        assertTrue(repository.deleteAll());
+        assertTrue(repository.drop());
         List<Customer> customerList = repository.findAll();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
@@ -38,30 +38,22 @@ public class FindByContainsTest {
     @Test
     @Order(2)
     public void saveCustomer() {
-        System.out.println("Save Customer");
         Customer customer = Const.createNew();
-        assertNotNull(customer);
+        customer.setUniqueId(UUID.randomUUID());
         assertTrue(repository.save(customer));
         assertTrue(repository.exists(customer));
     }
 
     @Test
     @Order(3)
-    public void operationTest() {
-        System.out.println("Test Operation");
-        Customer customer = repository.findByFirstNameContains("ainer");
-        assertNotNull(customer);
-        assertEquals(Const.FIRST_NAME, customer.getFirstName());
-        assertEquals(Const.LAST_NAME, customer.getLastName());
-        assertEquals(Const.BIRTHDAY, customer.getBirthday());
-        assertEquals(Const.PHONE_NUMBER, customer.getPhoneNumber());
-        assertEquals(Const.ORDERS.size(), customer.getOrders().size());
+    public void countCustomer() {
+        assertEquals(1, repository.countByCustomerId(Const.CUSTOMER_ID));
     }
-    
+
     @AfterAll
     public static void finish() {
-        System.out.println(FindByContainsTest.class.getName() + " END");
-        assertTrue(repository.deleteAll());
+        System.out.println(CountByCustomerIdTest.class.getName() + " END");
+        assertTrue(repository.drop());
         assertTrue(manager.close());
     }
 }
