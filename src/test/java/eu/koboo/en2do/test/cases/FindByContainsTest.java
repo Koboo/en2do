@@ -18,7 +18,7 @@ public class FindByContainsTest {
 
     @BeforeAll
     public static void setup() {
-        System.out.println(FindByContainsTest.class.getName() + " starting.");
+        System.out.println(FindByContainsTest.class.getName() + " START");
         manager = new MongoManager();
         assertNotNull(manager);
         repository = manager.create(CustomerRepository.class);
@@ -60,7 +60,7 @@ public class FindByContainsTest {
     
     @AfterAll
     public static void finish() {
-        System.out.println(FindByContainsTest.class.getName() + " ending.");
+        System.out.println(FindByContainsTest.class.getName() + " END");
         assertTrue(repository.deleteAll());
         assertTrue(manager.close());
     }

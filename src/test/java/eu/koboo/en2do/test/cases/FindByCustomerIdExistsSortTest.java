@@ -20,7 +20,7 @@ public class FindByCustomerIdExistsSortTest {
 
     @BeforeAll
     public static void setup() {
-        System.out.println(FindByCustomerIdExistsSortTest.class.getName() + " starting.");
+        System.out.println(FindByCustomerIdExistsSortTest.class.getName() + " START");
         manager = new MongoManager();
         assertNotNull(manager);
         repository = manager.create(CustomerRepository.class);
@@ -69,7 +69,7 @@ public class FindByCustomerIdExistsSortTest {
 
     @AfterAll
     public static void finish() {
-        System.out.println(FindByCustomerIdExistsSortTest.class.getName() + " ending.");
+        System.out.println(FindByCustomerIdExistsSortTest.class.getName() + " END");
         assertTrue(repository.deleteAll());
         assertTrue(manager.close());
     }

@@ -37,8 +37,6 @@ public class Const {
         customer.setCity(CITY);
         customer.setPhoneNumber(PHONE_NUMBER);
         customer.setBalance(BALANCE);
-        //customer.setOrderNumbers(ORDER_NUMBERS);
-        //customer.setOrderTexts(ORDER_TEXTS);
         customer.setOrders(ORDERS);
         return customer;
     }

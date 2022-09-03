@@ -13,6 +13,14 @@ public interface CustomerRepository extends Repo<Customer, UUID> {
 
     Customer findByFirstName(String firstName);
 
+    long countByFirstName(String firstName);
+
+    boolean deleteByFirstName(String firstName);
+
+    boolean existsByLastName(String lastName);
+
+    boolean existsByLastNameContains(String lastNamePart);
+
     Customer findByFirstNameIgn(String firstname);
 
     Customer findByBalanceGreaterThan(double balance);
@@ -39,7 +47,9 @@ public interface CustomerRepository extends Repo<Customer, UUID> {
 
     List<Customer> findByCustomerIdOrCustomerId(int customerId1, int customerId2);
 
-    //List<Customer> findByCustomerIdIn(List<Integer> customerIdList);
+    List<Customer> findByCustomerIdIn(List<Integer> customerIdList);
+
+    List<Customer> findByCustomerIdNotIn(List<Integer> customerIdList);
 
     List<Customer> findByCustomerIdExists(SortOptions<Customer> sortOptions);
 }
