@@ -183,49 +183,49 @@ These methods can be supplemented with any kind of filters. For simplicity, only
 
 | Keyword      | Example                                              | Method equivalent                               |
 |--------------|------------------------------------------------------|-------------------------------------------------|
-| ``findBy``   | ``Customer findByFirstName(String firstName)``       | ``collection.find(..).first()``                 |
-| ``findBy``   | ``List<Customer> findByFirstName(String firstName)`` | ``collection.find(..).into(new ArrayList<>())`` |
-| ``deleteBy`` | ``boolean deleteByFirstName(String firstName)``      | ``collection.deleteMany(..).wasAcknowledged``   |
-| ``existsBy`` | ``boolean existsByFirstName(String firstName)``      | ``collection.find(..).first() != null``         |
-| ``countBy``  | ``long countByFirstName(String firstName)``          | ``collection.countDocuments(..)``               |
+| **findBy**   | ``Customer findByFirstName(String firstName)``       | ``collection.find(..).first()``                 |
+| **findBy**   | ``List<Customer> findByFirstName(String firstName)`` | ``collection.find(..).into(new ArrayList<>())`` |
+| **deleteBy** | ``boolean deleteByFirstName(String firstName)``      | ``collection.deleteMany(..).wasAcknowledged``   |
+| **existsBy** | ``boolean existsByFirstName(String firstName)``      | ``collection.find(..).first() != null``         |
+| **countBy**  | ``long countByFirstName(String firstName)``          | ``collection.countDocuments(..)``               |
 
 ### Implemented filter keywords
 
 #### Filter Keyword Cheatsheet
 
-| Keyword      | Example                                                               | Bson equivalent                       |
-|--------------|-----------------------------------------------------------------------|---------------------------------------|
-| (No keyword) | ``findByFirstName(String firstName)``                                 | ``Filters.eq``                        |
-| Ign          | ``findByFirstNameIgn(String firstName)``                              | ``Filters.regex`` (``(?i)^[value]$``) |
-| Contains     | ``findByFirstNameContains(String part)``                              | ``Filters.regex`` (``.*[value].*``)   |
-| GreaterThan  | ``findByBalanceGreaterThan(double balance)``                          | ``Filters.gt``                        |
-| LessThan     | ``findByBalanceLessThan(double balance)``                             | ``Filters.lt``                        |
-| GreaterEq    | ``findByBalanceGreaterEq(double balance)``                            | ``Filters.gte``                       |
-| LessEq       | ``findByBalanceLessEq(double balance)``                               | ``Filters.lte``                       |
-| Regex        | ``findByFirstNameRegex(String regex)``                                | ``Filters.regex``                     |
-| Regex        | ``findByFirstNameRegex(Pattern pattern)``                             | ``Filters.regex``                     |
-| Exists       | ``findByFirstNameExists()``                                           | ``Filters.exists``                    |
-| Between      | ``findByBalanceBetween(double greater, double lower)``                | ``Filters.gt`` + ``Filters.lt``       |
-| BetweenEq    | ``findByBalanceBetweenEq(double greaterEquals, double lowerEquals)``  | ``Filters.gte`` + ``Filters.lte``     |
-| In           | ``findByCustomerIdIn(List<Integer> customerIdList)``                  | ``Filters.in``                        |
+| Keyword          | Example                                                               | Bson equivalent                       |
+|------------------|-----------------------------------------------------------------------|---------------------------------------|
+| **(No keyword)** | ``findByFirstName(String firstName)``                                 | ``Filters.eq``                        |
+| **Ign**          | ``findByFirstNameIgn(String firstName)``                              | ``Filters.regex`` (``(?i)^[value]$``) |
+| **Contains**     | ``findByFirstNameContains(String part)``                              | ``Filters.regex`` (``.*[value].*``)   |
+| **GreaterThan**  | ``findByBalanceGreaterThan(double balance)``                          | ``Filters.gt``                        |
+| **LessThan**     | ``findByBalanceLessThan(double balance)``                             | ``Filters.lt``                        |
+| **GreaterEq**    | ``findByBalanceGreaterEq(double balance)``                            | ``Filters.gte``                       |
+| **LessEq**       | ``findByBalanceLessEq(double balance)``                               | ``Filters.lte``                       |
+| **Regex**        | ``findByFirstNameRegex(String regex)``                                | ``Filters.regex``                     |
+| **Regex**        | ``findByFirstNameRegex(Pattern pattern)``                             | ``Filters.regex``                     |
+| **Exists**       | ``findByFirstNameExists()``                                           | ``Filters.exists``                    |
+| **Between**      | ``findByBalanceBetween(double greater, double lower)``                | ``Filters.gt`` + ``Filters.lt``       |
+| **BetweenEq**    | ``findByBalanceBetweenEq(double greaterEquals, double lowerEquals)``  | ``Filters.gte`` + ``Filters.lte``     |
+| **In**           | ``findByCustomerIdIn(List<Integer> customerIdList)``                  | ``Filters.in``                        |
 
 You can negate any filter with the keyword ``Not``.
 
-| Keyword         | Example                                                              | Bson equivalent                                         |
-|-----------------|----------------------------------------------------------------------|---------------------------------------------------------|
-| Not(No keyword) | ``findByFirstNameNot(String firstName)``                             | ``Filters.not`` + ``Filters.eq``                        |
-| NotIgn          | ``findByFirstNameNotIgn(String firstName)``                          | ``Filters.not`` + ``Filters.regex`` (``(?i)^[value]$``) |
-| ...             | _This works with every keyword from above_                           | ...                                                     |
+| Keyword             | Example                                                              | Bson equivalent                                         |
+|---------------------|----------------------------------------------------------------------|---------------------------------------------------------|
+| **Not(No keyword)** | ``findByFirstNameNot(String firstName)``                             | ``Filters.not`` + ``Filters.eq``                        |
+| **NotIgn**          | ``findByFirstNameNotIgn(String firstName)``                          | ``Filters.not`` + ``Filters.regex`` (``(?i)^[value]$``) |
+| ...                 | _This works with every keyword from above_                           | ...                                                     |
 
 Filters can also be chained. For this purpose the keyword ``And`` or the keyword ``Or`` can be used per method.
 
 **_ATTENTION: The keywords ``And`` and ``Or`` must not be used in the same method!_**
 
-| Keyword                     | Example                                                                      | Bson equivalent                                                              |
-|-----------------------------|------------------------------------------------------------------------------|------------------------------------------------------------------------------|
-| Not(No keyword)AndGreaterEq | ``findByFirstNameNotAndBalanceGreaterEq(String firstName, double balance)``  | ``Filters.not`` + ``Filters.eq`` && ``Filters.gte``                          |
-| IgnAndNotRegex              | ``findByFirstNameIgnAndLastNameNotRegex(String firstName, String lastName)`` | ``Filters.regex`` (``(?i)^[value]$``) && ``Filters.not`` + ``Filters.regex`` |
-| ...                         | _This works with every keyword from above_                                   | ...                                                                          |
+| Keyword                         | Example                                                                      | Bson equivalent                                                              |
+|---------------------------------|------------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| **Not(No keyword)AndGreaterEq** | ``findByFirstNameNotAndBalanceGreaterEq(String firstName, double balance)``  | ``Filters.not`` + ``Filters.eq`` && ``Filters.gte``                          |
+| **IgnAndNotRegex**              | ``findByFirstNameIgnAndLastNameNotRegex(String firstName, String lastName)`` | ``Filters.regex`` (``(?i)^[value]$``) && ``Filters.not`` + ``Filters.regex`` |
+| ...                             | _This works with every keyword from above_                                   | ...                                                                          |
 
 [Find more examples in CustomerRepository](src/test/java/eu/koboo/en2do/test/customer/CustomerRepository.java)
 
