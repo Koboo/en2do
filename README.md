@@ -32,8 +32,8 @@ Sync/Async entity framework for mongodb in Java 17
 ### What should it do (Future implementations)
 
 * Repository task flushing
-* in/nin Filter operators
-* Implement SortOptions
+* Operator ``countBy``
+* Operator ``existsBy``
 
 ## Get Started
 
@@ -173,6 +173,22 @@ public class Application {
 Here the implementations of the framework are listed and roughly explained.
 If a developer should make a mistake, the biggest issues are caught via exception throwing and output as an error.
 
+To explain the implemented methods, the [Customer Entity](src/test/java/eu/koboo/en2do/test/customer/Customer.java)
+from the test units is used as an example.
+
+### Implemented methods
+
+Here is a listing of all supported methods, and how they are executed in the framework. 
+These methods can be supplemented with any kind of filters. For simplicity, only a ``FirstNameEquals`` filter is applied.
+
+| Keyword      | Example                                              | Method equivalent                               |
+|--------------|------------------------------------------------------|-------------------------------------------------|
+| ``findBy``   | ``Customer findByFirstName(String firstName)``       | ``collection.find(..).first()``                 |
+| ``findBy``   | ``List<Customer> findByFirstName(String firstName)`` | ``collection.find(..).into(new ArrayList<>())`` |
+| ``deleteBy`` | ``boolean deleteByFirstName(String firstName)``      | ``collection.deleteMany(..).wasAcknowledged``   |
+| ``existsBy`` | ``boolean existsByFirstName(String firstName)``      | ``collection.find(..).first() != null``         |
+| ``countBy``  | ``long countByFirstName(String firstName)``          | ``collection.countDocuments(..)``               |
+
 ### Implemented filter keywords
 
 #### Filter Keyword Cheatsheet
@@ -214,30 +230,6 @@ Filters can also be chained. For this purpose the keyword ``And`` or the keyword
 
 _Note: If a method is declared incorrectly, an exception is usually thrown describing the error. 
 Due to wrong validation checks, this could also occur unintentionally or not at all if the declaration is incorrect._
-
-### Implemented methods
-
-To explain the implemented methods, the [Customer Entity](src/test/java/eu/koboo/en2do/test/customer/Customer.java)
-from the test units is used as an example.
-
-#### Find
-
-``findBy`` methods can return these two different objects.
-
-1. ``Customer findByFirstName(String firstName);``
-2. ``List<Customer> findByFirstName(String firstName);``
-
-So both a list of the entity and the first entity can be returned. 
-This depends on the developer which one he needs. 
-If a single entity is expected instead of a list of entities, the first entity of the filter is returned.
-
-#### Delete
-
-``deleteBy`` methods can return only one object.
-
-1. ``boolean deleteByFirstName(String firstName);``
-
-A boolean is returned which indicates if the operation was successful.
 
 ## References
 
