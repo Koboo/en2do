@@ -1,7 +1,9 @@
 package eu.koboo.en2do;
 
 import de.cronn.reflection.util.TypedPropertyGetter;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 @Getter

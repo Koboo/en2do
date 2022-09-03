@@ -4,11 +4,11 @@ import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepository;
-
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.*;
 
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class FindByIdTest {

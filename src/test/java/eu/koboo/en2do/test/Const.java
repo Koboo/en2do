@@ -3,7 +3,9 @@ package eu.koboo.en2do.test;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.Order;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 
 public class Const {
 
