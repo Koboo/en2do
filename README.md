@@ -193,20 +193,21 @@ These methods can be supplemented with any kind of filters. For simplicity, only
 
 #### Filter Keyword Cheatsheet
 
-| Keyword      | Example                                                              | Bson equivalent                       |
-|--------------|----------------------------------------------------------------------|---------------------------------------|
-| (No keyword) | ``findByFirstName(String firstName)``                                | ``Filters.eq``                        |
-| Ign          | ``findByFirstNameIgn(String firstName)``                             | ``Filters.regex`` (``(?i)^[value]$``) |
-| Contains     | ``findByFirstNameContains(String part)``                             | ``Filters.regex`` (``.*[value].*``)   |
-| GreaterThan  | ``findByBalanceGreaterThan(double balance)``                         | ``Filters.gt``                        |
-| LessThan     | ``findByBalanceLessThan(double balance)``                            | ``Filters.lt``                        |
-| GreaterEq    | ``findByBalanceGreaterEq(double balance)``                           | ``Filters.gte``                       |
-| LessEq       | ``findByBalanceLessEq(double balance)``                              | ``Filters.lte``                       |
-| Regex        | ``findByFirstNameRegex(String regex)``                               | ``Filters.regex``                     |
-| Regex        | ``findByFirstNameRegex(Pattern pattern)``                            | ``Filters.regex``                     |
-| Exists       | ``findByFirstNameExists()``                                          | ``Filters.exists``                    |
-| Between      | ``findByBalanceBetween(double greater, double lower)``               | ``Filters.gt`` + ``Filters.lt``       |
-| BetweenEq    | ``findByBalanceBetweenEq(double greaterEquals, double lowerEquals)`` | ``Filters.gte`` + ``Filters.lte``     |
+| Keyword      | Example                                                               | Bson equivalent                       |
+|--------------|-----------------------------------------------------------------------|---------------------------------------|
+| (No keyword) | ``findByFirstName(String firstName)``                                 | ``Filters.eq``                        |
+| Ign          | ``findByFirstNameIgn(String firstName)``                              | ``Filters.regex`` (``(?i)^[value]$``) |
+| Contains     | ``findByFirstNameContains(String part)``                              | ``Filters.regex`` (``.*[value].*``)   |
+| GreaterThan  | ``findByBalanceGreaterThan(double balance)``                          | ``Filters.gt``                        |
+| LessThan     | ``findByBalanceLessThan(double balance)``                             | ``Filters.lt``                        |
+| GreaterEq    | ``findByBalanceGreaterEq(double balance)``                            | ``Filters.gte``                       |
+| LessEq       | ``findByBalanceLessEq(double balance)``                               | ``Filters.lte``                       |
+| Regex        | ``findByFirstNameRegex(String regex)``                                | ``Filters.regex``                     |
+| Regex        | ``findByFirstNameRegex(Pattern pattern)``                             | ``Filters.regex``                     |
+| Exists       | ``findByFirstNameExists()``                                           | ``Filters.exists``                    |
+| Between      | ``findByBalanceBetween(double greater, double lower)``                | ``Filters.gt`` + ``Filters.lt``       |
+| BetweenEq    | ``findByBalanceBetweenEq(double greaterEquals, double lowerEquals)``  | ``Filters.gte`` + ``Filters.lte``     |
+| In           | ``findByCustomerIdIn(List<Integer> customerIdList)``                  | ``Filters.in``                        |
 
 You can negate any filter with the keyword ``Not``.
 
