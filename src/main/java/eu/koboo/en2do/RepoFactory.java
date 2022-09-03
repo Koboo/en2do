@@ -6,7 +6,7 @@ import eu.koboo.en2do.annotation.Repository;
 import eu.koboo.en2do.exception.*;
 import eu.koboo.en2do.misc.FilterOperator;
 import eu.koboo.en2do.misc.FilterType;
-import eu.koboo.en2do.utility.MethodNameUtil;
+import eu.koboo.en2do.misc.MethodOperator;
 import eu.koboo.en2do.utility.GenericUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -116,56 +116,63 @@ public class RepoFactory {
     private <E> void checkReturnTypes(Method method, Class<E> entityClass, Class<?> repoClass) throws Exception {
         Class<?> returnTypeClass = method.getReturnType();
         String methodName = method.getName();
-        if (GenericUtils.isTypeOf(List.class, returnTypeClass)) {
-            Class<?> listType = GenericUtils.getGenericTypeOfReturnedList(method);
-            if (listType.isAssignableFrom(entityClass)) {
-                if (methodName.startsWith("findBy")) {
+        MethodOperator methodOperator = MethodOperator.parseMethodStartsWith(methodName);
+        if(methodOperator == null) {
+            throw new MethodNoMethodOperatorException(method, repoClass);
+        }
+        switch (methodOperator) {
+            case FIND -> {
+                if(GenericUtils.isTypeOf(List.class, returnTypeClass)) {
+                    Class<?> listType = GenericUtils.getGenericTypeOfReturnList(method);
+                    if(!listType.isAssignableFrom(entityClass)) {
+                        throw new MethodFindListTypeException(method, entityClass, listType);
+                    }
+                    return;
+                }
+                if(GenericUtils.isTypeOf(entityClass, returnTypeClass)) {
                     return;
                 }
                 throw new MethodFindReturnTypeException(method, entityClass, repoClass);
             }
-            throw new MethodFindListTypeException(method, entityClass, listType);
-        }
-        if (GenericUtils.isTypeOf(entityClass, returnTypeClass)) {
-            if (methodName.startsWith("findBy")) {
-                return;
+            case DELETE, EXISTS -> {
+                if (!GenericUtils.isTypeOf(Boolean.class, returnTypeClass)) {
+                    throw new MethodBooleanReturnTypeException(method, repoClass);
+                }
             }
-            throw new MethodFindReturnTypeException(method, entityClass, repoClass);
-        }
-        if (GenericUtils.isTypeOf(Boolean.class, returnTypeClass)) {
-            if (methodName.startsWith("deleteBy")) {
-                return;
+            case COUNT -> {
+                if (!GenericUtils.isTypeOf(Long.class, returnTypeClass)) {
+                    throw new MethodLongReturnTypeException(method, repoClass);
+                }
             }
-            throw new MethodDeleteReturnTypeException(method, repoClass);
+            default -> throw new MethodUnsupportedReturnTypeException(returnTypeClass, methodName, entityClass);
         }
-        throw new MethodUnsupportedReturnTypeException(returnTypeClass, methodName, entityClass);
     }
 
     // ReturnType already checked.
     private <E> void checkMethodOperation(Method method, Class<E> entityClass, Class<?> repoClass) throws Exception {
         String methodName = method.getName();
-        String fieldFilterName = MethodNameUtil.removeLeadingOperator(methodName);
-        if (fieldFilterName == null) {
-            throw new MethodInvalidSignatureException(method, entityClass);
+        MethodOperator methodOperator = MethodOperator.parseMethodStartsWith(methodName);
+        if(methodOperator == null) {
+            throw new MethodNoMethodOperatorException(method, repoClass);
         }
+        String fieldFilterName = methodOperator.removeOperatorFrom(methodName);
         if (methodName.contains("And") && methodName.contains("Or")) {
             throw new MethodDuplicatedChainException(method, entityClass);
         }
         int expectedParameters = countExpectedParameters(entityClass, repoClass, method, fieldFilterName);
-        System.out.println("[DEBUG] Method: " + method.getName());
-        System.out.println("[DEBUG] ExpParams: " + expectedParameters);
+        Debugger.print("Method: " + method.getName());
+        Debugger.print("ExpParams: " + expectedParameters);
         int parameterCount = method.getParameterCount();
-        System.out.println("[DEBUG] ActParams: " + parameterCount);
+        Debugger.print("ActParams: " + parameterCount);
         if(expectedParameters != parameterCount) {
             if(parameterCount > 0) {
                 Class<?> lastParam = method.getParameterTypes()[parameterCount - 1];
-                System.out.println("[DEBUG] lastParam: " + lastParam.getName());
-                System.out.println("[DEBUG] AddParam: " + (expectedParameters + 1));
-                System.out.println("[DEBUG] Assignable: " + lastParam.isAssignableFrom(SortOptions.class));
+                Debugger.print("lastParam: " + lastParam.getName());
+                Debugger.print("AddParam: " + (expectedParameters + 1));
+                Debugger.print("Assignable: " + lastParam.isAssignableFrom(SortOptions.class));
                 if(lastParam.isAssignableFrom(SortOptions.class) && (expectedParameters + 1) != parameterCount) {
                     throw new MethodParameterCountException(method, repoClass, (expectedParameters + 1), parameterCount);
                 }
-                // TODO: Check for "additional" SortOptions as last parameter if return type is list
             } else {
                 throw new MethodParameterCountException(method, repoClass, expectedParameters, parameterCount);
             }
@@ -176,7 +183,7 @@ public class RepoFactory {
         for (int i = 0; i < fieldFilterSplitByType.length; i++) {
             String fieldFilterPart = fieldFilterSplitByType[i];
             FilterType filterType = createFilterType(entityClass, repoClass, method, fieldFilterPart);
-            checkParameterType(entityClass, method, filterType, nextIndex, repoClass);
+            checkParameterType(method, filterType, nextIndex, repoClass);
             nextIndex = i + filterType.operator().getExpectedParameterCount();
         }
     }
@@ -197,11 +204,12 @@ public class RepoFactory {
         return expectedCount;
     }
 
-    private <E> void checkParameterType(Class<E> entityClass, Method method, FilterType filterType, int startIndex, Class<?> repoClass) throws Exception {
+    private <E> void checkParameterType(Method method, FilterType filterType, int startIndex, Class<?> repoClass) throws Exception {
         int expectedParamCount = filterType.operator().getExpectedParameterCount();
-        System.out.println("[DEBUG] Check params for " + filterType.operator().name());
+        Debugger.print("Check params for " + filterType.operator().name());
         for(int i = 0; i < expectedParamCount; i++) {
-            Class<?> paramClass = method.getParameters()[startIndex + i].getType();
+            int paramIndex = startIndex + i;
+            Class<?> paramClass = method.getParameters()[paramIndex].getType();
             if (paramClass == null) {
                 throw new MethodParameterNotFoundException(method, repoClass, (startIndex + expectedParamCount),
                         method.getParameterCount());
@@ -214,6 +222,16 @@ public class RepoFactory {
                 return;
             }
             Class<?> fieldClass = filterType.field().getType();
+            if(filterType.operator() == FilterOperator.IN) {
+                if(!GenericUtils.isTypeOf(List.class, paramClass)) {
+                    throw new MethodMismatchingTypeException(method, repoClass, List.class, paramClass);
+                }
+                Class<?> listType = GenericUtils.getGenericTypeOfParameterList(method, paramIndex);
+                if(!GenericUtils.isTypeOf(fieldClass, listType)) {
+                    throw new MethodInvalidListParameterException(method, repoClass, fieldClass, listType);
+                }
+                return;
+            }
             if(!GenericUtils.isTypeOf(fieldClass, paramClass)) {
                 throw new MethodMismatchingTypeException(method, repoClass, fieldClass, paramClass);
             }
@@ -223,7 +241,7 @@ public class RepoFactory {
     protected <E> FilterType createFilterType(Class<E> entityClass, Class<?> repoClass, Method method, String operatorString) throws Exception {
         FilterOperator filterOperator = FilterOperator.parseFilterEndsWith(operatorString);
         if(filterOperator == null) {
-            throw new MethodNoOperatorException(method, repoClass);
+            throw new MethodNoFilterOperatorException(method, repoClass);
         }
         String expectedField = filterOperator.removeOperatorFrom(operatorString);
         expectedField = expectedField.endsWith("Not") ? expectedField.replaceFirst("Not", "") : expectedField;

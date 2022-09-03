@@ -10,7 +10,7 @@ import com.mongodb.client.result.UpdateResult;
 import de.cronn.reflection.util.PropertyUtils;
 import eu.koboo.en2do.exception.*;
 import eu.koboo.en2do.misc.FilterType;
-import eu.koboo.en2do.utility.MethodNameUtil;
+import eu.koboo.en2do.misc.MethodOperator;
 import eu.koboo.en2do.utility.GenericUtils;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -101,6 +101,20 @@ public class RepoInvocation<E, ID> implements InvocationHandler {
             collection.insertOne(entity);
             return true;
         }
+        if (methodName.equalsIgnoreCase("saveAll")) {
+            checkArguments(method, args, 1);
+            List<E> entityList = checkEntityList(method, args[0]);
+            for (E entity : entityList) {
+                ID uniqueId = checkUniqueId(method, getUniqueId(entity));
+                Bson idFilter = createIdFilter(uniqueId);
+                if (createIterable(idFilter).first() != null) {
+                    UpdateResult result = collection.replaceOne(idFilter, entity, new ReplaceOptions().upsert(true));
+                    return result.wasAcknowledged();
+                }
+                collection.insertOne(entity);
+            }
+            return true;
+        }
         if (methodName.equalsIgnoreCase("exists")) {
             checkArguments(method, args, 1);
             E entity = checkEntity(method, args[0]);
@@ -114,46 +128,50 @@ public class RepoInvocation<E, ID> implements InvocationHandler {
             Bson idFilter = createIdFilter(uniqueId);
             return collection.find(idFilter).first() != null;
         }
-        if (methodName.startsWith("findBy") || methodName.startsWith("deleteBy")) {
-            Class<?> returnTypeClass = method.getReturnType();
-            String operatorRootString = MethodNameUtil.removeLeadingOperator(methodName);
-            if (operatorRootString == null) {
-                throw new MethodInvalidSignatureException(method, entityClass);
+        MethodOperator methodOperator = MethodOperator.parseMethodStartsWith(methodName);
+        if (methodOperator == null) {
+            throw new MethodNoMethodOperatorException(method, repoClass);
+        }
+        Class<?> returnTypeClass = method.getReturnType();
+        String operatorRootString = methodOperator.removeOperatorFrom(methodName);
+        if (operatorRootString == null) {
+            throw new MethodInvalidSignatureException(method, entityClass);
+        }
+        Bson filter = null;
+        if (operatorRootString.contains("And") || operatorRootString.contains("Or")) {
+            List<Bson> filterList = new ArrayList<>();
+            String[] operatorStringArray = operatorRootString.contains("And") ?
+                    operatorRootString.split("And") : operatorRootString.split("Or");
+            int nextIndex = 0;
+            for (int i = 0; i < operatorStringArray.length; i++) {
+                String operatorString = operatorStringArray[i];
+                FilterType filterType = factory.createFilterType(entityClass, repoClass, method, operatorString);
+                boolean isNot = operatorString.replaceFirst(filterType.field().getName(), "").startsWith("Not");
+                filterList.add(createBsonFilter(method, filterType, isNot, nextIndex, args));
+                nextIndex = i + filterType.operator().getExpectedParameterCount();
             }
-            Bson filter = null;
-            if (operatorRootString.contains("And") || operatorRootString.contains("Or")) {
-                List<Bson> filterList = new ArrayList<>();
-                String[] operatorStringArray = operatorRootString.contains("And") ?
-                        operatorRootString.split("And") : operatorRootString.split("Or");
-                int nextIndex = 0;
-                for (int i = 0; i < operatorStringArray.length; i++) {
-                    String operatorString = operatorStringArray[i];
-                    FilterType filterType = factory.createFilterType(entityClass, repoClass, method, operatorString);
-                    boolean isNot = operatorString.replaceFirst(filterType.field().getName(), "").startsWith("Not");
-                    filterList.add(createBsonFilter(method, filterType, isNot, nextIndex, args));
-                    nextIndex = i + filterType.operator().getExpectedParameterCount();
-                }
-                if (operatorRootString.contains("And")) {
-                    filter = Filters.and(filterList);
-                } else {
-                    filter = Filters.or(filterList);
-                }
+            if (operatorRootString.contains("And")) {
+                filter = Filters.and(filterList);
             } else {
-                FilterType filterType = factory.createFilterType(entityClass, repoClass, method, operatorRootString);
-                boolean isNot = operatorRootString.toLowerCase(Locale.ROOT)
-                        .replaceFirst(filterType.field().getName().toLowerCase(Locale.ROOT), "").startsWith("not");
-                filter = createBsonFilter(method, filterType, isNot, 0, args);
+                filter = Filters.or(filterList);
             }
-            System.out.println("[DEBUG] BsonFilter: " + filter);
-            Class<?> lastParam = method.getParameterTypes()[method.getParameterCount() - 1];
-            boolean hasSortOptions = lastParam.isAssignableFrom(SortOptions.class);
-            SortOptions<E> sortOptions = null;
-            if (hasSortOptions) {
-                Object lastParamObject = args == null ? null : args[args.length - 1];
-                if (lastParamObject instanceof SortOptions) {
-                    sortOptions = (SortOptions) lastParamObject;
-                }
+        } else {
+            FilterType filterType = factory.createFilterType(entityClass, repoClass, method, operatorRootString);
+            boolean isNot = operatorRootString.toLowerCase(Locale.ROOT)
+                    .replaceFirst(filterType.field().getName().toLowerCase(Locale.ROOT), "").startsWith("not");
+            filter = createBsonFilter(method, filterType, isNot, 0, args);
+        }
+        Debugger.print("BsonFilter: " + filter);
+        Class<?> lastParam = method.getParameterTypes()[method.getParameterCount() - 1];
+        boolean hasSortOptions = lastParam.isAssignableFrom(SortOptions.class);
+        SortOptions<E> sortOptions = null;
+        if (hasSortOptions) {
+            Object lastParamObject = args == null ? null : args[args.length - 1];
+            if (lastParamObject instanceof SortOptions) {
+                sortOptions = (SortOptions) lastParamObject;
             }
+        }
+        if(methodOperator == MethodOperator.FIND) {
             if (GenericUtils.isTypeOf(List.class, returnTypeClass)) {
                 FindIterable<E> findIterable = collection.find(filter);
                 if (hasSortOptions && sortOptions != null) {
@@ -168,9 +186,22 @@ public class RepoInvocation<E, ID> implements InvocationHandler {
                 }
                 return findIterable.first();
             }
+        }
+        if(methodOperator == MethodOperator.DELETE) {
             if (GenericUtils.isTypeOf(Boolean.class, returnTypeClass)) {
-                DeleteResult deleteResult = collection.deleteOne(filter);
+                DeleteResult deleteResult = collection.deleteMany(filter);
                 return deleteResult.wasAcknowledged();
+            }
+        }
+        if(methodOperator == MethodOperator.EXISTS) {
+            if (GenericUtils.isTypeOf(Boolean.class, returnTypeClass)) {
+                E entity = collection.find(filter).first();
+                return entity != null;
+            }
+        }
+        if(methodOperator == MethodOperator.COUNT) {
+            if(GenericUtils.isTypeOf(Long.class, returnTypeClass)) {
+                return collection.countDocuments(filter);
             }
         }
         throw new RepositoryInvalidCallException(method, repoClass);
@@ -195,6 +226,17 @@ public class RepoInvocation<E, ID> implements InvocationHandler {
         return entity;
     }
 
+    @SuppressWarnings("all")
+    private List<E> checkEntityList(Method method, Object argument) {
+        List<E> entity = (List<E>) argument;
+        if (entity == null) {
+            throw new NullPointerException("entityList argument of method " + method.getName() + " from " +
+                    entityClass.getName() + " is null.");
+        }
+        return entity;
+    }
+
+
     private ID checkUniqueId(Method method, Object argument) {
         ID uniqueId = entityUniqueIdClass.cast(argument);
         if (uniqueId == null) {
@@ -217,17 +259,18 @@ public class RepoInvocation<E, ID> implements InvocationHandler {
     }
 
     private FindIterable<E> applySortOptions(FindIterable<E> findIterable, SortOptions<E> sortOptions) {
-        if(sortOptions.getField() != null) {
+        if (sortOptions.getField() != null) {
             String fieldName = PropertyUtils.getPropertyName(entityClass, sortOptions.getField());
             int orderType = sortOptions.isSortAscending() ? 1 : -1;
             findIterable = findIterable.sort(new BasicDBObject(fieldName, orderType));
         }
-        if(sortOptions.getLimit() != -1) {
+        if (sortOptions.getLimit() != -1) {
             findIterable = findIterable.limit(sortOptions.getLimit());
         }
         return findIterable;
     }
 
+    @SuppressWarnings("all")
     private Bson createBsonFilter(Method method, FilterType filterType, boolean isNot, int paramsIndexAt, Object[] args) throws Exception {
         // NameEqualsIgnoreCase (String name);
         // NumberGreaterThan (String name, Double number);
@@ -283,6 +326,13 @@ public class RepoInvocation<E, ID> implements InvocationHandler {
                 Object from = args[paramsIndexAt];
                 Object to = args[paramsIndexAt + 1];
                 retFilter = Filters.and(Filters.gte(fieldName, from), Filters.lte(fieldName, to));
+            }
+            case IN -> {
+                // MongoDB expects a Array and not a List, but for easier usage
+                // the framework wants a list. So just convert the list to an array and pass it to the filter
+                List<Object> objectList = (List<Object>) args[paramsIndexAt];
+                Object[] objectArray = objectList.toArray(new Object[]{});
+                retFilter = Filters.in(fieldName, objectArray);
             }
             default -> {
                 throw new MethodUnsupportedFilterException(method, repoClass);
