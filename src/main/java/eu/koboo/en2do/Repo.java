@@ -20,11 +20,13 @@ public interface Repo<E, ID> {
 
     boolean deleteById(ID identifier);
 
-    boolean deleteAll();
+    boolean deleteAll(List<E> entityList);
+
+    boolean drop();
 
     boolean save(E entity);
 
-    boolean saveAll(List<E> entity);
+    boolean saveAll(List<E> entityList);
 
     boolean exists(E entity);
 

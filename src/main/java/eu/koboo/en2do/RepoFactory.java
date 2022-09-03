@@ -82,7 +82,7 @@ public class RepoFactory {
         List<String> ignoredMethods = Arrays.asList(
                 // Predefined methods by Repo interface
                 "getCollectionName", "getUniqueId", "getEntityClass", "getEntityUniqueIdClass",
-                "findById", "findAll", "delete", "deleteById", "deleteAll", "save", "saveAll", "exists", "existsById",
+                "findById", "findAll", "delete", "deleteById", "deleteAll", "drop", "save", "saveAll", "exists", "existsById",
                 // Predefined methods by Java
                 "toString", "hashCode", "equals", "notify", "notifyAll", "wait", "finalize", "clone");
         for (Method method : repoClass.getMethods()) {

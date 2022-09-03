@@ -85,6 +85,17 @@ public class RepoInvocation<E, ID> implements InvocationHandler {
             return result.wasAcknowledged();
         }
         if (methodName.equalsIgnoreCase("deleteAll")) {
+            checkArguments(method, args, 1);
+            List<E> entityList = checkEntityList(method, args[0]);
+            for (E entity : entityList) {
+                checkArguments(method, args, 1);
+                ID uniqueId = checkUniqueId(method, getUniqueId(entity));
+                Bson idFilter = createIdFilter(uniqueId);
+                DeleteResult result = collection.deleteOne(idFilter);
+            }
+            return true;
+        }
+        if (methodName.equalsIgnoreCase("drop")) {
             checkArguments(method, args, 0);
             collection.drop();
             return true;
