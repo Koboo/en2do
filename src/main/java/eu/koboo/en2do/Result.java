@@ -11,10 +11,14 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 public class Result<T> {
 
+    public static <T> Result<T> of(ExecutorService executorService, Callable<T> producer) {
+        return new Result<>(executorService, producer);
+    }
+
     ExecutorService executorService;
     Callable<T> producer;
 
-    public Result(ExecutorService executorService, Callable<T> producer) {
+    private Result(ExecutorService executorService, Callable<T> producer) {
         this.executorService = executorService;
         this.producer = producer;
     }
