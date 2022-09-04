@@ -4,51 +4,43 @@ Sync/Async entity framework for mongodb in Java 17
 
 **_En2Do_** is short for **_Entity-To-Document_**.
 
+This framework is heavily inspired by [Spring Data](https://spring.io/projects/spring-data).
+
 ## Overview
-* Features
-  * [What can it do?](#what-can-it-do-current-implementations)
-  * [What should it do?](#what-should-it-do-future-implementations)
-* Get Started
-  * [Add as dependency](#add-en2do-as-dependency)
+* [Current Features](#current-features)
+* [Add as dependency](#add-as-dependency)
+* [Get Started](#get-started)
   * [Create MongoManager](#create-an-instance-of-the-mongomanager)
   * [Define Entity](#define-an-entity-class)
   * [Create Repository](#create-the-repository-for-the-entity)
-  * [Instantiate objects](#create-object-instances)
-* Implementation
-  * [Filter Keywords](#implemented-filter-keywords)
-  * [Methods](#implemented-methods)
-  * [Scope](#)
+  * [Instantiate objects](#create-object-instances) 
+* [Filter keywords](#filter-keywords)
+* [Method keywords](#method-keywords)
+* [Sorting via Annotations](#sorting-via-annotations-static)
+* [Sorting via Parameter](#sorting-via-parameter-dynamic)
+* [References](#references)
+* [MIT License](LICENSE)
 
-## Features
 
-### What can it do (Current implementations)
+## Current Features
 
-* MongoDB Conversion of POJO classes (POJOs in POJOs in POJOs)
-* Create filters without implementing them
+* MongoDB Conversion of POJO classes ([Learn more](https://www.mongodb.com/developer/languages/java/java-mapping-pojos/))
+* Create methods without implementing them ([Learn more](#filter-keywords))
+* Create methods with different operations ([Learn more](#method-keywords))
 * Object creation by proxy classes to simplify usage and method declaration
-* Implemented filters, which can be chained, negated and executed together to get the expected results
-* Load credentials from disk-files, resource-files or insert as hardcoded strings 
+* Load credentials from disk-files, resource-files or insert as hardcoded strings
+* Multiple ways to sort static or dynamic without implementing filters ([Learn more](#sorting)) 
 
-### What should it do (Future implementations)
+## Add as dependency
 
-* Repository task flushing
-* Operator ``countBy``
-* Operator ``existsBy``
+en2do is hosted and deployed on a private repository. 
 
-## Get Started
-
-To make it easier to get started with en2do here is a guide to add it to and use it in your project.
-
-### Add en2do as dependency
-
-en2do is hosted and deployed on a private repository. The Repository must be added. 
-The examples are designed for a Gradle (Groovy) configuration.
-
+**_Gradle (Groovy)_**:
 ````groovy
 repositories {
     maven {
         name 'koboo-reposilite'
-        url 'https://reposilite.koboo.eu'
+        url 'https://reposilite.koboo.eu/releases'
     }
 }
 
@@ -57,11 +49,13 @@ dependencies {
 }
 ````
 
-To get the latest version of en2do look in the repository.
+## Get Started
+
+To make it easier to get started with en2do, here is a guide how to start using it in your project.
 
 ### Create an instance of the ``MongoManager``
 
-In order to connect to the database, a new instance of ``MongoManager`` must be created.
+In byField to connect to the mongo database, a new instance of ``MongoManager`` must be created.
 
 **_Code Example:_**
 ````java
@@ -74,6 +68,8 @@ public class Application {
 If a ``MongoManager`` is created without arguments, the credentials are read from the following locations:
 1. From Disk: ``{applicationDirectory}/credentials.properties``
 2. From Resource: ``{applicationJar}/credentials.properties``
+
+If no credentials are found, an exception is thrown.
 
 **_Default ``credentials.properties``:_**
 ````properties
@@ -92,7 +88,7 @@ public class Application {
 }
 ````
 
-[To get help about the ConnectionString, see MongoDB Manual.](https://www.mongodb.com/docs/manual/reference/connection-string/)
+[MongoDB Manual (ConnectionString)](https://www.mongodb.com/docs/manual/reference/connection-string/)
 
 ### Define an Entity class
 
@@ -137,9 +133,15 @@ public class Customer {
 }
 ````
 
+There are also some annotations directly from MongoDB, but only one is supported.
+
+* ``@BsonIgnore``, to ignore a sortBy in the entity
+
+**_ATTENTION: You shouldn't use the other annotations, because it could break your entity!_**
+
 ### Create the Repository for the Entity
 
-In order to access the database and apply operations to any entity, a repository must be defined.
+In byField to access the database and apply operations to any entity, a repository must be defined.
 To ensure type safety, the type of the entity and the type of the identifier must be specified 
 as type parameters.
 
@@ -170,13 +172,15 @@ public class Application {
 
 ## Implementation
 
-Here the implementations of the framework are listed and roughly explained.
+Here the implementations and keywords are listed and explained.
 If a developer should make a mistake, the biggest issues are caught via exception throwing and output as an error.
 
 To explain the implemented methods, the [Customer Entity](src/test/java/eu/koboo/en2do/test/customer/Customer.java)
-from the test units is used as an example.
+from the [test units](src/test/java/eu/koboo/en2do/test/cases) is used as an example.
 
-### Implemented methods
+Find more examples in [CustomerRepository](src/test/java/eu/koboo/en2do/test/customer/CustomerRepository.java).
+
+## Method keywords
 
 Here is a listing of all supported methods, and how they are executed in the framework. 
 These methods can be supplemented with any kind of filters. For simplicity, only a ``FirstNameEquals`` filter is applied.
@@ -189,9 +193,7 @@ These methods can be supplemented with any kind of filters. For simplicity, only
 | **existsBy** | ``boolean existsByFirstName(String firstName)``      | ``collection.find(..).first() != null``         |
 | **countBy**  | ``long countByFirstName(String firstName)``          | ``collection.countDocuments(..)``               |
 
-### Implemented filter keywords
-
-#### Filter Keyword Cheatsheet
+## Filter keywords
 
 | Keyword          | Example                                                               | Bson equivalent                       |
 |------------------|-----------------------------------------------------------------------|---------------------------------------|
@@ -227,14 +229,64 @@ Filters can also be chained. For this purpose the keyword ``And`` or the keyword
 | **IgnAndNotRegex**              | ``findByFirstNameIgnAndLastNameNotRegex(String firstName, String lastName)`` | ``Filters.regex`` (``(?i)^[value]$``) && ``Filters.not`` + ``Filters.regex`` |
 | ...                             | _This works with every keyword from above_                                   | ...                                                                          |
 
-[Find more examples in CustomerRepository](src/test/java/eu/koboo/en2do/test/customer/CustomerRepository.java)
-
 _Note: If a method is declared incorrectly, an exception is usually thrown describing the error. 
 Due to wrong validation checks, this could also occur unintentionally or not at all if the declaration is incorrect._
+
+## Sorting
+
+The framework allows sorting in 2 ways. These two ways cannot be used at the same time.
+
+## Sorting via Annotations (Static)
+
+When sorting via annotation, the options for sorting must be written statically in annotations, 
+which means that they can no longer be changed.
+
+| Annotation  | Example                                             | Multiple usage allowed? | Description                                   |
+|-------------|-----------------------------------------------------|-------------------------|-----------------------------------------------|
+| ``@SortBy`` | ``@SortBy(field = "customerId")``                   | **Yes**                 | Define any entity field to sort by.           |
+| ``@SortBy`` | ``@SortBy(field = "customerId", ascending = true)`` | **Yes**                 | Define field and sort direction.              |
+| ``@Limit``  | ``@Limit(20)``                                      | **No**                  | Define a maximum amount of returned entities. |
+| ``@Skip``   | ``@Skip(10)``                                       | **No**                  | Define an amount of skipped entities.         |
+
+**_Code-Example:_**
+````java
+@Repository("customer_repository")
+public interface CustomerRepository extends Repo<Customer, UUID> {
+
+  @SortBy(field = "customerId")
+  @SortBy(field = "balance")
+  @Limit(20)
+  List<Customer> findByCustomerIdExists();
+}
+````
+
+## Sorting via Parameter (Dynamic)
+
+Dynamic sorting is provided via the ``Sort`` method parameter. The ``Sort`` object and its 
+options can be created in the Fluent pattern.
+
+**_Code-Example:_**
+````java
+public class Application {
+  public static void main(String args[]) {
+    MongoManager manager = new MongoManager();
+    CustomerRepository repository = manager.create(CustomerRepository.class);
+    
+    List<Customer> customerList = repository.findByCustomerIdNot(17,
+            Sort.create()
+                    .order(ByField.of("customerId", true))
+                    .order(ByField.of("balance", true))
+                    .limit(20)
+                    .skip(10)
+    );
+  }
+}
+````
 
 ## References
 
 * [JUnit 5 User Guide](https://junit.org/junit5/docs/current/user-guide/)
-* [JUnit 5 Test-Units](https://www.baeldung.com/junit-5-test-order)
-* [MongoDB POJO](https://www.mongodb.com/developer/languages/java/java-mapping-pojos/)
+* [JUnit 5 Test-Units](https://www.baeldung.com/junit-5-test-byField)
+* [MongoDB POJO Example](https://www.mongodb.com/developer/languages/java/java-mapping-pojos/)
+* [MongoDB POJO Documentation](https://mongodb.github.io/mongo-java-driver/3.5/bson/pojos/)
 * [Spring MongoDB Repositories](https://docs.spring.io/spring-data/mongodb/docs/1.2.0.RELEASE/reference/html/mongo.repositories.html)
