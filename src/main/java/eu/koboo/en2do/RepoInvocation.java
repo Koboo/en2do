@@ -7,10 +7,14 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
-import de.cronn.reflection.util.PropertyUtils;
-import eu.koboo.en2do.exception.*;
-import eu.koboo.en2do.misc.FilterType;
-import eu.koboo.en2do.misc.MethodOperator;
+import eu.koboo.en2do.repository.exception.*;
+import eu.koboo.en2do.sort.ByField;
+import eu.koboo.en2do.sort.Sort;
+import eu.koboo.en2do.sort.annotation.Limit;
+import eu.koboo.en2do.sort.annotation.Skip;
+import eu.koboo.en2do.sort.annotation.SortBy;
+import eu.koboo.en2do.repository.FilterType;
+import eu.koboo.en2do.repository.MethodOperator;
 import eu.koboo.en2do.utility.GenericUtils;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -139,15 +143,19 @@ public class RepoInvocation<E, ID> implements InvocationHandler {
             Bson idFilter = createIdFilter(uniqueId);
             return collection.find(idFilter).first() != null;
         }
+
+        // Start of the dynamic methods
+
         MethodOperator methodOperator = MethodOperator.parseMethodStartsWith(methodName);
         if (methodOperator == null) {
             throw new MethodNoMethodOperatorException(method, repoClass);
         }
-        Class<?> returnTypeClass = method.getReturnType();
         String operatorRootString = methodOperator.removeOperatorFrom(methodName);
         if (operatorRootString == null) {
             throw new MethodInvalidSignatureException(method, entityClass);
         }
+
+        // Bson filter conversion from method name
         Bson filter = null;
         if (operatorRootString.contains("And") || operatorRootString.contains("Or")) {
             List<Bson> filterList = new ArrayList<>();
@@ -173,45 +181,38 @@ public class RepoInvocation<E, ID> implements InvocationHandler {
             filter = createBsonFilter(method, filterType, isNot, 0, args);
         }
         Debugger.print("BsonFilter: " + filter);
-        Class<?> lastParam = method.getParameterTypes()[method.getParameterCount() - 1];
-        boolean hasSortOptions = lastParam.isAssignableFrom(SortOptions.class);
-        SortOptions<E> sortOptions = null;
-        if (hasSortOptions) {
-            Object lastParamObject = args == null ? null : args[args.length - 1];
-            if (lastParamObject instanceof SortOptions) {
-                sortOptions = (SortOptions) lastParamObject;
-            }
-        }
-        if(methodOperator == MethodOperator.FIND) {
+
+        Class<?> returnTypeClass = method.getReturnType();
+        if (methodOperator == MethodOperator.FIND) {
             if (GenericUtils.isTypeOf(List.class, returnTypeClass)) {
                 FindIterable<E> findIterable = collection.find(filter);
-                if (hasSortOptions && sortOptions != null) {
-                    findIterable = applySortOptions(findIterable, sortOptions);
-                }
+                findIterable = applySortObject(method, findIterable, args);
+                findIterable = applySortAnnotations(method, findIterable);
                 return findIterable.into(new ArrayList<>());
             }
             if (GenericUtils.isTypeOf(entityClass, returnTypeClass)) {
                 FindIterable<E> findIterable = collection.find(filter);
-                if (hasSortOptions && sortOptions != null) {
-                    findIterable = applySortOptions(findIterable, sortOptions);
-                }
+                findIterable = applySortObject(method, findIterable, args);
+                findIterable = applySortAnnotations(method, findIterable);
                 return findIterable.first();
             }
         }
-        if(methodOperator == MethodOperator.DELETE) {
+        if (methodOperator == MethodOperator.DELETE) {
             if (GenericUtils.isTypeOf(Boolean.class, returnTypeClass)) {
                 DeleteResult deleteResult = collection.deleteMany(filter);
                 return deleteResult.wasAcknowledged();
             }
         }
-        if(methodOperator == MethodOperator.EXISTS) {
+        if (methodOperator == MethodOperator.EXISTS) {
             if (GenericUtils.isTypeOf(Boolean.class, returnTypeClass)) {
-                E entity = collection.find(filter).first();
+                FindIterable<E> findIterable = collection.find(filter);
+                findIterable = applySortAnnotations(method, findIterable);
+                E entity = findIterable.first();
                 return entity != null;
             }
         }
-        if(methodOperator == MethodOperator.COUNT) {
-            if(GenericUtils.isTypeOf(Long.class, returnTypeClass)) {
+        if (methodOperator == MethodOperator.COUNT) {
+            if (GenericUtils.isTypeOf(Long.class, returnTypeClass)) {
                 return collection.countDocuments(filter);
             }
         }
@@ -269,14 +270,49 @@ public class RepoInvocation<E, ID> implements InvocationHandler {
         return collection.find(filter);
     }
 
-    private FindIterable<E> applySortOptions(FindIterable<E> findIterable, SortOptions<E> sortOptions) {
-        if (sortOptions.getField() != null) {
-            String fieldName = PropertyUtils.getPropertyName(entityClass, sortOptions.getField());
-            int orderType = sortOptions.isSortAscending() ? 1 : -1;
-            findIterable = findIterable.sort(new BasicDBObject(fieldName, orderType));
+    private FindIterable<E> applySortObject(Method method, FindIterable<E> findIterable, Object[] args) {
+        int parameterCount = method.getParameterCount();
+        if(parameterCount <= 0) {
+            return findIterable;
+        }
+        Class<?> lastParam = method.getParameterTypes()[method.getParameterCount() - 1];
+        if (!lastParam.isAssignableFrom(Sort.class)) {
+            return findIterable;
+        }
+        Object lastParamObject = args == null ? null : args[args.length - 1];
+        if (!(lastParamObject instanceof Sort sortOptions)) {
+            return findIterable;
+        }
+        if (!sortOptions.getByFieldList().isEmpty()) {
+            for (ByField byField : sortOptions.getByFieldList()) {
+                int orderType = byField.ascending() ? 1 : -1;
+                findIterable = findIterable.sort(new BasicDBObject(byField.fieldName(), orderType));
+            }
         }
         if (sortOptions.getLimit() != -1) {
             findIterable = findIterable.limit(sortOptions.getLimit());
+        }
+        if (sortOptions.getSkip() != -1) {
+            findIterable = findIterable.skip(sortOptions.getSkip());
+        }
+        return findIterable;
+    }
+
+    private FindIterable<E> applySortAnnotations(Method method, FindIterable<E> findIterable) {
+        SortBy[] sortAnnotations = method.getAnnotationsByType(SortBy.class);
+        if(sortAnnotations != null && sortAnnotations.length > 0) {
+            for (SortBy sortBy : sortAnnotations) {
+                int orderType = sortBy.ascending() ? 1 : -1;
+                findIterable = findIterable.sort(new BasicDBObject(sortBy.field(), orderType));
+            }
+        }
+        if (method.isAnnotationPresent(Limit.class)) {
+            Limit limit = method.getAnnotation(Limit.class);
+            findIterable = findIterable.limit(limit.value());
+        }
+        if (method.isAnnotationPresent(Skip.class)) {
+            Skip skip = method.getAnnotation(Skip.class);
+            findIterable = findIterable.skip(skip.value());
         }
         return findIterable;
     }
@@ -354,5 +390,4 @@ public class RepoInvocation<E, ID> implements InvocationHandler {
         }
         return retFilter;
     }
-
 }

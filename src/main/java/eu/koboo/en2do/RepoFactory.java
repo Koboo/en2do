@@ -1,12 +1,17 @@
 package eu.koboo.en2do;
 
 import com.mongodb.client.MongoCollection;
-import eu.koboo.en2do.annotation.Id;
-import eu.koboo.en2do.annotation.Repository;
-import eu.koboo.en2do.exception.*;
-import eu.koboo.en2do.misc.FilterOperator;
-import eu.koboo.en2do.misc.FilterType;
-import eu.koboo.en2do.misc.MethodOperator;
+import eu.koboo.en2do.repository.annotation.Id;
+import eu.koboo.en2do.repository.annotation.Repository;
+import eu.koboo.en2do.repository.exception.*;
+import eu.koboo.en2do.sort.annotation.Limit;
+import eu.koboo.en2do.sort.annotation.Skip;
+import eu.koboo.en2do.sort.annotation.SortFields;
+import eu.koboo.en2do.sort.annotation.SortBy;
+import eu.koboo.en2do.repository.FilterOperator;
+import eu.koboo.en2do.repository.FilterType;
+import eu.koboo.en2do.repository.MethodOperator;
+import eu.koboo.en2do.sort.Sort;
 import eu.koboo.en2do.utility.GenericUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -27,7 +32,7 @@ public class RepoFactory {
     }
 
     @SuppressWarnings("unchecked")
-    protected  <E, ID, R extends Repo<E, ID>> R create(Class<R> repoClass) throws Exception {
+    protected <E, ID, R extends Repo<E, ID>> R create(Class<R> repoClass) throws Exception {
         if (repoRegistry.containsKey(repoClass)) {
             return (R) repoRegistry.get(repoClass);
         }
@@ -82,7 +87,8 @@ public class RepoFactory {
         List<String> ignoredMethods = Arrays.asList(
                 // Predefined methods by Repo interface
                 "getCollectionName", "getUniqueId", "getEntityClass", "getEntityUniqueIdClass",
-                "findById", "findAll", "delete", "deleteById", "deleteAll", "drop", "save", "saveAll", "exists", "existsById",
+                "findById", "findAll", "delete", "deleteById", "deleteAll", "drop",
+                "save", "saveAll", "exists", "existsById",
                 // Predefined methods by Java
                 "toString", "hashCode", "equals", "notify", "notifyAll", "wait", "finalize", "clone");
         for (Method method : repoClass.getMethods()) {
@@ -92,6 +98,7 @@ public class RepoFactory {
             // Check for the return-types of the methods, and their defined names to match our pattern.
             checkReturnTypes(method, entityClass, repoClass);
             checkMethodOperation(method, entityClass, repoClass);
+            checkSortOptions(method, entityClass, repoClass);
         }
 
         // Parse predefined collection name and create mongo collection
@@ -117,19 +124,19 @@ public class RepoFactory {
         Class<?> returnTypeClass = method.getReturnType();
         String methodName = method.getName();
         MethodOperator methodOperator = MethodOperator.parseMethodStartsWith(methodName);
-        if(methodOperator == null) {
+        if (methodOperator == null) {
             throw new MethodNoMethodOperatorException(method, repoClass);
         }
         switch (methodOperator) {
             case FIND -> {
-                if(GenericUtils.isTypeOf(List.class, returnTypeClass)) {
+                if (GenericUtils.isTypeOf(List.class, returnTypeClass)) {
                     Class<?> listType = GenericUtils.getGenericTypeOfReturnList(method);
-                    if(!listType.isAssignableFrom(entityClass)) {
+                    if (!listType.isAssignableFrom(entityClass)) {
                         throw new MethodFindListTypeException(method, entityClass, listType);
                     }
                     return;
                 }
-                if(GenericUtils.isTypeOf(entityClass, returnTypeClass)) {
+                if (GenericUtils.isTypeOf(entityClass, returnTypeClass)) {
                     return;
                 }
                 throw new MethodFindReturnTypeException(method, entityClass, repoClass);
@@ -152,7 +159,7 @@ public class RepoFactory {
     private <E> void checkMethodOperation(Method method, Class<E> entityClass, Class<?> repoClass) throws Exception {
         String methodName = method.getName();
         MethodOperator methodOperator = MethodOperator.parseMethodStartsWith(methodName);
-        if(methodOperator == null) {
+        if (methodOperator == null) {
             throw new MethodNoMethodOperatorException(method, repoClass);
         }
         String fieldFilterName = methodOperator.removeOperatorFrom(methodName);
@@ -164,13 +171,13 @@ public class RepoFactory {
         Debugger.print("ExpParams: " + expectedParameters);
         int parameterCount = method.getParameterCount();
         Debugger.print("ActParams: " + parameterCount);
-        if(expectedParameters != parameterCount) {
-            if(parameterCount > 0) {
+        if (expectedParameters != parameterCount) {
+            if (parameterCount > 0) {
                 Class<?> lastParam = method.getParameterTypes()[parameterCount - 1];
                 Debugger.print("lastParam: " + lastParam.getName());
                 Debugger.print("AddParam: " + (expectedParameters + 1));
-                Debugger.print("Assignable: " + lastParam.isAssignableFrom(SortOptions.class));
-                if(lastParam.isAssignableFrom(SortOptions.class) && (expectedParameters + 1) != parameterCount) {
+                Debugger.print("Assignable: " + lastParam.isAssignableFrom(Sort.class));
+                if (lastParam.isAssignableFrom(Sort.class) && (expectedParameters + 1) != parameterCount) {
                     throw new MethodParameterCountException(method, repoClass, (expectedParameters + 1), parameterCount);
                 }
             } else {
@@ -190,7 +197,7 @@ public class RepoFactory {
 
     private <E> int countExpectedParameters(Class<E> entityClass, Class<?> repoClass, Method method, String fieldFilterPart) throws Exception {
         String methodName = method.getName();
-        if(!methodName.contains("And") && !methodName.contains("Or")) {
+        if (!methodName.contains("And") && !methodName.contains("Or")) {
             FilterType filterType = createFilterType(entityClass, repoClass, method, fieldFilterPart);
             return filterType.operator().getExpectedParameterCount();
         }
@@ -207,7 +214,7 @@ public class RepoFactory {
     private <E> void checkParameterType(Method method, FilterType filterType, int startIndex, Class<?> repoClass) throws Exception {
         int expectedParamCount = filterType.operator().getExpectedParameterCount();
         Debugger.print("Check params for " + filterType.operator().name());
-        for(int i = 0; i < expectedParamCount; i++) {
+        for (int i = 0; i < expectedParamCount; i++) {
             int paramIndex = startIndex + i;
             Class<?> paramClass = method.getParameters()[paramIndex].getType();
             if (paramClass == null) {
@@ -215,24 +222,24 @@ public class RepoFactory {
                         method.getParameterCount());
             }
             // Special check for regex, because it has only String or Pattern parameters
-            if(filterType.operator() == FilterOperator.REGEX) {
-                if(!GenericUtils.isTypeOf(String.class, paramClass) && !GenericUtils.isTypeOf(Pattern.class, paramClass)) {
+            if (filterType.operator() == FilterOperator.REGEX) {
+                if (!GenericUtils.isTypeOf(String.class, paramClass) && !GenericUtils.isTypeOf(Pattern.class, paramClass)) {
                     throw new MethodInvalidRegexParameterException(method, repoClass, paramClass);
                 }
                 return;
             }
             Class<?> fieldClass = filterType.field().getType();
-            if(filterType.operator() == FilterOperator.IN) {
-                if(!GenericUtils.isTypeOf(List.class, paramClass)) {
+            if (filterType.operator() == FilterOperator.IN) {
+                if (!GenericUtils.isTypeOf(List.class, paramClass)) {
                     throw new MethodMismatchingTypeException(method, repoClass, List.class, paramClass);
                 }
                 Class<?> listType = GenericUtils.getGenericTypeOfParameterList(method, paramIndex);
-                if(!GenericUtils.isTypeOf(fieldClass, listType)) {
+                if (!GenericUtils.isTypeOf(fieldClass, listType)) {
                     throw new MethodInvalidListParameterException(method, repoClass, fieldClass, listType);
                 }
                 return;
             }
-            if(!GenericUtils.isTypeOf(fieldClass, paramClass)) {
+            if (!GenericUtils.isTypeOf(fieldClass, paramClass)) {
                 throw new MethodMismatchingTypeException(method, repoClass, fieldClass, paramClass);
             }
         }
@@ -240,13 +247,13 @@ public class RepoFactory {
 
     protected <E> FilterType createFilterType(Class<E> entityClass, Class<?> repoClass, Method method, String operatorString) throws Exception {
         FilterOperator filterOperator = FilterOperator.parseFilterEndsWith(operatorString);
-        if(filterOperator == null) {
+        if (filterOperator == null) {
             throw new MethodNoFilterOperatorException(method, repoClass);
         }
         String expectedField = filterOperator.removeOperatorFrom(operatorString);
         expectedField = expectedField.endsWith("Not") ? expectedField.replaceFirst("Not", "") : expectedField;
         Field field = findExpectedField(entityClass, expectedField);
-        if(field == null) {
+        if (field == null) {
             throw new MethodFieldNotFoundException(expectedField, method, entityClass, repoClass);
         }
         return new FilterType(field, filterOperator);
@@ -260,5 +267,31 @@ public class RepoFactory {
             return field;
         }
         return null;
+    }
+
+    private <E> void checkSortOptions(Method method, Class<E> entityClass, Class<?> repoClass) throws Exception {
+        String fieldName = null;
+        if (method.isAnnotationPresent(SortBy.class)) {
+            SortBy sortBy = method.getAnnotation(SortBy.class);
+            fieldName = sortBy.field();
+        }
+        int parameterCount = method.getParameterCount();
+        if (parameterCount > 0) {
+            Class<?> lastParam = method.getParameterTypes()[parameterCount - 1];
+            boolean hasAnySortAnnotation = method.isAnnotationPresent(Limit.class)
+                    || method.isAnnotationPresent(Skip.class)
+                    || method.isAnnotationPresent(SortBy.class)
+                    || method.isAnnotationPresent(SortFields.class);
+            if (hasAnySortAnnotation && lastParam.isAssignableFrom(Sort.class)) {
+                throw new MethodMixedSortException(method, repoClass);
+            }
+        }
+        if(fieldName == null) {
+            return;
+        }
+        Field field = findExpectedField(entityClass, fieldName);
+        if (field == null) {
+            throw new MethodSortFieldNotFoundException(fieldName, method, entityClass, repoClass);
+        }
     }
 }
