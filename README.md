@@ -150,7 +150,7 @@ as type parameters.
 import eu.koboo.en2do.*;
 import java.util.*;
 
-@Repository("customer_repository")
+@Collection("customer_repository")
 public interface CustomerRepository extends Repository<Customer, UUID> {
 
 }
@@ -250,7 +250,7 @@ which means that they can no longer be changed.
 
 **_Code-Example:_**
 ````java
-@Repository("customer_repository")
+@Collection("customer_repository")
 public interface CustomerRepository extends Repo<Customer, UUID> {
 
   @SortBy(field = "customerId")
