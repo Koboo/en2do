@@ -1,0 +1,40 @@
+package eu.koboo.en2do.sort;
+
+import lombok.Getter;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+public class Sort {
+
+    public static Sort create() {
+        return new Sort();
+    }
+
+    List<ByField> byFieldList;
+    int limit;
+    int skip;
+
+    private Sort() {
+        this.byFieldList = new ArrayList<>();
+        this.limit = -1;
+        this.skip = -1;
+    }
+
+    public Sort order(ByField byField) {
+        byFieldList.add(byField);
+        return this;
+    }
+
+    public Sort limit(int limit) {
+        this.limit = limit;
+        return this;
+    }
+
+    public Sort skip(int skip) {
+        this.skip = skip;
+        return this;
+    }
+
+}
