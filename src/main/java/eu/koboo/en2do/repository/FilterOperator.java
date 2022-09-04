@@ -1,4 +1,4 @@
-package eu.koboo.en2do.misc;
+package eu.koboo.en2do.repository;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,8 +21,7 @@ public enum FilterOperator {
     CONTAINS("Contains", 1),
     BETWEEN("Between", 2),
     BETWEEN_EQUALS("BetweenEq", 2),
-    IN("In", 1),
-    ;
+    IN("In", 1);
 
     public static final FilterOperator[] VALUES = FilterOperator.values();
 
@@ -45,5 +44,4 @@ public enum FilterOperator {
         }
         return EQUALS;
     }
-
 }
