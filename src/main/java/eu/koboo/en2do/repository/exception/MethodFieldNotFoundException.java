@@ -1,11 +1,11 @@
-package eu.koboo.en2do.exception;
+package eu.koboo.en2do.repository.exception;
 
 import java.lang.reflect.Method;
 
 public class MethodFieldNotFoundException extends Exception {
 
     public MethodFieldNotFoundException(String fieldName, Method method, Class<?> entityClass, Class<?> repoClass) {
-        super("Couldn't find field \"" + fieldName + "\" in " + entityClass.getName() + ". Used in method " + method.getName() +
-                " of " + repoClass.getName());
+        super("Couldn't find field \"" + fieldName + "\" in " + entityClass.getName() + ". Used in method " +
+                method.getName() + " of " + repoClass.getName());
     }
 }

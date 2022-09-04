@@ -1,4 +1,4 @@
-package eu.koboo.en2do.exception;
+package eu.koboo.en2do.repository.exception;
 
 import java.lang.reflect.Method;
 
