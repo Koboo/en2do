@@ -1,8 +1,11 @@
 package eu.koboo.en2do.test.customer;
 
 import eu.koboo.en2do.Repo;
-import eu.koboo.en2do.SortOptions;
-import eu.koboo.en2do.annotation.Repository;
+import eu.koboo.en2do.sort.Sort;
+import eu.koboo.en2do.sort.annotation.Limit;
+import eu.koboo.en2do.repository.annotation.Repository;
+import eu.koboo.en2do.sort.annotation.Skip;
+import eu.koboo.en2do.sort.annotation.SortBy;
 
 import java.util.List;
 import java.util.UUID;
@@ -45,13 +48,17 @@ public interface CustomerRepository extends Repo<Customer, UUID> {
 
     Customer findByFirstNameAndBalanceNotBetweenAndCustomerId(String firstName, double from, double to, int customerId);
 
-    List<Customer> findByCustomerIdNot(int customerId, SortOptions<Customer> sortOptions);
-
     List<Customer> findByCustomerIdOrCustomerId(int customerId1, int customerId2);
 
     List<Customer> findByCustomerIdIn(List<Integer> customerIdList);
 
     List<Customer> findByCustomerIdNotIn(List<Integer> customerIdList);
 
-    List<Customer> findByCustomerIdExists(SortOptions<Customer> sortOptions);
+    @SortBy(field = "customerId")
+    @SortBy(field = "balance")
+    @Limit(20)
+    @Skip(10)
+    List<Customer> findByCustomerIdExists();
+
+    List<Customer> findByCustomerIdNot(int customerId, Sort sort);
 }

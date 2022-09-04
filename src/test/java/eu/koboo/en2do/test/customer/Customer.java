@@ -1,6 +1,6 @@
 package eu.koboo.en2do.test.customer;
 
-import eu.koboo.en2do.annotation.Id;
+import eu.koboo.en2do.repository.annotation.Id;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

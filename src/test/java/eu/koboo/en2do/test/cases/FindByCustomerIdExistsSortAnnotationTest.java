@@ -1,7 +1,6 @@
 package eu.koboo.en2do.test.cases;
 
 import eu.koboo.en2do.MongoManager;
-import eu.koboo.en2do.SortOptions;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepository;
@@ -13,14 +12,14 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class FindByCustomerIdExistsSortTest {
+public class FindByCustomerIdExistsSortAnnotationTest {
 
     static MongoManager manager;
     static CustomerRepository repository;
 
     @BeforeAll
     public static void setup() {
-        System.out.println(FindByCustomerIdExistsSortTest.class.getName() + " START");
+        System.out.println(FindByCustomerIdExistsSortAnnotationTest.class.getName() + " START");
         manager = new MongoManager();
         assertNotNull(manager);
         repository = manager.create(CustomerRepository.class);
@@ -39,7 +38,7 @@ public class FindByCustomerIdExistsSortTest {
     @Test
     @Order(2)
     public void saveCustomer() {
-        for(int i = 0; i < 100; i++) {
+        for (int i = 0; i < 100; i++) {
             Customer customer = Const.createNew();
             customer.setUniqueId(UUID.randomUUID());
             customer.setCustomerId(i);
@@ -51,15 +50,12 @@ public class FindByCustomerIdExistsSortTest {
     @Test
     @Order(3)
     public void findCustomer() {
-        List<Customer> customerList = repository.findByCustomerIdNot(17,
-                new SortOptions<>(Customer::getCustomerId, true, 20)
-        );
+        List<Customer> customerList = repository.findByCustomerIdExists();
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());
         assertEquals(20, customerList.size());
         for (Customer customer : customerList) {
             assertNotNull(customer);
-            assertNotEquals(17, customer.getCustomerId());
             assertEquals(Const.FIRST_NAME, customer.getFirstName());
             assertEquals(Const.LAST_NAME, customer.getLastName());
             assertEquals(Const.BIRTHDAY, customer.getBirthday());
@@ -70,7 +66,7 @@ public class FindByCustomerIdExistsSortTest {
 
     @AfterAll
     public static void finish() {
-        System.out.println(FindByCustomerIdExistsSortTest.class.getName() + " END");
+        System.out.println(FindByCustomerIdExistsSortAnnotationTest.class.getName() + " END");
         assertTrue(repository.drop());
         assertTrue(manager.close());
     }
