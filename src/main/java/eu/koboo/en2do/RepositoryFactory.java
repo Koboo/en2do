@@ -1,6 +1,7 @@
 package eu.koboo.en2do;
 
 import com.mongodb.client.MongoCollection;
+import eu.koboo.en2do.repository.annotation.Collection;
 import eu.koboo.en2do.repository.annotation.Id;
 import eu.koboo.en2do.repository.exception.*;
 import eu.koboo.en2do.sort.annotation.Limit;
@@ -101,10 +102,10 @@ public class RepositoryFactory {
         }
 
         // Parse predefined collection name and create mongo collection
-        if (!repoClass.isAnnotationPresent(eu.koboo.en2do.repository.annotation.Repository.class)) {
+        if (!repoClass.isAnnotationPresent(Collection.class)) {
             throw new RepositoryNameNotFoundException(repoClass);
         }
-        String entityCollectionName = repoClass.getAnnotation(eu.koboo.en2do.repository.annotation.Repository.class).value();
+        String entityCollectionName = repoClass.getAnnotation(Collection.class).value();
         MongoCollection<E> entityCollection = manager.getDatabase().getCollection(entityCollectionName, entityClass);
 
         // Create dynamic repository proxy object
