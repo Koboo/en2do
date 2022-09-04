@@ -2,7 +2,6 @@ package eu.koboo.en2do;
 
 import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.repository.annotation.Id;
-import eu.koboo.en2do.repository.annotation.Repository;
 import eu.koboo.en2do.repository.exception.*;
 import eu.koboo.en2do.sort.annotation.Limit;
 import eu.koboo.en2do.sort.annotation.Skip;
@@ -21,18 +20,18 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class RepoFactory {
+public class RepositoryFactory {
 
     MongoManager manager;
-    Map<Class<?>, Repo<?, ?>> repoRegistry;
+    Map<Class<?>, Repository<?, ?>> repoRegistry;
 
-    public RepoFactory(MongoManager manager) {
+    public RepositoryFactory(MongoManager manager) {
         this.manager = manager;
         this.repoRegistry = new HashMap<>();
     }
 
     @SuppressWarnings("unchecked")
-    protected <E, ID, R extends Repo<E, ID>> R create(Class<R> repoClass) throws Exception {
+    protected <E, ID, R extends Repository<E, ID>> R create(Class<R> repoClass) throws Exception {
         if (repoRegistry.containsKey(repoClass)) {
             return (R) repoRegistry.get(repoClass);
         }
@@ -41,7 +40,7 @@ public class RepoFactory {
         Type[] repoGenericTypeArray = repoClass.getGenericInterfaces();
         Type repoGenericTypeParams = null;
         for (Type type : repoGenericTypeArray) {
-            if (type.getTypeName().split("<")[0].equalsIgnoreCase(Repo.class.getName())) {
+            if (type.getTypeName().split("<")[0].equalsIgnoreCase(Repository.class.getName())) {
                 repoGenericTypeParams = type;
                 break;
             }
@@ -102,22 +101,22 @@ public class RepoFactory {
         }
 
         // Parse predefined collection name and create mongo collection
-        if (!repoClass.isAnnotationPresent(Repository.class)) {
+        if (!repoClass.isAnnotationPresent(eu.koboo.en2do.repository.annotation.Repository.class)) {
             throw new RepositoryNameNotFoundException(repoClass);
         }
-        String entityCollectionName = repoClass.getAnnotation(Repository.class).value();
+        String entityCollectionName = repoClass.getAnnotation(eu.koboo.en2do.repository.annotation.Repository.class).value();
         MongoCollection<E> entityCollection = manager.getDatabase().getCollection(entityCollectionName, entityClass);
 
         // Create dynamic repository proxy object
         ClassLoader repoClassLoader = repoClass.getClassLoader();
         Class<?>[] interfaces = new Class[]{repoClass};
-        Class<Repo<E, ID>> actualClass = (Class<Repo<E, ID>>) repoClass;
-        Repo<E, ID> repo = (Repo<E, ID>) Proxy.newProxyInstance(repoClassLoader, interfaces,
-                new RepoInvocation<>(this, entityCollectionName, entityCollection,
+        Class<Repository<E, ID>> actualClass = (Class<Repository<E, ID>>) repoClass;
+        Repository<E, ID> repository = (Repository<E, ID>) Proxy.newProxyInstance(repoClassLoader, interfaces,
+                new RepositoryInvocationHandler<>(this, entityCollectionName, entityCollection,
                         actualClass, entityClass, entityUniqueIdClass,
                         entityUniqueIdField));
-        repoRegistry.put(repoClass, repo);
-        return (R) repo;
+        repoRegistry.put(repoClass, repository);
+        return (R) repository;
     }
 
     private <E> void checkReturnTypes(Method method, Class<E> entityClass, Class<?> repoClass) throws Exception {

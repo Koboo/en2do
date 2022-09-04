@@ -2,7 +2,7 @@ package eu.koboo.en2do;
 
 import java.util.List;
 
-public interface Repo<E, ID> {
+public interface Repository<E, ID> {
 
     String getCollectionName();
 

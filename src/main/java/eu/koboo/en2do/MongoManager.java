@@ -25,7 +25,7 @@ public class MongoManager {
 
     MongoClient client;
     MongoDatabase database;
-    RepoFactory factory;
+    RepositoryFactory factory;
 
     public MongoManager(String connectString, String databaseString) {
 
@@ -59,7 +59,7 @@ public class MongoManager {
         client = MongoClients.create(clientSettings);
         database = client.getDatabase(databaseString);
 
-        factory = new RepoFactory(this);
+        factory = new RepositoryFactory(this);
     }
 
     public MongoManager() {
@@ -70,7 +70,7 @@ public class MongoManager {
         return database;
     }
 
-    public <E, ID, R extends Repo<E, ID>> R create(Class<R> repoClass) {
+    public <E, ID, R extends Repository<E, ID>> R create(Class<R> repoClass) {
         try {
             return factory.create(repoClass);
         } catch (Exception e) {

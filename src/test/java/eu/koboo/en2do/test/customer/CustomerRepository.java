@@ -1,9 +1,8 @@
 package eu.koboo.en2do.test.customer;
 
-import eu.koboo.en2do.Repo;
+import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.sort.Sort;
 import eu.koboo.en2do.sort.annotation.Limit;
-import eu.koboo.en2do.repository.annotation.Repository;
 import eu.koboo.en2do.sort.annotation.Skip;
 import eu.koboo.en2do.sort.annotation.SortBy;
 
@@ -11,8 +10,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-@Repository("customer_repository")
-public interface CustomerRepository extends Repo<Customer, UUID> {
+@eu.koboo.en2do.repository.annotation.Repository("customer_repository")
+public interface CustomerRepository extends Repository<Customer, UUID> {
 
     Customer findByFirstName(String firstName);
 

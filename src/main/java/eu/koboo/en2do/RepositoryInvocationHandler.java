@@ -31,12 +31,12 @@ import java.util.regex.Pattern;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @AllArgsConstructor
-public class RepoInvocation<E, ID> implements InvocationHandler {
+public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
 
-    RepoFactory factory;
+    RepositoryFactory factory;
     String entityCollectionName;
     MongoCollection<E> collection;
-    Class<Repo<E, ID>> repoClass;
+    Class<Repository<E, ID>> repoClass;
     Class<E> entityClass;
     Class<ID> entityUniqueIdClass;
     Field entityUniqueIdField;
