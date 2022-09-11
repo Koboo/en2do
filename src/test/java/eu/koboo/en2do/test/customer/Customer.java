@@ -28,4 +28,5 @@ public class Customer {
     Long phoneNumber;
     double balance;
     List<Order> orders;
+    CustomerType customerType;
 }

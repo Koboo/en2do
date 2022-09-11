@@ -1,6 +1,7 @@
 package eu.koboo.en2do.test;
 
 import eu.koboo.en2do.test.customer.Customer;
+import eu.koboo.en2do.test.customer.CustomerType;
 import eu.koboo.en2do.test.customer.Order;
 
 import java.util.Arrays;
@@ -23,8 +24,9 @@ public class Const {
     public static final List<Order> ORDERS = Arrays.asList(
             new Order("First", 1.0, Arrays.asList(1, 2, 3, 4)),
             new Order("Second", 2.0, Arrays.asList(1, 2, 3, 4)),
-            new Order("Thirth", 3.0, Arrays.asList(1, 2, 3, 4))
+            new Order("Third", 3.0, Arrays.asList(1, 2, 3, 4))
     );
+    public static final CustomerType TYPE = CustomerType.DEFAULT;
 
     public static Customer createNew() {
         Customer customer = new Customer();
@@ -40,6 +42,7 @@ public class Const {
         customer.setPhoneNumber(PHONE_NUMBER);
         customer.setBalance(BALANCE);
         customer.setOrders(ORDERS);
+        customer.setCustomerType(TYPE);
         return customer;
     }
 }
