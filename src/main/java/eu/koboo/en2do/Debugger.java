@@ -1,5 +1,8 @@
 package eu.koboo.en2do;
 
+import lombok.extern.java.Log;
+
+@Log
 public class Debugger {
 
     private static final boolean printDebugMessages = false;
@@ -8,6 +11,6 @@ public class Debugger {
         if(!printDebugMessages) {
             return;
         }
-        System.out.print("[DEBUGGER] " + message);
+        log.finest("[DEBUGGER] " + message);
     }
 }
