@@ -12,8 +12,6 @@ import java.util.List;
 @Getter
 public enum MethodOperator {
 
-    // TODO: findOne / findMany
-    // TODO: deleteOne / deleteMany
     FIND("findBy",List.class),
     DELETE("deleteBy", boolean.class),
     EXISTS("existsBy", boolean.class),
