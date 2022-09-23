@@ -55,7 +55,7 @@ public class FindByFirstNameTest {
         assertEquals(Const.PHONE_NUMBER, customer.getPhoneNumber());
         assertEquals(Const.ORDERS.size(), customer.getOrders().size());
     }
-    
+
     @AfterAll
     public static void finish() {
         System.out.println(FindByFirstNameTest.class.getName() + " END");

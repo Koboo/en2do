@@ -34,10 +34,10 @@ public enum FilterOperator {
 
     public static FilterOperator parseFilterEndsWith(String methodNamePart) {
         for (FilterOperator operator : VALUES) {
-            if(operator == EQUALS) {
+            if (operator == EQUALS) {
                 continue;
             }
-            if(!methodNamePart.endsWith(operator.getKeyword())) {
+            if (!methodNamePart.endsWith(operator.getKeyword())) {
                 continue;
             }
             return operator;

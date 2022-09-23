@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 public enum MethodOperator {
 
-    FIND("findBy",List.class),
+    FIND("findBy", List.class),
     DELETE("deleteBy", boolean.class),
     EXISTS("existsBy", boolean.class),
     COUNT("countBy", long.class);
@@ -28,7 +28,7 @@ public enum MethodOperator {
 
     public static MethodOperator parseMethodStartsWith(String methodNamePart) {
         for (MethodOperator operator : VALUES) {
-            if(!methodNamePart.startsWith(operator.getKeyword())) {
+            if (!methodNamePart.startsWith(operator.getKeyword())) {
                 continue;
             }
             return operator;

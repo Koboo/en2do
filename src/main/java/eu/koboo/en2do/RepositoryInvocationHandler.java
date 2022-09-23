@@ -7,14 +7,14 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
+import eu.koboo.en2do.repository.FilterType;
+import eu.koboo.en2do.repository.MethodOperator;
 import eu.koboo.en2do.repository.exception.*;
 import eu.koboo.en2do.sort.ByField;
 import eu.koboo.en2do.sort.Sort;
 import eu.koboo.en2do.sort.annotation.Limit;
 import eu.koboo.en2do.sort.annotation.Skip;
 import eu.koboo.en2do.sort.annotation.SortBy;
-import eu.koboo.en2do.repository.FilterType;
-import eu.koboo.en2do.repository.MethodOperator;
 import eu.koboo.en2do.utility.GenericUtils;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -272,7 +272,7 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
 
     private FindIterable<E> applySortObject(Method method, FindIterable<E> findIterable, Object[] args) {
         int parameterCount = method.getParameterCount();
-        if(parameterCount <= 0) {
+        if (parameterCount <= 0) {
             return findIterable;
         }
         Class<?> lastParam = method.getParameterTypes()[method.getParameterCount() - 1];
@@ -300,7 +300,7 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
 
     private FindIterable<E> applySortAnnotations(Method method, FindIterable<E> findIterable) {
         SortBy[] sortAnnotations = method.getAnnotationsByType(SortBy.class);
-        if(sortAnnotations != null && sortAnnotations.length > 0) {
+        if (sortAnnotations != null && sortAnnotations.length > 0) {
             for (SortBy sortBy : sortAnnotations) {
                 int orderType = sortBy.ascending() ? 1 : -1;
                 findIterable = findIterable.sort(new BasicDBObject(sortBy.field(), orderType));
@@ -319,8 +319,6 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
 
     @SuppressWarnings("all")
     private Bson createBsonFilter(Method method, FilterType filterType, boolean isNot, int paramsIndexAt, Object[] args) throws Exception {
-        // NameEqualsIgnoreCase (String name);
-        // NumberGreaterThan (String name, Double number);
         String fieldName = filterType.field().getName();
         Bson retFilter = null;
         switch (filterType.operator()) {
@@ -382,9 +380,11 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
                 retFilter = Filters.in(fieldName, objectArray);
             }
             default -> {
+                // This filter is not supported. Throw exception.
                 throw new MethodUnsupportedFilterException(method, repoClass);
             }
         }
+        // Applying negotiating of the filter, if needed
         if (isNot) {
             return Filters.not(retFilter);
         }

@@ -29,20 +29,20 @@ public class MongoManager {
 
     public MongoManager(String connectString, String databaseString) {
 
-        if(connectString == null && databaseString == null) {
+        if (connectString == null && databaseString == null) {
             String[] credentials = readConfig();
-            if(credentials == null) {
+            if (credentials == null) {
                 throw new NullPointerException("No credentials given! Please make sure to provide " +
                         "accessible credentials.");
             }
             connectString = credentials[0];
             databaseString = credentials[1];
         }
-        if(connectString == null) {
+        if (connectString == null) {
             throw new NullPointerException("No connectString given! Please make sure to provide a " +
                     "accessible connectString.");
         }
-        if(databaseString == null) {
+        if (databaseString == null) {
             throw new NullPointerException("No databaseString given! Please make sure to provide a " +
                     "accessible databaseString.");
         }
@@ -91,7 +91,7 @@ public class MongoManager {
     private static String[] readConfig() {
         File diskFile = new File(FILE_NAME);
         if (diskFile.exists()) {
-            try(InputStream inputStream = new FileInputStream(diskFile)) {
+            try (InputStream inputStream = new FileInputStream(diskFile)) {
                 return readProperties(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -101,7 +101,7 @@ public class MongoManager {
         Class<MongoManager> managerClass = MongoManager.class;
         URL resourceFile = managerClass.getResource(FILE_NAME);
         if (resourceFile != null) {
-            try(InputStream inputStream = managerClass.getResourceAsStream(FILE_NAME)) {
+            try (InputStream inputStream = managerClass.getResourceAsStream(FILE_NAME)) {
                 return readProperties(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();

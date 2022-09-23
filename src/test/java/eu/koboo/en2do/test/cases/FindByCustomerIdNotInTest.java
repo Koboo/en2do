@@ -39,7 +39,7 @@ public class FindByCustomerIdNotInTest {
     @Test
     @Order(2)
     public void saveCustomer() {
-        for(int i = 0; i < 30; i++) {
+        for (int i = 0; i < 30; i++) {
             Customer customer = Const.createNew();
             customer.setUniqueId(UUID.randomUUID());
             customer.setCustomerId(i);
@@ -51,7 +51,7 @@ public class FindByCustomerIdNotInTest {
     @Test
     @Order(3)
     public void findCustomer() {
-        List<Customer> customerList = repository.findByCustomerIdNotIn(Arrays.asList(1,2,3,4,5));
+        List<Customer> customerList = repository.findByCustomerIdNotIn(Arrays.asList(1, 2, 3, 4, 5));
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());
         assertEquals(25, customerList.size());

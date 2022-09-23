@@ -1,17 +1,17 @@
 package eu.koboo.en2do;
 
 import com.mongodb.client.MongoCollection;
-import eu.koboo.en2do.repository.annotation.Collection;
-import eu.koboo.en2do.repository.annotation.Id;
-import eu.koboo.en2do.repository.exception.*;
-import eu.koboo.en2do.sort.annotation.Limit;
-import eu.koboo.en2do.sort.annotation.Skip;
-import eu.koboo.en2do.sort.annotation.SortFields;
-import eu.koboo.en2do.sort.annotation.SortBy;
 import eu.koboo.en2do.repository.FilterOperator;
 import eu.koboo.en2do.repository.FilterType;
 import eu.koboo.en2do.repository.MethodOperator;
+import eu.koboo.en2do.repository.annotation.Collection;
+import eu.koboo.en2do.repository.annotation.Id;
+import eu.koboo.en2do.repository.exception.*;
 import eu.koboo.en2do.sort.Sort;
+import eu.koboo.en2do.sort.annotation.Limit;
+import eu.koboo.en2do.sort.annotation.Skip;
+import eu.koboo.en2do.sort.annotation.SortBy;
+import eu.koboo.en2do.sort.annotation.SortByArray;
 import eu.koboo.en2do.utility.GenericUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -33,11 +33,13 @@ public class RepositoryFactory {
 
     @SuppressWarnings("unchecked")
     protected <E, ID, R extends Repository<E, ID>> R create(Class<R> repoClass) throws Exception {
+
+        // Check for already created repository to avoid multiply instances of the same repository
         if (repoRegistry.containsKey(repoClass)) {
             return (R) repoRegistry.get(repoClass);
         }
 
-        // Parse Entity and UniqueId classes
+        // Parse Entity and UniqueId type classes (Yea, it's very hacky, but works)
         Type[] repoGenericTypeArray = repoClass.getGenericInterfaces();
         Type repoGenericTypeParams = null;
         for (Type type : repoGenericTypeArray) {
@@ -54,6 +56,7 @@ public class RepositoryFactory {
         Class<ID> entityUniqueIdClass = null;
         Set<String> entityFieldNameSet = new HashSet<>();
         Field entityUniqueIdField = null;
+        // Searching for the actual classes by their respective names
         try {
             entityClass = (Class<E>) Class.forName(entityClassName);
             Field[] declaredFields = entityClass.getDeclaredFields();
@@ -85,11 +88,11 @@ public class RepositoryFactory {
 
         // These methods are ignored by our methods processing.
         List<String> ignoredMethods = Arrays.asList(
-                // Predefined methods by Repo interface
+                // Predefined methods by Repository interface
                 "getCollectionName", "getUniqueId", "getEntityClass", "getEntityUniqueIdClass",
                 "findById", "findAll", "delete", "deleteById", "deleteAll", "drop",
                 "save", "saveAll", "exists", "existsById",
-                // Predefined methods by Java
+                // Predefined methods by Java objects
                 "toString", "hashCode", "equals", "notify", "notifyAll", "wait", "finalize", "clone");
         for (Method method : repoClass.getMethods()) {
             if (ignoredMethods.contains(method.getName())) {
@@ -101,11 +104,12 @@ public class RepositoryFactory {
             checkSortOptions(method, entityClass, repoClass);
         }
 
-        // Parse predefined collection name and create mongo collection
-        if (!repoClass.isAnnotationPresent(Collection.class)) {
+        // Parse annotated collection name and create pojo-related mongo collection
+        Collection collectionAnnotation = repoClass.getAnnotation(Collection.class);
+        if (collectionAnnotation == null) {
             throw new RepositoryNameNotFoundException(repoClass);
         }
-        String entityCollectionName = repoClass.getAnnotation(Collection.class).value();
+        String entityCollectionName = collectionAnnotation.value();
         MongoCollection<E> entityCollection = manager.getDatabase().getCollection(entityCollectionName, entityClass);
 
         // Create dynamic repository proxy object
@@ -211,7 +215,7 @@ public class RepositoryFactory {
         return expectedCount;
     }
 
-    private <E> void checkParameterType(Method method, FilterType filterType, int startIndex, Class<?> repoClass) throws Exception {
+    private void checkParameterType(Method method, FilterType filterType, int startIndex, Class<?> repoClass) throws Exception {
         int expectedParamCount = filterType.operator().getExpectedParameterCount();
         Debugger.print("Check params for " + filterType.operator().name());
         for (int i = 0; i < expectedParamCount; i++) {
@@ -281,12 +285,12 @@ public class RepositoryFactory {
             boolean hasAnySortAnnotation = method.isAnnotationPresent(Limit.class)
                     || method.isAnnotationPresent(Skip.class)
                     || method.isAnnotationPresent(SortBy.class)
-                    || method.isAnnotationPresent(SortFields.class);
+                    || method.isAnnotationPresent(SortByArray.class);
             if (hasAnySortAnnotation && lastParam.isAssignableFrom(Sort.class)) {
                 throw new MethodMixedSortException(method, repoClass);
             }
         }
-        if(fieldName == null) {
+        if (fieldName == null) {
             return;
         }
         Field field = findExpectedField(entityClass, fieldName);
