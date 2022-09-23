@@ -323,32 +323,32 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
         Bson retFilter = null;
         switch (filterType.operator()) {
             case EQUALS -> {
-                retFilter = Filters.eq(fieldName, args[paramsIndexAt]);
+                retFilter = Filters.eq(fieldName, getFilterableValue(args[paramsIndexAt]));
             }
             case EQUALS_IGNORE_CASE -> {
-                String patternString = "(?i)^" + args[paramsIndexAt] + "$";
+                String patternString = "(?i)^" + getFilterableValue(args[paramsIndexAt]) + "$";
                 Pattern pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
                 retFilter = Filters.regex(fieldName, pattern);
             }
             case CONTAINS -> {
-                String patternString = ".*" + args[paramsIndexAt] + ".*";
+                String patternString = ".*" + getFilterableValue(args[paramsIndexAt]) + ".*";
                 Pattern pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
                 retFilter = Filters.regex(fieldName, pattern);
             }
             case GREATER_THAN -> {
-                retFilter = Filters.gt(fieldName, args[paramsIndexAt]);
+                retFilter = Filters.gt(fieldName, getFilterableValue(args[paramsIndexAt]));
             }
             case LESS_THAN -> {
-                retFilter = Filters.lt(fieldName, args[paramsIndexAt]);
+                retFilter = Filters.lt(fieldName, getFilterableValue(args[paramsIndexAt]));
             }
             case GREATER_EQUALS -> {
-                retFilter = Filters.gte(fieldName, args[paramsIndexAt]);
+                retFilter = Filters.gte(fieldName, getFilterableValue(args[paramsIndexAt]));
             }
             case LESS_EQUALS -> {
-                retFilter = Filters.lte(fieldName, args[paramsIndexAt]);
+                retFilter = Filters.lte(fieldName, getFilterableValue(args[paramsIndexAt]));
             }
             case REGEX -> {
-                Object value = args[paramsIndexAt];
+                Object value = getFilterableValue(args[paramsIndexAt]);
                 if (value instanceof String patternString) {
                     retFilter = Filters.regex(fieldName, patternString);
                 }
@@ -363,19 +363,19 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
                 retFilter = Filters.exists(fieldName);
             }
             case BETWEEN -> {
-                Object from = args[paramsIndexAt];
+                Object from = getFilterableValue(args[paramsIndexAt]);
                 Object to = args[paramsIndexAt + 1];
                 retFilter = Filters.and(Filters.gt(fieldName, from), Filters.lt(fieldName, to));
             }
             case BETWEEN_EQUALS -> {
-                Object from = args[paramsIndexAt];
+                Object from = getFilterableValue(args[paramsIndexAt]);
                 Object to = args[paramsIndexAt + 1];
                 retFilter = Filters.and(Filters.gte(fieldName, from), Filters.lte(fieldName, to));
             }
             case IN -> {
                 // MongoDB expects a Array and not a List, but for easier usage
                 // the framework wants a list. So just convert the list to an array and pass it to the filter
-                List<Object> objectList = (List<Object>) args[paramsIndexAt];
+                List<Object> objectList = (List<Object>) getFilterableValue(args[paramsIndexAt]);
                 Object[] objectArray = objectList.toArray(new Object[]{});
                 retFilter = Filters.in(fieldName, objectArray);
             }
@@ -389,5 +389,12 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
             return Filters.not(retFilter);
         }
         return retFilter;
+    }
+
+    private Object getFilterableValue(Object object) {
+        if(object instanceof Enum<?>) {
+            return ((Enum<?>) object).name();
+        }
+        return object;
     }
 }
