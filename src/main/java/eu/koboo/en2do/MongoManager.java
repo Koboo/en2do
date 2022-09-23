@@ -33,18 +33,18 @@ public class MongoManager {
             String[] credentials = readConfig();
             if(credentials == null) {
                 throw new NullPointerException("No credentials given! Please make sure to provide " +
-                        "working credentials.");
+                        "accessible credentials.");
             }
             connectString = credentials[0];
             databaseString = credentials[1];
         }
         if(connectString == null) {
             throw new NullPointerException("No connectString given! Please make sure to provide a " +
-                    "working connectString.");
+                    "accessible connectString.");
         }
         if(databaseString == null) {
             throw new NullPointerException("No databaseString given! Please make sure to provide a " +
-                    "working databaseString.");
+                    "accessible databaseString.");
         }
         ConnectionString connection = new ConnectionString(connectString);
 
