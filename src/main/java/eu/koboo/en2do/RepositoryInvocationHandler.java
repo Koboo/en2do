@@ -392,7 +392,7 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
     }
 
     private Object getFilterableValue(Object object) {
-        if(object instanceof Enum<?>) {
+        if (object instanceof Enum<?>) {
             return ((Enum<?>) object).name();
         }
         return object;
