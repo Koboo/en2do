@@ -7,13 +7,14 @@ Sync/Async entity framework for mongodb in Java 17
 This framework is heavily inspired by [Spring Data](https://spring.io/projects/spring-data).
 
 ## Overview
+
 * [Current Features](#current-features)
 * [Add as dependency](#add-as-dependency)
 * [Get Started](#get-started)
-  * [Create MongoManager](#create-an-instance-of-the-mongomanager)
-  * [Define Entity](#define-an-entity-class)
-  * [Create Repository](#create-the-repository-for-the-entity)
-  * [Instantiate objects](#create-object-instances) 
+    * [Create MongoManager](#create-an-instance-of-the-mongomanager)
+    * [Define Entity](#define-an-entity-class)
+    * [Create Repository](#create-the-repository-for-the-entity)
+    * [Instantiate objects](#create-object-instances)
 * [Filter keywords](#filter-keywords)
 * [Method keywords](#method-keywords)
 * [Sorting via Annotations](#sorting-via-annotations-static)
@@ -21,21 +22,22 @@ This framework is heavily inspired by [Spring Data](https://spring.io/projects/s
 * [References](#references)
 * [MIT License](LICENSE)
 
-
 ## Current Features
 
-* MongoDB Conversion of POJO classes ([Learn more](https://www.mongodb.com/developer/languages/java/java-mapping-pojos/))
+* MongoDB Conversion of POJO
+  classes ([Learn more](https://www.mongodb.com/developer/languages/java/java-mapping-pojos/))
 * Create methods without implementing them ([Learn more](#filter-keywords))
 * Create methods with different operations ([Learn more](#method-keywords))
 * Object creation by proxy classes to simplify usage and method declaration
 * Load credentials from disk-files, resource-files or insert as hardcoded strings
-* Multiple ways to sort static or dynamic without implementing filters ([Learn more](#sorting)) 
+* Multiple ways to sort static or dynamic without implementing filters ([Learn more](#sorting))
 
 ## Add as dependency
 
-en2do is hosted and deployed on a private repository. 
+en2do is hosted and deployed on a private repository.
 
 **_Gradle (Groovy)_**:
+
 ````groovy
 repositories {
     maven {
@@ -58,6 +60,7 @@ To make it easier to get started with en2do, here is a guide how to start using 
 In byField to connect to the mongo database, a new instance of ``MongoManager`` must be created.
 
 **_Code Example:_**
+
 ````java
 public class Application {
     public static void main(String[] args) {
@@ -65,13 +68,16 @@ public class Application {
     }
 }
 ````
+
 If a ``MongoManager`` is created without arguments, the credentials are read from the following locations:
+
 1. From Disk: ``{applicationDirectory}/credentials.properties``
 2. From Resource: ``{applicationJar}/credentials.properties``
 
 If no credentials are found, an exception is thrown.
 
 **_Default ``credentials.properties``:_**
+
 ````properties
 mongodb.connect=mongodb://<username>:<password>@<host>:<port>/?<options>
 mongodb.database=<database>
@@ -80,6 +86,7 @@ mongodb.database=<database>
 The credentials can also hardcoded.
 
 **_Code Example:_**
+
 ````java
 public class Application {
     public static void main(String[] args) {
@@ -92,21 +99,25 @@ public class Application {
 
 ### Define an Entity class
 
-An ``Entity`` can use almost any Java data type. However, there are some special features which are not possible due to MongoDB.
+An ``Entity`` can use almost any Java data type. However, there are some special features which are not possible due to
+MongoDB.
 
 **_Restrictions:_**
+
 * You cannot use a map with numbers as a key.
-  * ``Map<Short, ?>``
-  * ``Map<Integer, ?>``
-  * ``Map<Float, ?>``
-  * ``Map<Double, ?>``
-  * ``Map<Long, ?>``
-  * ``Map<Byte, ?>``
+    * ``Map<Short, ?>``
+    * ``Map<Integer, ?>``
+    * ``Map<Float, ?>``
+    * ``Map<Double, ?>``
+    * ``Map<Long, ?>``
+    * ``Map<Byte, ?>``
 
 **_Code Example:_**
+
 ````java
 import eu.koboo.en2do.annotation.*;
 import lombok.*;
+
 import java.util.*;
 
 @Getter // from lombok - required (to access fields)
@@ -116,20 +127,22 @@ import java.util.*;
 @ToString // from lombok
 public class Customer {
 
-  @Id // from en2do - unique identifier (can be String, int, long, UUID or any object)
-  UUID uniqueId;
+    // from en2do - unique identifier (can be String, int, long, UUID or any object)
+    // this will also create an index on this field to speed up queries on the unique identifier
+    @Id
+    UUID uniqueId;
 
-  int customerId;
-  String firstName;
-  String lastName;
-  String birthday;
-  String street;
-  int houseNumber;
-  Integer postalCode;
-  String city;
-  Long phoneNumber;
-  double balance;
-  List<Order> orders;
+    int customerId;
+    String firstName;
+    String lastName;
+    String birthday;
+    String street;
+    int houseNumber;
+    Integer postalCode;
+    String city;
+    Long phoneNumber;
+    double balance;
+    List<Order> orders;
 }
 ````
 
@@ -142,12 +155,14 @@ There are also some annotations directly from MongoDB, but only one is supported
 ### Create the Repository for the Entity
 
 In byField to access the database and apply operations to any entity, a repository must be defined.
-To ensure type safety, the type of the entity and the type of the identifier must be specified 
+To ensure type safety, the type of the entity and the type of the identifier must be specified
 as type parameters.
 
 **_Code Example:_**
+
 ````java
 import eu.koboo.en2do.*;
+
 import java.util.*;
 
 @Collection("customer_repository")
@@ -161,6 +176,7 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
 Now all important classes have been created, and you can start instantiating the objects.
 
 **_Code Example:_**
+
 ````java
 public class Application {
     public static void main(String[] args) {
@@ -182,8 +198,9 @@ Find more examples in [CustomerRepository](src/test/java/eu/koboo/en2do/test/cus
 
 ## Method keywords
 
-Here is a listing of all supported methods, and how they are executed in the framework. 
-These methods can be supplemented with any kind of filters. For simplicity, only a ``FirstNameEquals`` filter is applied.
+Here is a listing of all supported methods, and how they are executed in the framework.
+These methods can be supplemented with any kind of filters. For simplicity, only a ``FirstNameEquals`` filter is
+applied.
 
 | Keyword      | Example                                              | Method equivalent                               |
 |--------------|------------------------------------------------------|-------------------------------------------------|
@@ -229,7 +246,7 @@ Filters can also be chained. For this purpose the keyword ``And`` or the keyword
 | **IgnAndNotRegex**              | ``findByFirstNameIgnAndLastNameNotRegex(String firstName, String lastName)`` | ``Filters.regex`` (``(?i)^[value]$``) && ``Filters.not`` + ``Filters.regex`` |
 | ...                             | _This works with every keyword from above_                                   | ...                                                                          |
 
-_Note: If a method is declared incorrectly, an exception is usually thrown describing the error. 
+_Note: If a method is declared incorrectly, an exception is usually thrown describing the error.
 Due to wrong validation checks, this could also occur unintentionally or not at all if the declaration is incorrect._
 
 ## Sorting
@@ -238,7 +255,7 @@ The framework allows sorting in 2 ways. These two ways cannot be used at the sam
 
 ## Sorting via Annotations (Static)
 
-When sorting via annotation, the options for sorting must be written statically in annotations, 
+When sorting via annotation, the options for sorting must be written statically in annotations,
 which means that they can no longer be changed.
 
 | Annotation  | Example                                             | Multiple usage allowed? | Description                                   |
@@ -249,37 +266,40 @@ which means that they can no longer be changed.
 | ``@Skip``   | ``@Skip(10)``                                       | **No**                  | Define an amount of skipped entities.         |
 
 **_Code-Example:_**
+
 ````java
+
 @Collection("customer_repository")
 public interface CustomerRepository extends Repo<Customer, UUID> {
 
-  @SortBy(field = "customerId")
-  @SortBy(field = "balance")
-  @Limit(20)
-  List<Customer> findByCustomerIdExists();
+    @SortBy(field = "customerId")
+    @SortBy(field = "balance")
+    @Limit(20)
+    List<Customer> findByCustomerIdExists();
 }
 ````
 
 ## Sorting via Parameter (Dynamic)
 
-Dynamic sorting is provided via the ``Sort`` method parameter. The ``Sort`` object and its 
+Dynamic sorting is provided via the ``Sort`` method parameter. The ``Sort`` object and its
 options can be created in the Fluent pattern.
 
 **_Code-Example:_**
+
 ````java
 public class Application {
-  public static void main(String args[]) {
-    MongoManager manager = new MongoManager();
-    CustomerRepository repository = manager.create(CustomerRepository.class);
-    
-    List<Customer> customerList = repository.findByCustomerIdNot(17,
-            Sort.create()
-                    .order(ByField.of("customerId", true))
-                    .order(ByField.of("balance", true))
-                    .limit(20)
-                    .skip(10)
-    );
-  }
+    public static void main(String args[]) {
+        MongoManager manager = new MongoManager();
+        CustomerRepository repository = manager.create(CustomerRepository.class);
+
+        List<Customer> customerList = repository.findByCustomerIdNot(17,
+                Sort.create()
+                        .order(ByField.of("customerId", true))
+                        .order(ByField.of("balance", true))
+                        .limit(20)
+                        .skip(10)
+        );
+    }
 }
 ````
 
