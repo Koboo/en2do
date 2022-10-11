@@ -1,11 +1,13 @@
 package eu.koboo.en2do;
 
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Indexes;
 import eu.koboo.en2do.repository.FilterOperator;
 import eu.koboo.en2do.repository.FilterType;
 import eu.koboo.en2do.repository.MethodOperator;
 import eu.koboo.en2do.repository.annotation.Collection;
 import eu.koboo.en2do.repository.annotation.Id;
+import eu.koboo.en2do.repository.annotation.NonIndex;
 import eu.koboo.en2do.repository.exception.*;
 import eu.koboo.en2do.sort.Sort;
 import eu.koboo.en2do.sort.annotation.Limit;
@@ -15,6 +17,7 @@ import eu.koboo.en2do.sort.annotation.SortByArray;
 import eu.koboo.en2do.utility.GenericUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import org.bson.Document;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -111,6 +114,11 @@ public class RepositoryFactory {
         }
         String entityCollectionName = collectionAnnotation.value();
         MongoCollection<E> entityCollection = manager.getDatabase().getCollection(entityCollectionName, entityClass);
+
+        // Creating an index on the uniqueIdentifier field of the entity to speed up queries
+        if(!entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
+            entityCollection.createIndex(Indexes.ascending(entityUniqueIdField.getName()));
+        }
 
         // Create dynamic repository proxy object
         ClassLoader repoClassLoader = repoClass.getClassLoader();
