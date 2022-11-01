@@ -7,7 +7,7 @@ import java.lang.annotation.*;
 @Repeatable(value = SortByArray.class)
 public @interface SortBy {
 
-    String field() default "_null";
+    String field();
 
     boolean ascending() default false;
 }

@@ -10,5 +10,5 @@ import java.lang.annotation.Target;
 @SuppressWarnings("unused")
 public @interface SortByArray {
 
-    SortBy[] value() default {};
+    SortBy[] value();
 }
