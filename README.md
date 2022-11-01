@@ -20,7 +20,7 @@ This framework is heavily inspired by [Spring Data](https://spring.io/projects/s
 * [Sorting via Annotations](#sorting-via-annotations-static)
 * [Sorting via Parameter](#sorting-via-parameter-dynamic)
 * [References](#references)
-* [MIT License](LICENSE)
+* [WTFPL License](LICENSE)
 
 ## Current Features
 
