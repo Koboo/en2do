@@ -1,4 +1,4 @@
-package eu.koboo.en2do.repository.annotation;
+package eu.koboo.en2do;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

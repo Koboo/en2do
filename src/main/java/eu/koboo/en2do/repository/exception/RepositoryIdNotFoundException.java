@@ -1,6 +1,6 @@
 package eu.koboo.en2do.repository.exception;
 
-import eu.koboo.en2do.repository.annotation.Id;
+import eu.koboo.en2do.index.Id;
 
 public class RepositoryIdNotFoundException extends Exception {
 

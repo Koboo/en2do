@@ -1,4 +1,4 @@
-package eu.koboo.en2do.repository.annotation;
+package eu.koboo.en2do.index;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,5 +7,5 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface Id {
+public @interface NonIndex {
 }

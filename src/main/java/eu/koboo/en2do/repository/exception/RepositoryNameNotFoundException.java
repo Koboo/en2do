@@ -1,6 +1,6 @@
 package eu.koboo.en2do.repository.exception;
 
-import eu.koboo.en2do.repository.annotation.Collection;
+import eu.koboo.en2do.Collection;
 
 public class RepositoryNameNotFoundException extends Exception {
 

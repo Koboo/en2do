@@ -2,12 +2,12 @@ package eu.koboo.en2do;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Indexes;
+import eu.koboo.en2do.index.EntityIndex;
+import eu.koboo.en2do.index.Id;
+import eu.koboo.en2do.index.NonIndex;
 import eu.koboo.en2do.repository.FilterOperator;
 import eu.koboo.en2do.repository.FilterType;
 import eu.koboo.en2do.repository.MethodOperator;
-import eu.koboo.en2do.repository.annotation.Collection;
-import eu.koboo.en2do.repository.annotation.Id;
-import eu.koboo.en2do.repository.annotation.NonIndex;
 import eu.koboo.en2do.repository.exception.*;
 import eu.koboo.en2do.sort.Sort;
 import eu.koboo.en2do.sort.annotation.Limit;
@@ -17,7 +17,7 @@ import eu.koboo.en2do.sort.annotation.SortByArray;
 import eu.koboo.en2do.utility.GenericUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-import org.bson.Document;
+import org.bson.conversions.Bson;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -54,14 +54,17 @@ public class RepositoryFactory {
         if (repoGenericTypeParams == null) {
             throw new RepositoryNoTypeException(repoClass);
         }
+
         String entityClassName = repoGenericTypeParams.getTypeName().split("<")[1].split(",")[0];
         Class<E> entityClass;
         Class<ID> entityUniqueIdClass = null;
         Set<String> entityFieldNameSet = new HashSet<>();
         Field entityUniqueIdField = null;
+
         // Searching for the actual classes by their respective names
         try {
             entityClass = (Class<E>) Class.forName(entityClassName);
+
             Set<Field> allFields = getAllFields(entityClass);
             if (allFields.size() == 0) {
                 throw new RepositoryNoFieldsException(repoClass);
@@ -115,9 +118,32 @@ public class RepositoryFactory {
         String entityCollectionName = collectionAnnotation.value();
         MongoCollection<E> entityCollection = manager.getDatabase().getCollection(entityCollectionName, entityClass);
 
-        // Creating an index on the uniqueIdentifier field of the entity to speed up queries
+        // Creating an index on the uniqueIdentifier field of the entity to speed up queries,
+        // but only if wanted. Users can disable that with the annotation.
         if(!entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
             entityCollection.createIndex(Indexes.ascending(entityUniqueIdField.getName()));
+        }
+
+        // Check and create indexes for the fields, set in the EntityIndex annotation.
+        Set<Field> entityFieldSet = getAllFields(entityClass);
+        Set<EntityIndex> entityIndexList = getAllEntityIndecies(entityClass);
+        for (EntityIndex entityIndex : entityIndexList) {
+            // Checking if the field in the annotation exists in the entity class.
+            String[] fieldIndexes = entityIndex.value();
+            for (String fieldIndex : fieldIndexes) {
+                if(entityFieldSet.stream().map(Field::getName).noneMatch(fieldIndex::equalsIgnoreCase)) {
+                    throw new RepositoryFieldNotFoundException(repoClass, fieldIndex);
+                }
+            }
+            // Validated all fields and creating the indexes on the collection.
+            List<String> indexList = Arrays.asList(fieldIndexes);
+            Bson keys;
+            if(entityIndex.ascending()) {
+                keys = Indexes.ascending(indexList);
+            } else {
+                keys = Indexes.descending(indexList);
+            }
+            entityCollection.createIndex(keys);
         }
 
         // Create dynamic repository proxy object
@@ -281,11 +307,15 @@ public class RepositoryFactory {
         return null;
     }
 
-    private Set<Field> getAllFields(Class<?> typeClass) {
+    private <E> Set<Field> getAllFields(Class<E> typeClass) {
         Set<Field> fields = new HashSet<>();
         Class<?> clazz = typeClass;
         while (clazz != Object.class) {
-            fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
+            Field[] declaredFields = clazz.getDeclaredFields();
+            if(declaredFields.length == 0) {
+                continue;
+            }
+            fields.addAll(Arrays.asList(declaredFields));
             clazz = clazz.getSuperclass();
         }
         return fields;
@@ -315,5 +345,19 @@ public class RepositoryFactory {
         if (field == null) {
             throw new MethodSortFieldNotFoundException(fieldName, method, entityClass, repoClass);
         }
+    }
+
+    private <E> Set<EntityIndex> getAllEntityIndecies(Class<E> entityClass) {
+        Set<EntityIndex> entityIndexList = new HashSet<>();
+        Class<?> clazz = entityClass;
+        while(clazz != Object.class) {
+            EntityIndex[] indexArray = entityClass.getAnnotationsByType(EntityIndex.class);
+            if(indexArray.length == 0) {
+                continue;
+            }
+            entityIndexList.addAll(Arrays.asList(indexArray));
+            clazz = clazz.getSuperclass();
+        }
+        return entityIndexList;
     }
 }

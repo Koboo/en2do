@@ -1,7 +1,7 @@
 package eu.koboo.en2do.test.customer;
 
 import eu.koboo.en2do.Repository;
-import eu.koboo.en2do.repository.annotation.Collection;
+import eu.koboo.en2do.Collection;
 import eu.koboo.en2do.sort.Sort;
 import eu.koboo.en2do.sort.annotation.Limit;
 import eu.koboo.en2do.sort.annotation.Skip;
