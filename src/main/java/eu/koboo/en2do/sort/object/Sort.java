@@ -1,4 +1,4 @@
-package eu.koboo.en2do.sort;
+package eu.koboo.en2do.sort.object;
 
 import lombok.Getter;
 

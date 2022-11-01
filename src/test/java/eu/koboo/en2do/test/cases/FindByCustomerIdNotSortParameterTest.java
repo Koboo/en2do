@@ -1,8 +1,8 @@
 package eu.koboo.en2do.test.cases;
 
 import eu.koboo.en2do.MongoManager;
-import eu.koboo.en2do.sort.ByField;
-import eu.koboo.en2do.sort.Sort;
+import eu.koboo.en2do.sort.object.ByField;
+import eu.koboo.en2do.sort.object.Sort;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepository;
