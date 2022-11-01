@@ -7,6 +7,7 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
+import eu.koboo.en2do.exception.*;
 import eu.koboo.en2do.repository.FilterType;
 import eu.koboo.en2do.repository.MethodOperator;
 import eu.koboo.en2do.repository.exception.*;

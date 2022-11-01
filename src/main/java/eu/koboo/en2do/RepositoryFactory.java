@@ -2,13 +2,13 @@ package eu.koboo.en2do;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Indexes;
+import eu.koboo.en2do.exception.*;
 import eu.koboo.en2do.index.EntityIndex;
 import eu.koboo.en2do.index.Id;
 import eu.koboo.en2do.index.NonIndex;
 import eu.koboo.en2do.repository.FilterOperator;
 import eu.koboo.en2do.repository.FilterType;
 import eu.koboo.en2do.repository.MethodOperator;
-import eu.koboo.en2do.repository.exception.*;
 import eu.koboo.en2do.sort.Sort;
 import eu.koboo.en2do.sort.annotation.Limit;
 import eu.koboo.en2do.sort.annotation.Skip;

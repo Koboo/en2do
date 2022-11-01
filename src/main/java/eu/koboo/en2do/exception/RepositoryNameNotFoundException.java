@@ -1,4 +1,4 @@
-package eu.koboo.en2do.repository.exception;
+package eu.koboo.en2do.exception;
 
 import eu.koboo.en2do.Collection;
 
