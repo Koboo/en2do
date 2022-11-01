@@ -62,11 +62,11 @@ public class RepositoryFactory {
         // Searching for the actual classes by their respective names
         try {
             entityClass = (Class<E>) Class.forName(entityClassName);
-            Field[] declaredFields = entityClass.getDeclaredFields();
-            if (declaredFields.length == 0) {
+            Set<Field> allFields = getAllFields(entityClass);
+            if (allFields.size() == 0) {
                 throw new RepositoryNoFieldsException(repoClass);
             }
-            for (Field field : declaredFields) {
+            for (Field field : allFields) {
                 String lowerFieldName = field.getName().toLowerCase(Locale.ROOT);
                 if (entityFieldNameSet.contains(lowerFieldName)) {
                     throw new RepositoryDuplicatedFieldException(field, repoClass);
@@ -272,13 +272,23 @@ public class RepositoryFactory {
     }
 
     private <E> Field findExpectedField(Class<E> entityClass, String expectedField) {
-        for (Field field : entityClass.getDeclaredFields()) {
+        for (Field field : getAllFields(entityClass)) {
             if (!field.getName().equalsIgnoreCase(expectedField)) {
                 continue;
             }
             return field;
         }
         return null;
+    }
+
+    private Set<Field> getAllFields(Class<?> typeClass) {
+        Set<Field> fields = new HashSet<>();
+        Class<?> clazz = typeClass;
+        while (clazz != Object.class) {
+            fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
+            clazz = clazz.getSuperclass();
+        }
+        return fields;
     }
 
     private <E> void checkSortOptions(Method method, Class<E> entityClass, Class<?> repoClass) throws Exception {
