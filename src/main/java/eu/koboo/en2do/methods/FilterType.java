@@ -1,4 +1,4 @@
-package eu.koboo.en2do.validation;
+package eu.koboo.en2do.methods;
 
 import java.lang.reflect.Field;
 
