@@ -5,7 +5,6 @@ import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerExtended;
 import eu.koboo.en2do.test.customer.CustomerExtendedRepository;
-import eu.koboo.en2do.test.customer.CustomerRepository;
 import eu.koboo.en2do.utility.EntityUtils;
 import org.junit.jupiter.api.*;
 

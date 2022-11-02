@@ -1,7 +1,7 @@
 package eu.koboo.en2do.test.customer;
 
-import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.Collection;
+import eu.koboo.en2do.Repository;
 
 import java.util.UUID;
 

@@ -8,5 +8,6 @@ import java.lang.annotation.*;
 public @interface EntityIndex {
 
     String[] value();
+
     boolean ascending() default true;
 }

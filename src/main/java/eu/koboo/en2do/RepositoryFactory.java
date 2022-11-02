@@ -6,15 +6,15 @@ import eu.koboo.en2do.exception.*;
 import eu.koboo.en2do.index.EntityIndex;
 import eu.koboo.en2do.index.Id;
 import eu.koboo.en2do.index.NonIndex;
-import eu.koboo.en2do.validation.FilterOperator;
-import eu.koboo.en2do.validation.FilterType;
-import eu.koboo.en2do.validation.MethodOperator;
-import eu.koboo.en2do.sort.object.Sort;
 import eu.koboo.en2do.sort.annotation.Limit;
 import eu.koboo.en2do.sort.annotation.Skip;
 import eu.koboo.en2do.sort.annotation.SortBy;
 import eu.koboo.en2do.sort.annotation.SortByArray;
+import eu.koboo.en2do.sort.object.Sort;
 import eu.koboo.en2do.utility.GenericUtils;
+import eu.koboo.en2do.validation.FilterOperator;
+import eu.koboo.en2do.validation.FilterType;
+import eu.koboo.en2do.validation.MethodOperator;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.bson.conversions.Bson;
@@ -120,7 +120,7 @@ public class RepositoryFactory {
 
         // Creating an index on the uniqueIdentifier field of the entity to speed up queries,
         // but only if wanted. Users can disable that with the annotation.
-        if(!entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
+        if (!entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
             entityCollection.createIndex(Indexes.ascending(entityUniqueIdField.getName()));
         }
 
@@ -131,14 +131,14 @@ public class RepositoryFactory {
             // Checking if the field in the annotation exists in the entity class.
             String[] fieldIndexes = entityIndex.value();
             for (String fieldIndex : fieldIndexes) {
-                if(entityFieldSet.stream().map(Field::getName).noneMatch(fieldIndex::equalsIgnoreCase)) {
+                if (entityFieldSet.stream().map(Field::getName).noneMatch(fieldIndex::equalsIgnoreCase)) {
                     throw new RepositoryFieldNotFoundException(repoClass, fieldIndex);
                 }
             }
             // Validated all fields and creating the indexes on the collection.
             List<String> indexList = Arrays.asList(fieldIndexes);
             Bson keys;
-            if(entityIndex.ascending()) {
+            if (entityIndex.ascending()) {
                 keys = Indexes.ascending(indexList);
             } else {
                 keys = Indexes.descending(indexList);
@@ -312,7 +312,7 @@ public class RepositoryFactory {
         Class<?> clazz = typeClass;
         while (clazz != Object.class) {
             Field[] declaredFields = clazz.getDeclaredFields();
-            if(declaredFields.length == 0) {
+            if (declaredFields.length == 0) {
                 continue;
             }
             fields.addAll(Arrays.asList(declaredFields));
@@ -350,9 +350,9 @@ public class RepositoryFactory {
     private <E> Set<EntityIndex> getAllEntityIndecies(Class<E> entityClass) {
         Set<EntityIndex> entityIndexList = new HashSet<>();
         Class<?> clazz = entityClass;
-        while(clazz != Object.class) {
+        while (clazz != Object.class) {
             EntityIndex[] indexArray = entityClass.getAnnotationsByType(EntityIndex.class);
-            if(indexArray.length == 0) {
+            if (indexArray.length == 0) {
                 continue;
             }
             entityIndexList.addAll(Arrays.asList(indexArray));

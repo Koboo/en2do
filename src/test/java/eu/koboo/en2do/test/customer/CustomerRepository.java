@@ -1,11 +1,11 @@
 package eu.koboo.en2do.test.customer;
 
-import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.Collection;
-import eu.koboo.en2do.sort.object.Sort;
+import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.sort.annotation.Limit;
 import eu.koboo.en2do.sort.annotation.Skip;
 import eu.koboo.en2do.sort.annotation.SortBy;
+import eu.koboo.en2do.sort.object.Sort;
 
 import java.util.List;
 import java.util.UUID;
