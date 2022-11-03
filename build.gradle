@@ -12,13 +12,16 @@ repositories {
 }
 
 dependencies {
-    implementation "org.mongodb:mongodb-driver:$mongoDbVersion"
+    // Project dependencies
+    implementation "org.mongodb:mongodb-driver-sync:$mongoDriverVersion"
+    testImplementation "org.mongodb:mongodb-driver-sync:$mongoDriverVersion"
 
+    // Jupiter test dependencies
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:$jupiterVersion"
+
+    // Lombok
     compileOnly "org.projectlombok:lombok:$lombokVersion"
     annotationProcessor "org.projectlombok:lombok:$lombokVersion"
-
-    testImplementation "org.junit.jupiter:junit-jupiter-engine:$jupiterVersion"
-    testImplementation "org.mongodb:mongodb-driver:$mongoDbVersion"
 
     testCompileOnly "org.projectlombok:lombok:$lombokVersion"
     testAnnotationProcessor "org.projectlombok:lombok:$lombokVersion"
