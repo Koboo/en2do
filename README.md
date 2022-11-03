@@ -371,5 +371,7 @@ public class Customer {
 - [MongoDB Documentation](https://www.mongodb.com/docs/manual/introduction/)
 - [MongoDB POJO Example](https://www.mongodb.com/developer/languages/java/java-mapping-pojos/)
 - [MongoDB POJO Documentation](https://mongodb.github.io/mongo-java-driver/3.5/bson/pojos/)
+- [MongoDB MapCodec GitHub](https://github.com/benjamonnguyen/mongodb-bson-codec)
+- [MongoDB MapCodec StackOverflow](https://stackoverflow.com/questions/67849754/mongodb-mapk-v-codec-maps-must-have-string-keys-fix)
 - [Spring MongoDB Repositories](https://docs.spring.io/spring-data/mongodb/docs/1.2.0.RELEASE/reference/html/mongo.repositories.html)
 - [WTFPL License About](http://www.wtfpl.net/)
