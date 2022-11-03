@@ -105,16 +105,12 @@ MongoDB.
 
 **_Restrictions:_**
 
-- You cannot use a map with numbers as a key.
-    - ``Map<Short, ?>``
-    - ``Map<Integer, ?>``
-    - ``Map<Float, ?>``
-    - ``Map<Double, ?>``
-    - ``Map<Long, ?>``
-    - ``Map<Byte, ?>``
+**The standard PojoCodec of mongodb only allows Strings as keys in maps.**
+
+This has been fixed via a **Custom MapCodec**.
+In the [references](#references) you can find all links which helped immensely.
 
 **_Code Example:_**
-
 ````java
 import eu.koboo.en2do.annotation.*;
 import lombok.*;
