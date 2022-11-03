@@ -39,7 +39,7 @@ public class FindByCustomerIdExistsSortAnnotationTest {
     @Order(2)
     public void saveCustomer() {
         for (int i = 0; i < 100; i++) {
-            Customer customer = Const.createNew();
+            Customer customer = Const.createNewCustomer();
             customer.setUniqueId(UUID.randomUUID());
             customer.setCustomerId(i);
             assertTrue(repository.save(customer));

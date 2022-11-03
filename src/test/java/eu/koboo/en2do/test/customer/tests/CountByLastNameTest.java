@@ -38,7 +38,7 @@ public class CountByLastNameTest {
     @Test
     @Order(2)
     public void saveCustomer() {
-        Customer customer = Const.createNew();
+        Customer customer = Const.createNewCustomer();
         customer.setUniqueId(UUID.randomUUID());
         assertTrue(repository.save(customer));
         assertTrue(repository.exists(customer));

@@ -1,11 +1,14 @@
 package eu.koboo.en2do.test;
 
+import eu.koboo.en2do.test.alien.Alien;
+import eu.koboo.en2do.test.alien.Planet;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerType;
 import eu.koboo.en2do.test.customer.Order;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class Const {
@@ -28,7 +31,7 @@ public class Const {
     );
     public static final CustomerType TYPE = CustomerType.DEFAULT;
 
-    public static Customer createNew() {
+    public static Customer createNewCustomer() {
         Customer customer = new Customer();
         customer.setUniqueId(UNIQUE_ID);
         customer.setCustomerId(CUSTOMER_ID);
@@ -44,5 +47,14 @@ public class Const {
         customer.setOrders(ORDERS);
         customer.setCustomerType(TYPE);
         return customer;
+    }
+
+    public static Alien createNewAlien() {
+        Alien alien = new Alien();
+        alien.setUniqueId(UNIQUE_ID);
+        alien.setUfoIdList(Map.of(10L, "Millenium Falcon", 20L, "X-WING", 30L, "Death-Star"));
+        alien.setPlanetTimeMap(Map.of(Planet.NEPTUNE, 100L, Planet.EARTH, 0L, Planet.MARS, 3000L));
+        alien.setTranslationPlanetMap(Map.of("Neptun", Planet.NEPTUNE, "Erde", Planet.EARTH, "Mars", Planet.MARS));
+        return alien;
     }
 }

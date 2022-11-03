@@ -37,7 +37,7 @@ public class FindByIdTest {
     @Test
     @Order(2)
     public void saveCustomer() {
-        Customer customer = Const.createNew();
+        Customer customer = Const.createNewCustomer();
         assertNotNull(customer);
         assertFalse(repository.exists(customer));
         assertTrue(repository.save(customer));

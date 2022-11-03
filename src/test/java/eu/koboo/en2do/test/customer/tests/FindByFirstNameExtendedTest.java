@@ -39,7 +39,7 @@ public class FindByFirstNameExtendedTest {
     @Test
     @Order(2)
     public void saveCustomer() {
-        Customer customer = Const.createNew();
+        Customer customer = Const.createNewCustomer();
         CustomerExtended customerExtended = new CustomerExtended();
         EntityUtils.copyProperties(customer, customerExtended);
         assertNotNull(customerExtended);
