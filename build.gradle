@@ -18,6 +18,7 @@ dependencies {
 
     // Jupiter test dependencies
     testImplementation "org.junit.jupiter:junit-jupiter-engine:$jupiterVersion"
+    testImplementation "org.slf4j:slf4j-simple:$slf4jVersion"
 
     // Lombok
     compileOnly "org.projectlombok:lombok:$lombokVersion"
