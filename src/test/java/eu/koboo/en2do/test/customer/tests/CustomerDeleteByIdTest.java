@@ -11,14 +11,14 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class FindByFirstNameTest {
+public class CustomerDeleteByIdTest {
 
     static MongoManager manager;
     static CustomerRepository repository;
 
     @BeforeAll
     public static void setup() {
-        System.out.println(FindByFirstNameTest.class.getName() + " START");
+        System.out.println(CustomerDeleteByIdTest.class.getName() + " START");
         manager = new MongoManager();
         assertNotNull(manager);
         repository = manager.create(CustomerRepository.class);
@@ -38,27 +38,21 @@ public class FindByFirstNameTest {
     @Order(2)
     public void saveCustomer() {
         Customer customer = Const.createNewCustomer();
-        assertNotNull(customer);
         assertTrue(repository.save(customer));
         assertTrue(repository.exists(customer));
     }
 
     @Test
     @Order(3)
-    public void operationTest() {
-        Customer customer = repository.findByFirstName(Const.FIRST_NAME);
-        assertNotNull(customer);
-        assertEquals(Const.CUSTOMER_ID, customer.getCustomerId());
-        assertEquals(Const.FIRST_NAME, customer.getFirstName());
-        assertEquals(Const.LAST_NAME, customer.getLastName());
-        assertEquals(Const.BIRTHDAY, customer.getBirthday());
-        assertEquals(Const.PHONE_NUMBER, customer.getPhoneNumber());
-        assertEquals(Const.ORDERS.size(), customer.getOrders().size());
+    public void deleteCustomer() {
+        assertTrue(repository.deleteById(Const.UNIQUE_ID));
+        assertFalse(repository.existsById(Const.UNIQUE_ID));
+        assertEquals(0, repository.countByCustomerId(Const.CUSTOMER_ID));
     }
 
     @AfterAll
     public static void finish() {
-        System.out.println(FindByFirstNameTest.class.getName() + " END");
+        System.out.println(CustomerDeleteByIdTest.class.getName() + " END");
         assertTrue(repository.drop());
         assertTrue(manager.close());
     }

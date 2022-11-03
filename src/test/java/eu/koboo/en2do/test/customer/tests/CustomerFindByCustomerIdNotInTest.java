@@ -13,14 +13,14 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class FindByCustomerIdNotInTest {
+public class CustomerFindByCustomerIdNotInTest {
 
     static MongoManager manager;
     static CustomerRepository repository;
 
     @BeforeAll
     public static void setup() {
-        System.out.println(FindByCustomerIdNotInTest.class.getName() + " START");
+        System.out.println(CustomerFindByCustomerIdNotInTest.class.getName() + " START");
         manager = new MongoManager();
         assertNotNull(manager);
         repository = manager.create(CustomerRepository.class);
@@ -72,7 +72,7 @@ public class FindByCustomerIdNotInTest {
 
     @AfterAll
     public static void finish() {
-        System.out.println(FindByCustomerIdNotInTest.class.getName() + " END");
+        System.out.println(CustomerFindByCustomerIdNotInTest.class.getName() + " END");
         assertTrue(repository.drop());
         assertTrue(manager.close());
     }

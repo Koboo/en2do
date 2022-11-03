@@ -12,14 +12,14 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class CountByCustomerIdTest {
+public class CustomerCountByLastNameTest {
 
     static MongoManager manager;
     static CustomerRepository repository;
 
     @BeforeAll
     public static void setup() {
-        System.out.println(CountByCustomerIdTest.class.getName() + " START");
+        System.out.println(CustomerCountByLastNameTest.class.getName() + " START");
         manager = new MongoManager();
         assertNotNull(manager);
         repository = manager.create(CustomerRepository.class);
@@ -47,12 +47,12 @@ public class CountByCustomerIdTest {
     @Test
     @Order(3)
     public void countCustomer() {
-        assertEquals(1, repository.countByCustomerId(Const.CUSTOMER_ID));
+        assertEquals(1, repository.countByFirstName(Const.FIRST_NAME));
     }
 
     @AfterAll
     public static void finish() {
-        System.out.println(CountByCustomerIdTest.class.getName() + " END");
+        System.out.println(CustomerCountByLastNameTest.class.getName() + " END");
         assertTrue(repository.drop());
         assertTrue(manager.close());
     }

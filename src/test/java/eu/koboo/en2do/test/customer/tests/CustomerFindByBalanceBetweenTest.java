@@ -11,14 +11,14 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class FindByFirstNameContainsTest {
+public class CustomerFindByBalanceBetweenTest {
 
     static MongoManager manager;
     static CustomerRepository repository;
 
     @BeforeAll
     public static void setup() {
-        System.out.println(FindByFirstNameContainsTest.class.getName() + " START");
+        System.out.println(CustomerFindByBalanceBetweenTest.class.getName() + " START");
         manager = new MongoManager();
         assertNotNull(manager);
         repository = manager.create(CustomerRepository.class);
@@ -46,7 +46,11 @@ public class FindByFirstNameContainsTest {
     @Test
     @Order(3)
     public void operationTest() {
-        Customer customer = repository.findByFirstNameContains("aine");
+        List<Customer> customerList = repository.findByBalanceBetweenAndCustomerId(100, 600, 1);
+        assertNotNull(customerList);
+        assertFalse(customerList.isEmpty());
+        assertEquals(1, customerList.size());
+        Customer customer = customerList.get(0);
         assertNotNull(customer);
         assertEquals(Const.CUSTOMER_ID, customer.getCustomerId());
         assertEquals(Const.FIRST_NAME, customer.getFirstName());
@@ -58,7 +62,7 @@ public class FindByFirstNameContainsTest {
 
     @AfterAll
     public static void finish() {
-        System.out.println(FindByFirstNameContainsTest.class.getName() + " END");
+        System.out.println(CustomerFindByBalanceBetweenTest.class.getName() + " END");
         assertTrue(repository.drop());
         assertTrue(manager.close());
     }

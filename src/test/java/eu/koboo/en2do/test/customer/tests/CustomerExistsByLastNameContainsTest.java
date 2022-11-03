@@ -13,14 +13,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class ExistsByLastNameContainsTest {
+public class CustomerExistsByLastNameContainsTest {
 
     static MongoManager manager;
     static CustomerRepository repository;
 
     @BeforeAll
     public static void setup() {
-        System.out.println(ExistsByLastNameContainsTest.class.getName() + " START");
+        System.out.println(CustomerExistsByLastNameContainsTest.class.getName() + " START");
         manager = new MongoManager();
         assertNotNull(manager);
         repository = manager.create(CustomerRepository.class);
@@ -53,7 +53,7 @@ public class ExistsByLastNameContainsTest {
 
     @AfterAll
     public static void finish() {
-        System.out.println(ExistsByLastNameContainsTest.class.getName() + " END");
+        System.out.println(CustomerExistsByLastNameContainsTest.class.getName() + " END");
         assertTrue(repository.drop());
         assertTrue(manager.close());
     }

@@ -1,8 +1,6 @@
 package eu.koboo.en2do.test.customer.tests;
 
 import eu.koboo.en2do.MongoManager;
-import eu.koboo.en2do.sort.object.ByField;
-import eu.koboo.en2do.sort.object.Sort;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepository;
@@ -14,14 +12,14 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class FindByCustomerIdNotSortParameterTest {
+public class CustomerFindByCustomerIdExistsSortAnnotationTest {
 
     static MongoManager manager;
     static CustomerRepository repository;
 
     @BeforeAll
     public static void setup() {
-        System.out.println(FindByCustomerIdNotSortParameterTest.class.getName() + " START");
+        System.out.println(CustomerFindByCustomerIdExistsSortAnnotationTest.class.getName() + " START");
         manager = new MongoManager();
         assertNotNull(manager);
         repository = manager.create(CustomerRepository.class);
@@ -52,18 +50,12 @@ public class FindByCustomerIdNotSortParameterTest {
     @Test
     @Order(3)
     public void findCustomer() {
-        List<Customer> customerList = repository.findByCustomerIdNot(17,
-                Sort.create()
-                        .order(ByField.of("customerId", true))
-                        .limit(20)
-                        .skip(10)
-        );
+        List<Customer> customerList = repository.findByCustomerIdExists();
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());
         assertEquals(20, customerList.size());
         for (Customer customer : customerList) {
             assertNotNull(customer);
-            assertNotEquals(17, customer.getCustomerId());
             assertEquals(Const.FIRST_NAME, customer.getFirstName());
             assertEquals(Const.LAST_NAME, customer.getLastName());
             assertEquals(Const.BIRTHDAY, customer.getBirthday());
@@ -74,7 +66,7 @@ public class FindByCustomerIdNotSortParameterTest {
 
     @AfterAll
     public static void finish() {
-        System.out.println(FindByCustomerIdNotSortParameterTest.class.getName() + " END");
+        System.out.println(CustomerFindByCustomerIdExistsSortAnnotationTest.class.getName() + " END");
         assertTrue(repository.drop());
         assertTrue(manager.close());
     }

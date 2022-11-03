@@ -7,18 +7,20 @@ import eu.koboo.en2do.test.customer.CustomerRepository;
 import org.junit.jupiter.api.*;
 
 import java.util.List;
+import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class FindByIdTest {
+public class CustomerExistsByLastNameTest {
 
     static MongoManager manager;
     static CustomerRepository repository;
 
     @BeforeAll
     public static void setup() {
-        System.out.println(FindByIdTest.class.getName() + " START");
+        System.out.println(CustomerExistsByLastNameTest.class.getName() + " START");
         manager = new MongoManager();
         assertNotNull(manager);
         repository = manager.create(CustomerRepository.class);
@@ -38,28 +40,20 @@ public class FindByIdTest {
     @Order(2)
     public void saveCustomer() {
         Customer customer = Const.createNewCustomer();
-        assertNotNull(customer);
-        assertFalse(repository.exists(customer));
+        customer.setUniqueId(UUID.randomUUID());
         assertTrue(repository.save(customer));
         assertTrue(repository.exists(customer));
     }
 
     @Test
     @Order(3)
-    public void findCustomer() {
-        assertTrue(repository.existsById(Const.UNIQUE_ID));
-        Customer customer = repository.findById(Const.UNIQUE_ID);
-        assertNotNull(customer);
-        assertEquals(Const.FIRST_NAME, customer.getFirstName());
-        assertEquals(Const.LAST_NAME, customer.getLastName());
-        assertEquals(Const.BIRTHDAY, customer.getBirthday());
-        assertEquals(Const.PHONE_NUMBER, customer.getPhoneNumber());
-        assertEquals(Const.ORDERS.size(), customer.getOrders().size());
+    public void existsCustomer() {
+        assertTrue(repository.existsByLastName(Const.LAST_NAME));
     }
 
     @AfterAll
     public static void finish() {
-        System.out.println(FindByIdTest.class.getName() + " END");
+        System.out.println(CustomerExistsByLastNameTest.class.getName() + " END");
         assertTrue(repository.drop());
         assertTrue(manager.close());
     }

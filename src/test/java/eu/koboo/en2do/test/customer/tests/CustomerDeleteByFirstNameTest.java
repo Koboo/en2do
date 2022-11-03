@@ -7,20 +7,18 @@ import eu.koboo.en2do.test.customer.CustomerRepository;
 import org.junit.jupiter.api.*;
 
 import java.util.List;
-import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class ExistsByLastNameTest {
+public class CustomerDeleteByFirstNameTest {
 
     static MongoManager manager;
     static CustomerRepository repository;
 
     @BeforeAll
     public static void setup() {
-        System.out.println(ExistsByLastNameTest.class.getName() + " START");
+        System.out.println(CustomerDeleteByFirstNameTest.class.getName() + " START");
         manager = new MongoManager();
         assertNotNull(manager);
         repository = manager.create(CustomerRepository.class);
@@ -40,20 +38,21 @@ public class ExistsByLastNameTest {
     @Order(2)
     public void saveCustomer() {
         Customer customer = Const.createNewCustomer();
-        customer.setUniqueId(UUID.randomUUID());
         assertTrue(repository.save(customer));
         assertTrue(repository.exists(customer));
     }
 
     @Test
     @Order(3)
-    public void existsCustomer() {
-        assertTrue(repository.existsByLastName(Const.LAST_NAME));
+    public void deleteCustomer() {
+        assertTrue(repository.deleteByFirstName(Const.FIRST_NAME));
+        assertFalse(repository.existsById(Const.UNIQUE_ID));
+        assertEquals(0, repository.countByCustomerId(Const.CUSTOMER_ID));
     }
 
     @AfterAll
     public static void finish() {
-        System.out.println(ExistsByLastNameTest.class.getName() + " END");
+        System.out.println(CustomerDeleteByFirstNameTest.class.getName() + " END");
         assertTrue(repository.drop());
         assertTrue(manager.close());
     }
