@@ -36,7 +36,6 @@ public class RepositoryFactory {
 
     @SuppressWarnings("unchecked")
     protected <E, ID, R extends Repository<E, ID>> R create(Class<R> repoClass) throws Exception {
-
         // Check for already created repository to avoid multiply instances of the same repository
         if (repoRegistry.containsKey(repoClass)) {
             return (R) repoRegistry.get(repoClass);
@@ -61,11 +60,13 @@ public class RepositoryFactory {
         Set<String> entityFieldNameSet = new HashSet<>();
         Field entityUniqueIdField = null;
 
+        Set<Field> allFields;
+
         // Searching for the actual classes by their respective names
         try {
             entityClass = (Class<E>) Class.forName(entityClassName);
 
-            Set<Field> allFields = getAllFields(entityClass);
+            allFields = getAllFields(entityClass);
             if (allFields.size() == 0) {
                 throw new RepositoryNoFieldsException(repoClass);
             }
@@ -106,8 +107,8 @@ public class RepositoryFactory {
             }
             // Check for the return-types of the methods, and their defined names to match our pattern.
             checkReturnTypes(method, entityClass, repoClass);
-            checkMethodOperation(method, entityClass, repoClass);
-            checkSortOptions(method, entityClass, repoClass);
+            checkMethodOperation(method, entityClass, repoClass, allFields);
+            checkSortOptions(method, entityClass, repoClass, allFields);
         }
 
         // Parse annotated collection name and create pojo-related mongo collection
@@ -123,15 +124,12 @@ public class RepositoryFactory {
         if (!entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
             entityCollection.createIndex(Indexes.ascending(entityUniqueIdField.getName()));
         }
-
-        // Check and create indexes for the fields, set in the EntityIndex annotation.
-        Set<Field> entityFieldSet = getAllFields(entityClass);
         Set<EntityIndex> entityIndexList = getAllEntityIndecies(entityClass);
         for (EntityIndex entityIndex : entityIndexList) {
             // Checking if the field in the annotation exists in the entity class.
             String[] fieldIndexes = entityIndex.value();
             for (String fieldIndex : fieldIndexes) {
-                if (entityFieldSet.stream().map(Field::getName).noneMatch(fieldIndex::equalsIgnoreCase)) {
+                if (allFields.stream().map(Field::getName).noneMatch(fieldIndex::equalsIgnoreCase)) {
                     throw new RepositoryFieldNotFoundException(repoClass, fieldIndex);
                 }
             }
@@ -152,7 +150,7 @@ public class RepositoryFactory {
         Class<Repository<E, ID>> actualClass = (Class<Repository<E, ID>>) repoClass;
         Repository<E, ID> repository = (Repository<E, ID>) Proxy.newProxyInstance(repoClassLoader, interfaces,
                 new RepositoryInvocationHandler<>(this, entityCollectionName, entityCollection,
-                        actualClass, entityClass, entityUniqueIdClass,
+                        actualClass, entityClass, allFields, entityUniqueIdClass,
                         entityUniqueIdField));
         repoRegistry.put(repoClass, repository);
         return (R) repository;
@@ -194,7 +192,8 @@ public class RepositoryFactory {
     }
 
     // ReturnType already checked.
-    private <E> void checkMethodOperation(Method method, Class<E> entityClass, Class<?> repoClass) throws Exception {
+    private <E> void checkMethodOperation(Method method, Class<E> entityClass, Class<?> repoClass,
+                                          Set<Field> fieldSet) throws Exception {
         String methodName = method.getName();
         MethodOperator methodOperator = MethodOperator.parseMethodStartsWith(methodName);
         if (methodOperator == null) {
@@ -204,7 +203,7 @@ public class RepositoryFactory {
         if (methodName.contains("And") && methodName.contains("Or")) {
             throw new MethodDuplicatedChainException(method, entityClass);
         }
-        int expectedParameters = countExpectedParameters(entityClass, repoClass, method, fieldFilterName);
+        int expectedParameters = countExpectedParameters(entityClass, repoClass, method, fieldFilterName, fieldSet);
         Debugger.print("Method: " + method.getName());
         Debugger.print("ExpParams: " + expectedParameters);
         int parameterCount = method.getParameterCount();
@@ -227,23 +226,24 @@ public class RepositoryFactory {
         int nextIndex = 0;
         for (int i = 0; i < fieldFilterSplitByType.length; i++) {
             String fieldFilterPart = fieldFilterSplitByType[i];
-            FilterType filterType = createFilterType(entityClass, repoClass, method, fieldFilterPart);
+            FilterType filterType = createFilterType(entityClass, repoClass, method, fieldFilterPart, fieldSet);
             checkParameterType(method, filterType, nextIndex, repoClass);
             nextIndex = i + filterType.operator().getExpectedParameterCount();
         }
     }
 
-    private <E> int countExpectedParameters(Class<E> entityClass, Class<?> repoClass, Method method, String fieldFilterPart) throws Exception {
+    private <E> int countExpectedParameters(Class<E> entityClass, Class<?> repoClass, Method method,
+                                            String fieldFilterPart, Set<Field> fieldSet) throws Exception {
         String methodName = method.getName();
         if (!methodName.contains("And") && !methodName.contains("Or")) {
-            FilterType filterType = createFilterType(entityClass, repoClass, method, fieldFilterPart);
+            FilterType filterType = createFilterType(entityClass, repoClass, method, fieldFilterPart, fieldSet);
             return filterType.operator().getExpectedParameterCount();
         }
         String[] fieldFilterPartSplitByType = fieldFilterPart.contains("And") ?
                 fieldFilterPart.split("And") : fieldFilterPart.split("Or");
         int expectedCount = 0;
         for (String fieldFilterPartSplit : fieldFilterPartSplitByType) {
-            FilterType filterType = createFilterType(entityClass, repoClass, method, fieldFilterPartSplit);
+            FilterType filterType = createFilterType(entityClass, repoClass, method, fieldFilterPartSplit, fieldSet);
             expectedCount += filterType.operator().getExpectedParameterCount();
         }
         return expectedCount;
@@ -283,22 +283,23 @@ public class RepositoryFactory {
         }
     }
 
-    protected <E> FilterType createFilterType(Class<E> entityClass, Class<?> repoClass, Method method, String operatorString) throws Exception {
+    protected <E> FilterType createFilterType(Class<E> entityClass, Class<?> repoClass, Method method,
+                                              String operatorString, Set<Field> fieldSet) throws Exception {
         FilterOperator filterOperator = FilterOperator.parseFilterEndsWith(operatorString);
         if (filterOperator == null) {
             throw new MethodNoFilterOperatorException(method, repoClass);
         }
         String expectedField = filterOperator.removeOperatorFrom(operatorString);
         expectedField = expectedField.endsWith("Not") ? expectedField.replaceFirst("Not", "") : expectedField;
-        Field field = findExpectedField(entityClass, expectedField);
+        Field field = findExpectedField(entityClass, expectedField, fieldSet);
         if (field == null) {
             throw new MethodFieldNotFoundException(expectedField, method, entityClass, repoClass);
         }
         return new FilterType(field, filterOperator);
     }
 
-    private <E> Field findExpectedField(Class<E> entityClass, String expectedField) {
-        for (Field field : getAllFields(entityClass)) {
+    private <E> Field findExpectedField(Class<E> entityClass, String expectedField, Set<Field> fieldSet) {
+        for (Field field : fieldSet) {
             if (!field.getName().equalsIgnoreCase(expectedField)) {
                 continue;
             }
@@ -307,21 +308,7 @@ public class RepositoryFactory {
         return null;
     }
 
-    private <E> Set<Field> getAllFields(Class<E> typeClass) {
-        Set<Field> fields = new HashSet<>();
-        Class<?> clazz = typeClass;
-        while (clazz != Object.class) {
-            Field[] declaredFields = clazz.getDeclaredFields();
-            if (declaredFields.length == 0) {
-                continue;
-            }
-            fields.addAll(Arrays.asList(declaredFields));
-            clazz = clazz.getSuperclass();
-        }
-        return fields;
-    }
-
-    private <E> void checkSortOptions(Method method, Class<E> entityClass, Class<?> repoClass) throws Exception {
+    private <E> void checkSortOptions(Method method, Class<E> entityClass, Class<?> repoClass, Set<Field> fieldSet) throws Exception {
         String fieldName = null;
         if (method.isAnnotationPresent(SortBy.class)) {
             SortBy sortBy = method.getAnnotation(SortBy.class);
@@ -341,22 +328,36 @@ public class RepositoryFactory {
         if (fieldName == null) {
             return;
         }
-        Field field = findExpectedField(entityClass, fieldName);
+        Field field = findExpectedField(entityClass, fieldName, fieldSet);
         if (field == null) {
             throw new MethodSortFieldNotFoundException(fieldName, method, entityClass, repoClass);
         }
+    }
+
+    private <E> Set<Field> getAllFields(Class<E> typeClass) {
+        Set<Field> fields = new HashSet<>();
+        Class<?> clazz = typeClass;
+        while (clazz != Object.class) {
+            Field[] declaredFields = clazz.getDeclaredFields();
+            clazz = clazz.getSuperclass();
+            if (declaredFields.length == 0) {
+                continue;
+            }
+            fields.addAll(Arrays.asList(declaredFields));
+        }
+        return fields;
     }
 
     private <E> Set<EntityIndex> getAllEntityIndecies(Class<E> entityClass) {
         Set<EntityIndex> entityIndexList = new HashSet<>();
         Class<?> clazz = entityClass;
         while (clazz != Object.class) {
-            EntityIndex[] indexArray = entityClass.getAnnotationsByType(EntityIndex.class);
+            EntityIndex[] indexArray = clazz.getAnnotationsByType(EntityIndex.class);
+            clazz = clazz.getSuperclass();
             if (indexArray.length == 0) {
                 continue;
             }
             entityIndexList.addAll(Arrays.asList(indexArray));
-            clazz = clazz.getSuperclass();
         }
         return entityIndexList;
     }

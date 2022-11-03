@@ -5,6 +5,7 @@ import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
+import eu.koboo.en2do.codec.MapCodecProvider;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.bson.codecs.configuration.CodecRegistries;
@@ -48,7 +49,10 @@ public class MongoManager {
         }
         ConnectionString connection = new ConnectionString(connectString);
 
-        CodecRegistry pojoCodec = CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).build());
+        CodecRegistry pojoCodec = CodecRegistries.fromProviders(PojoCodecProvider.builder()
+                .automatic(true)
+                .register(new MapCodecProvider())
+                .build());
         CodecRegistry registry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), pojoCodec);
 
         MongoClientSettings clientSettings = MongoClientSettings.builder()
