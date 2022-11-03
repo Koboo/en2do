@@ -8,33 +8,34 @@ This framework is heavily inspired by [Spring Data](https://spring.io/projects/s
 
 ## Overview
 
-* [Current Features](#current-features)
-* [Add as dependency](#add-as-dependency)
-* [Get Started](#get-started)
-    * [Create MongoManager](#create-an-instance-of-the-mongomanager)
-    * [Define Entity](#define-an-entity-class)
-    * [Create Repository](#create-the-repository-for-the-entity)
-    * [Instantiate objects](#create-object-instances)
-* [Filter keywords](#filter-keywords)
-* [Method keywords](#method-keywords)
-* [Sorting via Annotations](#sorting-via-annotations-static)
-* [Sorting via Parameter](#sorting-via-parameter-dynamic)
-* [References](#references)
-* [WTFPL License](LICENSE)
+- [Current Features](#current-features)
+- [Add as dependency](#add-as-dependency)
+- [Get Started](#get-started)
+    - [Create MongoManager](#create-an-instance-of-the-mongomanager)
+    - [Define Entity](#define-an-entity-class)
+    - [Create Repository](#create-the-repository-for-the-entity)
+    - [Instantiate objects](#create-object-instances)
+- [Filter keywords](#filter-keywords)
+- [Method keywords](#method-keywords)
+- [Sorting](#sorting)
+  - [Sorting via Annotations](#static-sorting-via-annotations)
+  - [Sorting via Parameter](#dynamic-sorting-via-parameter)
+- [Indexing](#indexing)
+  - [Identifier](#identifier-indexing)
+  - [Multi-Field](#multi-field-indexing)
+- [References](#references)
+- [WTFPL License](LICENSE)
 
 ## Current Features
 
-* MongoDB Conversion of POJO
-  classes ([Learn more](https://www.mongodb.com/developer/languages/java/java-mapping-pojos/))
-* Create methods without implementing them ([Learn more](#filter-keywords))
-* Create methods with different operations ([Learn more](#method-keywords))
-* Object creation by proxy classes to simplify usage and method declaration
-* Load credentials from disk-files, resource-files or insert as hardcoded strings
-* Multiple ways to sort static or dynamic without implementing filters ([Learn more](#sorting))
+- MongoDB POJO-Codec classes ([Learn more](https://www.mongodb.com/developer/languages/java/java-mapping-pojos/))
+- Create methods without implementing them ([Learn more](#filter-keywords))
+- Create methods with different operations ([Learn more](#method-keywords))
+- Repositories by proxy classes to simplify usage and method declaration
+- Load credentials from files, resources or hardcoded Strings
+- Multiple ways to sort static or dynamic without implementing filters ([Learn more](#sorting))
 
 ## Add as dependency
-
-en2do is hosted and deployed on a private repository.
 
 **_Gradle (Groovy)_**:
 
@@ -104,13 +105,13 @@ MongoDB.
 
 **_Restrictions:_**
 
-* You cannot use a map with numbers as a key.
-    * ``Map<Short, ?>``
-    * ``Map<Integer, ?>``
-    * ``Map<Float, ?>``
-    * ``Map<Double, ?>``
-    * ``Map<Long, ?>``
-    * ``Map<Byte, ?>``
+- You cannot use a map with numbers as a key.
+    - ``Map<Short, ?>``
+    - ``Map<Integer, ?>``
+    - ``Map<Float, ?>``
+    - ``Map<Double, ?>``
+    - ``Map<Long, ?>``
+    - ``Map<Byte, ?>``
 
 **_Code Example:_**
 
@@ -148,7 +149,7 @@ public class Customer {
 
 There are also some annotations directly from MongoDB, but only one is supported.
 
-* ``@BsonIgnore``, to ignore a sortBy in the entity
+- ``@BsonIgnore``, to ignore a sortBy in the entity
 
 **_ATTENTION: You shouldn't use the other annotations, because it could break your entity!_**
 
@@ -253,7 +254,7 @@ Due to wrong validation checks, this could also occur unintentionally or not at 
 
 The framework allows sorting in 2 ways. These two ways cannot be used at the same time.
 
-## Sorting via Annotations (Static)
+## Static sorting via Annotations
 
 When sorting via annotation, the options for sorting must be written statically in annotations,
 which means that they can no longer be changed.
@@ -279,7 +280,7 @@ public interface CustomerRepository extends Repo<Customer, UUID> {
 }
 ````
 
-## Sorting via Parameter (Dynamic)
+## Dynamic sorting via Parameter
 
 Dynamic sorting is provided via the ``Sort`` method parameter. The ``Sort`` object and its
 options can be created in the Fluent pattern.
@@ -303,10 +304,72 @@ public class Application {
 }
 ````
 
+## Indexing
+
+MongoDB gives the user the possibility to index desired fields of a document.
+([Learn more](https://www.mongodb.com/docs/manual/indexes/))
+
+en2do also enables this feature, but a bit smaller than in native MongoDB.
+
+## Identifier indexing
+
+Basically the ``@Id`` of an entity is indexed. This can be disabled via ``@NonIndex`` if access should mostly be
+performed on other fields than the index.
+
+**_Code-Example:_**
+````java
+@Getter // lombok
+@Setter // lombok
+@NoArgsConstructor // lombok
+@FieldDefaults(level = AccessLevel.PRIVATE) // lombok
+@ToString // lombok
+public class Customer {
+
+    @Id // en2do
+    @NonIndex // en2do
+    UUID uniqueId;
+
+    //.. other fields, getter, setter
+}
+
+````
+
+## Multi-Field indexing
+Since the access does not always necessarily take place on the unique identifier, there is also the possibility to
+combine several fields at the same time to an index. This annotation is used for this function:
+
+- ``@EntityIndex(value = {"fieldName1", "fieldName2"}, ascending = false)``
+
+In the example, an index is created on the ``firstName`` and ``lastName`` of the ``Customer``, which would speed
+up the method ``findByFirstNameAndLastName(String first, String last);``.
+
+You can also add multiple ``@EntityIndex`` annotations in one entity.
+
+````java
+@Getter // lombok
+@Setter // lombok
+@NoArgsConstructor // lombok
+@FieldDefaults(level = AccessLevel.PRIVATE) // lombok
+@ToString // lombok
+@EntityIndex(value = {"firstName", "lastName"}, ascending = false) // en2do
+public class Customer {
+
+    @Id // en2do
+    @NonIndex // en2do
+    UUID uniqueId;
+
+    String firstName;
+    String lastName;
+    //.. other fields, getter, setter
+}
+````
+
 ## References
 
-* [JUnit 5 User Guide](https://junit.org/junit5/docs/current/user-guide/)
-* [JUnit 5 Test-Units](https://www.baeldung.com/junit-5-test-byField)
-* [MongoDB POJO Example](https://www.mongodb.com/developer/languages/java/java-mapping-pojos/)
-* [MongoDB POJO Documentation](https://mongodb.github.io/mongo-java-driver/3.5/bson/pojos/)
-* [Spring MongoDB Repositories](https://docs.spring.io/spring-data/mongodb/docs/1.2.0.RELEASE/reference/html/mongo.repositories.html)
+- [JUnit 5 User Guide](https://junit.org/junit5/docs/current/user-guide/)
+- [JUnit 5 Test-Units](https://www.baeldung.com/junit-5-test-byField)
+- [MongoDB Documentation](https://www.mongodb.com/docs/manual/introduction/)
+- [MongoDB POJO Example](https://www.mongodb.com/developer/languages/java/java-mapping-pojos/)
+- [MongoDB POJO Documentation](https://mongodb.github.io/mongo-java-driver/3.5/bson/pojos/)
+- [Spring MongoDB Repositories](https://docs.spring.io/spring-data/mongodb/docs/1.2.0.RELEASE/reference/html/mongo.repositories.html)
+- [WTFPL License About](http://www.wtfpl.net/)
