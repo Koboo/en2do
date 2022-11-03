@@ -1,11 +1,9 @@
-package eu.koboo.en2do.test.cases;
+package eu.koboo.en2do.test.customer.tests;
 
 import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
-import eu.koboo.en2do.test.customer.CustomerExtended;
-import eu.koboo.en2do.test.customer.CustomerExtendedRepository;
-import eu.koboo.en2do.utility.EntityUtils;
+import eu.koboo.en2do.test.customer.CustomerRepository;
 import org.junit.jupiter.api.*;
 
 import java.util.List;
@@ -13,17 +11,17 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class FindByFirstNameExtendedTest {
+public class FindByBalanceBetweenTest {
 
     static MongoManager manager;
-    static CustomerExtendedRepository repository;
+    static CustomerRepository repository;
 
     @BeforeAll
     public static void setup() {
-        System.out.println(FindByFirstNameExtendedTest.class.getName() + " START");
+        System.out.println(FindByBalanceBetweenTest.class.getName() + " START");
         manager = new MongoManager();
         assertNotNull(manager);
-        repository = manager.create(CustomerExtendedRepository.class);
+        repository = manager.create(CustomerRepository.class);
         assertNotNull(repository);
     }
 
@@ -31,7 +29,7 @@ public class FindByFirstNameExtendedTest {
     @Order(1)
     public void cleanUpRepository() {
         assertTrue(repository.drop());
-        List<CustomerExtended> customerList = repository.findAll();
+        List<Customer> customerList = repository.findAll();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
     }
@@ -40,17 +38,19 @@ public class FindByFirstNameExtendedTest {
     @Order(2)
     public void saveCustomer() {
         Customer customer = Const.createNew();
-        CustomerExtended customerExtended = new CustomerExtended();
-        EntityUtils.copyProperties(customer, customerExtended);
-        assertNotNull(customerExtended);
-        assertTrue(repository.save(customerExtended));
-        assertTrue(repository.exists(customerExtended));
+        assertNotNull(customer);
+        assertTrue(repository.save(customer));
+        assertTrue(repository.exists(customer));
     }
 
     @Test
     @Order(3)
     public void operationTest() {
-        CustomerExtended customer = repository.findByFirstName(Const.FIRST_NAME);
+        List<Customer> customerList = repository.findByBalanceBetweenAndCustomerId(100, 600, 1);
+        assertNotNull(customerList);
+        assertFalse(customerList.isEmpty());
+        assertEquals(1, customerList.size());
+        Customer customer = customerList.get(0);
         assertNotNull(customer);
         assertEquals(Const.CUSTOMER_ID, customer.getCustomerId());
         assertEquals(Const.FIRST_NAME, customer.getFirstName());
@@ -58,13 +58,11 @@ public class FindByFirstNameExtendedTest {
         assertEquals(Const.BIRTHDAY, customer.getBirthday());
         assertEquals(Const.PHONE_NUMBER, customer.getPhoneNumber());
         assertEquals(Const.ORDERS.size(), customer.getOrders().size());
-        assertNull(customer.getOrderStatus());
-        assertNull(customer.getLockStatus());
     }
 
     @AfterAll
     public static void finish() {
-        System.out.println(FindByFirstNameExtendedTest.class.getName() + " END");
+        System.out.println(FindByBalanceBetweenTest.class.getName() + " END");
         assertTrue(repository.drop());
         assertTrue(manager.close());
     }

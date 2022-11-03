@@ -1,4 +1,4 @@
-package eu.koboo.en2do.test.cases;
+package eu.koboo.en2do.test.customer.tests;
 
 import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.sort.object.ByField;

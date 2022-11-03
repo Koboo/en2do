@@ -1,4 +1,4 @@
-package eu.koboo.en2do.test.cases;
+package eu.koboo.en2do.test.customer.tests;
 
 import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.test.Const;
@@ -7,20 +7,18 @@ import eu.koboo.en2do.test.customer.CustomerRepository;
 import org.junit.jupiter.api.*;
 
 import java.util.List;
-import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class ExistsByLastNameContainsTest {
+public class FindByIdTest {
 
     static MongoManager manager;
     static CustomerRepository repository;
 
     @BeforeAll
     public static void setup() {
-        System.out.println(ExistsByLastNameContainsTest.class.getName() + " START");
+        System.out.println(FindByIdTest.class.getName() + " START");
         manager = new MongoManager();
         assertNotNull(manager);
         repository = manager.create(CustomerRepository.class);
@@ -40,20 +38,28 @@ public class ExistsByLastNameContainsTest {
     @Order(2)
     public void saveCustomer() {
         Customer customer = Const.createNew();
-        customer.setUniqueId(UUID.randomUUID());
+        assertNotNull(customer);
+        assertFalse(repository.exists(customer));
         assertTrue(repository.save(customer));
         assertTrue(repository.exists(customer));
     }
 
     @Test
     @Order(3)
-    public void existsCustomer() {
-        assertTrue(repository.existsByLastNameContains("fal"));
+    public void findCustomer() {
+        assertTrue(repository.existsById(Const.UNIQUE_ID));
+        Customer customer = repository.findById(Const.UNIQUE_ID);
+        assertNotNull(customer);
+        assertEquals(Const.FIRST_NAME, customer.getFirstName());
+        assertEquals(Const.LAST_NAME, customer.getLastName());
+        assertEquals(Const.BIRTHDAY, customer.getBirthday());
+        assertEquals(Const.PHONE_NUMBER, customer.getPhoneNumber());
+        assertEquals(Const.ORDERS.size(), customer.getOrders().size());
     }
 
     @AfterAll
     public static void finish() {
-        System.out.println(ExistsByLastNameContainsTest.class.getName() + " END");
+        System.out.println(FindByIdTest.class.getName() + " END");
         assertTrue(repository.drop());
         assertTrue(manager.close());
     }

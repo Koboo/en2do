@@ -1,9 +1,11 @@
-package eu.koboo.en2do.test.cases;
+package eu.koboo.en2do.test.customer.tests;
 
 import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
-import eu.koboo.en2do.test.customer.CustomerRepository;
+import eu.koboo.en2do.test.customer.CustomerExtended;
+import eu.koboo.en2do.test.customer.CustomerExtendedRepository;
+import eu.koboo.en2do.utility.EntityUtils;
 import org.junit.jupiter.api.*;
 
 import java.util.List;
@@ -11,17 +13,17 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class FindByIdTest {
+public class FindByFirstNameExtendedTest {
 
     static MongoManager manager;
-    static CustomerRepository repository;
+    static CustomerExtendedRepository repository;
 
     @BeforeAll
     public static void setup() {
-        System.out.println(FindByIdTest.class.getName() + " START");
+        System.out.println(FindByFirstNameExtendedTest.class.getName() + " START");
         manager = new MongoManager();
         assertNotNull(manager);
-        repository = manager.create(CustomerRepository.class);
+        repository = manager.create(CustomerExtendedRepository.class);
         assertNotNull(repository);
     }
 
@@ -29,7 +31,7 @@ public class FindByIdTest {
     @Order(1)
     public void cleanUpRepository() {
         assertTrue(repository.drop());
-        List<Customer> customerList = repository.findAll();
+        List<CustomerExtended> customerList = repository.findAll();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
     }
@@ -38,28 +40,31 @@ public class FindByIdTest {
     @Order(2)
     public void saveCustomer() {
         Customer customer = Const.createNew();
-        assertNotNull(customer);
-        assertFalse(repository.exists(customer));
-        assertTrue(repository.save(customer));
-        assertTrue(repository.exists(customer));
+        CustomerExtended customerExtended = new CustomerExtended();
+        EntityUtils.copyProperties(customer, customerExtended);
+        assertNotNull(customerExtended);
+        assertTrue(repository.save(customerExtended));
+        assertTrue(repository.exists(customerExtended));
     }
 
     @Test
     @Order(3)
-    public void findCustomer() {
-        assertTrue(repository.existsById(Const.UNIQUE_ID));
-        Customer customer = repository.findById(Const.UNIQUE_ID);
+    public void operationTest() {
+        CustomerExtended customer = repository.findByFirstName(Const.FIRST_NAME);
         assertNotNull(customer);
+        assertEquals(Const.CUSTOMER_ID, customer.getCustomerId());
         assertEquals(Const.FIRST_NAME, customer.getFirstName());
         assertEquals(Const.LAST_NAME, customer.getLastName());
         assertEquals(Const.BIRTHDAY, customer.getBirthday());
         assertEquals(Const.PHONE_NUMBER, customer.getPhoneNumber());
         assertEquals(Const.ORDERS.size(), customer.getOrders().size());
+        assertNull(customer.getOrderStatus());
+        assertNull(customer.getLockStatus());
     }
 
     @AfterAll
     public static void finish() {
-        System.out.println(FindByIdTest.class.getName() + " END");
+        System.out.println(FindByFirstNameExtendedTest.class.getName() + " END");
         assertTrue(repository.drop());
         assertTrue(manager.close());
     }

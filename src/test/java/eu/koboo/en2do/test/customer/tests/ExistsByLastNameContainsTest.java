@@ -1,4 +1,4 @@
-package eu.koboo.en2do.test.cases;
+package eu.koboo.en2do.test.customer.tests;
 
 import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.test.Const;
@@ -7,18 +7,20 @@ import eu.koboo.en2do.test.customer.CustomerRepository;
 import org.junit.jupiter.api.*;
 
 import java.util.List;
+import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class DeleteByIdTest {
+public class ExistsByLastNameContainsTest {
 
     static MongoManager manager;
     static CustomerRepository repository;
 
     @BeforeAll
     public static void setup() {
-        System.out.println(DeleteByIdTest.class.getName() + " START");
+        System.out.println(ExistsByLastNameContainsTest.class.getName() + " START");
         manager = new MongoManager();
         assertNotNull(manager);
         repository = manager.create(CustomerRepository.class);
@@ -38,21 +40,20 @@ public class DeleteByIdTest {
     @Order(2)
     public void saveCustomer() {
         Customer customer = Const.createNew();
+        customer.setUniqueId(UUID.randomUUID());
         assertTrue(repository.save(customer));
         assertTrue(repository.exists(customer));
     }
 
     @Test
     @Order(3)
-    public void deleteCustomer() {
-        assertTrue(repository.deleteById(Const.UNIQUE_ID));
-        assertFalse(repository.existsById(Const.UNIQUE_ID));
-        assertEquals(0, repository.countByCustomerId(Const.CUSTOMER_ID));
+    public void existsCustomer() {
+        assertTrue(repository.existsByLastNameContains("fal"));
     }
 
     @AfterAll
     public static void finish() {
-        System.out.println(DeleteByIdTest.class.getName() + " END");
+        System.out.println(ExistsByLastNameContainsTest.class.getName() + " END");
         assertTrue(repository.drop());
         assertTrue(manager.close());
     }

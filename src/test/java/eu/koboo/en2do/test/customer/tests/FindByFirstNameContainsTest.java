@@ -1,4 +1,4 @@
-package eu.koboo.en2do.test.cases;
+package eu.koboo.en2do.test.customer.tests;
 
 import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.test.Const;
@@ -11,14 +11,14 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class FindByBalanceBetweenTest {
+public class FindByFirstNameContainsTest {
 
     static MongoManager manager;
     static CustomerRepository repository;
 
     @BeforeAll
     public static void setup() {
-        System.out.println(FindByBalanceBetweenTest.class.getName() + " START");
+        System.out.println(FindByFirstNameContainsTest.class.getName() + " START");
         manager = new MongoManager();
         assertNotNull(manager);
         repository = manager.create(CustomerRepository.class);
@@ -46,11 +46,7 @@ public class FindByBalanceBetweenTest {
     @Test
     @Order(3)
     public void operationTest() {
-        List<Customer> customerList = repository.findByBalanceBetweenAndCustomerId(100, 600, 1);
-        assertNotNull(customerList);
-        assertFalse(customerList.isEmpty());
-        assertEquals(1, customerList.size());
-        Customer customer = customerList.get(0);
+        Customer customer = repository.findByFirstNameContains("aine");
         assertNotNull(customer);
         assertEquals(Const.CUSTOMER_ID, customer.getCustomerId());
         assertEquals(Const.FIRST_NAME, customer.getFirstName());
@@ -62,7 +58,7 @@ public class FindByBalanceBetweenTest {
 
     @AfterAll
     public static void finish() {
-        System.out.println(FindByBalanceBetweenTest.class.getName() + " END");
+        System.out.println(FindByFirstNameContainsTest.class.getName() + " END");
         assertTrue(repository.drop());
         assertTrue(manager.close());
     }
