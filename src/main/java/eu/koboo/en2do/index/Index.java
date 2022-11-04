@@ -4,10 +4,10 @@ import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@Repeatable(EntityIndexArray.class)
-public @interface EntityIndex {
+@Repeatable(CompoundIndex.class)
+public @interface Index {
 
-    String[] value();
+    String value();
 
     boolean ascending() default true;
 }

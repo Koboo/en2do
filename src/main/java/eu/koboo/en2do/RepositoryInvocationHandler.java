@@ -350,6 +350,7 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
                 retFilter = Filters.lte(fieldName, getFilterableValue(args[paramsIndexAt]));
             }
             case REGEX -> {
+                // MongoDB supports multiple types of regex filtering, so check which type is provided.
                 Object value = getFilterableValue(args[paramsIndexAt]);
                 if (value instanceof String patternString) {
                     retFilter = Filters.regex(fieldName, patternString);

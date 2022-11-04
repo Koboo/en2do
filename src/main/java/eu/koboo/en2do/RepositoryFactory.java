@@ -1,10 +1,12 @@
 package eu.koboo.en2do;
 
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import eu.koboo.en2do.exception.*;
-import eu.koboo.en2do.index.EntityIndex;
+import eu.koboo.en2do.index.CompoundIndex;
 import eu.koboo.en2do.index.Id;
+import eu.koboo.en2do.index.Index;
 import eu.koboo.en2do.index.NonIndex;
 import eu.koboo.en2do.sort.annotation.Limit;
 import eu.koboo.en2do.sort.annotation.Skip;
@@ -122,26 +124,32 @@ public class RepositoryFactory {
         // Creating an index on the uniqueIdentifier field of the entity to speed up queries,
         // but only if wanted. Users can disable that with the annotation.
         if (!entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
-            entityCollection.createIndex(Indexes.ascending(entityUniqueIdField.getName()));
+            entityCollection.createIndex(Indexes.ascending(entityUniqueIdField.getName()), new IndexOptions().unique(true));
         }
-        Set<EntityIndex> entityIndexList = getAllEntityIndecies(entityClass);
-        for (EntityIndex entityIndex : entityIndexList) {
+        Set<CompoundIndex> compoundIndexList = getAllEntityIndecies(entityClass);
+        for (CompoundIndex compoundIndex : compoundIndexList) {
             // Checking if the field in the annotation exists in the entity class.
-            String[] fieldIndexes = entityIndex.value();
-            for (String fieldIndex : fieldIndexes) {
-                if (allFields.stream().map(Field::getName).noneMatch(fieldIndex::equalsIgnoreCase)) {
-                    throw new RepositoryFieldNotFoundException(repoClass, fieldIndex);
+            Index[] fieldIndexes = compoundIndex.value();
+            for (Index fieldIndex : fieldIndexes) {
+                if (allFields.stream().map(Field::getName).noneMatch(fieldName -> fieldIndex.value().equalsIgnoreCase(fieldName))) {
+                    throw new RepositoryIndexFieldNotFoundException(repoClass, fieldIndex.value());
                 }
             }
             // Validated all fields and creating the indexes on the collection.
-            List<String> indexList = Arrays.asList(fieldIndexes);
-            Bson keys;
-            if (entityIndex.ascending()) {
-                keys = Indexes.ascending(indexList);
-            } else {
-                keys = Indexes.descending(indexList);
+            List<Bson> indexBsonList = new ArrayList<>();
+            for (Index fieldIndex : fieldIndexes) {
+                String fieldName = fieldIndex.value();
+                Bson bsonIndex;
+                if (fieldIndex.ascending()) {
+                    bsonIndex = Indexes.ascending(fieldName);
+                } else {
+                    bsonIndex = Indexes.descending(fieldName);
+                }
+                indexBsonList.add(bsonIndex);
             }
-            entityCollection.createIndex(keys);
+            IndexOptions indexOptions = new IndexOptions()
+                    .unique(compoundIndex.uniqueIndex());
+            entityCollection.createIndex(Indexes.compoundIndex(indexBsonList), indexOptions);
         }
 
         // Create dynamic repository proxy object
@@ -348,17 +356,17 @@ public class RepositoryFactory {
         return fields;
     }
 
-    private <E> Set<EntityIndex> getAllEntityIndecies(Class<E> entityClass) {
-        Set<EntityIndex> entityIndexList = new HashSet<>();
+    private <E> Set<CompoundIndex> getAllEntityIndecies(Class<E> entityClass) {
+        Set<CompoundIndex> compoundIndexList = new HashSet<>();
         Class<?> clazz = entityClass;
         while (clazz != Object.class) {
-            EntityIndex[] indexArray = clazz.getAnnotationsByType(EntityIndex.class);
+            CompoundIndex[] indexArray = clazz.getAnnotationsByType(CompoundIndex.class);
             clazz = clazz.getSuperclass();
             if (indexArray.length == 0) {
                 continue;
             }
-            entityIndexList.addAll(Arrays.asList(indexArray));
+            compoundIndexList.addAll(Arrays.asList(indexArray));
         }
-        return entityIndexList;
+        return compoundIndexList;
     }
 }
