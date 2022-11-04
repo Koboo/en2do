@@ -1,32 +1,19 @@
 package eu.koboo.en2do.test.customer.tests;
 
-import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.sort.object.ByField;
 import eu.koboo.en2do.sort.object.Sort;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
-import eu.koboo.en2do.test.customer.CustomerRepository;
-import org.junit.jupiter.api.*;
+import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class CustomerFindByCustomerIdNotSortParameterTest {
-
-    static MongoManager manager;
-    static CustomerRepository repository;
-
-    @BeforeAll
-    public static void setup() {
-        System.out.println(CustomerFindByCustomerIdNotSortParameterTest.class.getName() + " START");
-        manager = new MongoManager();
-        assertNotNull(manager);
-        repository = manager.create(CustomerRepository.class);
-        assertNotNull(repository);
-    }
+public class CustomerFindByCustomerIdNotSortParameterTest extends CustomerRepositoryTest {
 
     @Test
     @Order(1)
@@ -69,12 +56,5 @@ public class CustomerFindByCustomerIdNotSortParameterTest {
             assertEquals(Const.PHONE_NUMBER, customer.getPhoneNumber());
             assertEquals(Const.ORDERS.size(), customer.getOrders().size());
         }
-    }
-
-    @AfterAll
-    public static void finish() {
-        System.out.println(CustomerFindByCustomerIdNotSortParameterTest.class.getName() + " END");
-        assertTrue(repository.drop());
-        assertTrue(manager.close());
     }
 }

@@ -1,29 +1,16 @@
 package eu.koboo.en2do.test.alien.tests;
 
-import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.alien.Alien;
-import eu.koboo.en2do.test.alien.AlienRepository;
-import org.junit.jupiter.api.*;
+import eu.koboo.en2do.test.alien.AlienRepositoryTest;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class AlienSaveAndFindTest {
-
-    static MongoManager manager;
-    static AlienRepository repository;
-
-    @BeforeAll
-    public static void setup() {
-        System.out.println(AlienSaveAndFindTest.class.getName() + " START");
-        manager = new MongoManager();
-        assertNotNull(manager);
-        repository = manager.create(AlienRepository.class);
-        assertNotNull(repository);
-    }
+public class AlienSaveAndFindTest extends AlienRepositoryTest {
 
     @Test
     @Order(1)
@@ -52,12 +39,5 @@ public class AlienSaveAndFindTest {
         assertEquals(3, alien.getUfoIdList().size());
         assertEquals(3, alien.getPlanetTimeMap().size());
         assertEquals(3, alien.getTranslationPlanetMap().size());
-    }
-
-    @AfterAll
-    public static void finish() {
-        System.out.println(AlienSaveAndFindTest.class.getName() + " END");
-        //assertTrue(repository.drop());
-        assertTrue(manager.close());
     }
 }

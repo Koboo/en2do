@@ -1,31 +1,18 @@
-package eu.koboo.en2do.test.customer.tests;
+package eu.koboo.en2do.test.customerextended.tests;
 
-import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
-import eu.koboo.en2do.test.customer.CustomerExtended;
-import eu.koboo.en2do.test.customer.CustomerExtendedRepository;
+import eu.koboo.en2do.test.customerextended.CustomerExtended;
+import eu.koboo.en2do.test.customerextended.CustomerExtendedRepositoryTest;
 import eu.koboo.en2do.utility.EntityUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class CustomerFindByFirstNameExtendedTest {
-
-    static MongoManager manager;
-    static CustomerExtendedRepository repository;
-
-    @BeforeAll
-    public static void setup() {
-        System.out.println(CustomerFindByFirstNameExtendedTest.class.getName() + " START");
-        manager = new MongoManager();
-        assertNotNull(manager);
-        repository = manager.create(CustomerExtendedRepository.class);
-        assertNotNull(repository);
-    }
+public class CustomerFindByFirstNameExtendedTest extends CustomerExtendedRepositoryTest {
 
     @Test
     @Order(1)
@@ -59,12 +46,5 @@ public class CustomerFindByFirstNameExtendedTest {
         assertEquals(Const.ORDERS.size(), customer.getOrders().size());
         assertNull(customer.getOrderStatus());
         assertNull(customer.getLockStatus());
-    }
-
-    @AfterAll
-    public static void finish() {
-        System.out.println(CustomerFindByFirstNameExtendedTest.class.getName() + " END");
-        assertTrue(repository.drop());
-        assertTrue(manager.close());
     }
 }

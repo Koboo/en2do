@@ -1,12 +1,9 @@
 package eu.koboo.en2do.test.alien;
 
 import eu.koboo.en2do.index.Id;
-import eu.koboo.en2do.test.customer.CustomerType;
-import eu.koboo.en2do.test.customer.Order;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 

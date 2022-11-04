@@ -1,4 +1,4 @@
-package eu.koboo.en2do.test.customer;
+package eu.koboo.en2do.test.customerextended;
 
 import eu.koboo.en2do.Collection;
 import eu.koboo.en2do.Repository;
