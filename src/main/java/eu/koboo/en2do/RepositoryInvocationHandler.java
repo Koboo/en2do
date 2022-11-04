@@ -125,12 +125,12 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
             E entity = checkEntity(method, args[0]);
             ID uniqueId = checkUniqueId(method, getUniqueId(entity));
             Bson idFilter = createIdFilter(uniqueId);
-            return collection.find(idFilter).limit(1).first() != null;
+            return collection.countDocuments(idFilter) > 0;
         }
         if (methodName.equalsIgnoreCase("existsById")) {
             ID uniqueId = checkUniqueId(method, args[0]);
             Bson idFilter = createIdFilter(uniqueId);
-            return collection.find(idFilter).limit(1).first() != null;
+            return collection.countDocuments(idFilter) > 0;
         }
 
         // Start of the dynamic methods
