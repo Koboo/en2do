@@ -8,14 +8,14 @@ import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import eu.koboo.en2do.exception.*;
+import eu.koboo.en2do.methods.FilterType;
+import eu.koboo.en2do.methods.MethodOperator;
 import eu.koboo.en2do.sort.annotation.Limit;
 import eu.koboo.en2do.sort.annotation.Skip;
 import eu.koboo.en2do.sort.annotation.SortBy;
 import eu.koboo.en2do.sort.object.ByField;
 import eu.koboo.en2do.sort.object.Sort;
 import eu.koboo.en2do.utility.GenericUtils;
-import eu.koboo.en2do.methods.FilterType;
-import eu.koboo.en2do.methods.MethodOperator;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -48,11 +48,9 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
         if (methodName.equalsIgnoreCase("getCollectionName")) {
-            checkArguments(method, args, 0);
             return entityCollectionName;
         }
         if (methodName.equalsIgnoreCase("getUniqueId")) {
-            checkArguments(method, args, 1);
             E entity = checkEntity(method, args[0]);
             return checkUniqueId(method, getUniqueId(entity));
         }
@@ -66,17 +64,14 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
             return entityUniqueIdClass;
         }
         if (methodName.equalsIgnoreCase("findById")) {
-            checkArguments(method, args, 1);
             ID uniqueId = checkUniqueId(method, args[0]);
             Bson idFilter = createIdFilter(uniqueId);
             return collection.find(idFilter).limit(0).first();
         }
         if (methodName.equalsIgnoreCase("findAll")) {
-            checkArguments(method, args, 0);
             return collection.find().into(new ArrayList<>());
         }
         if (methodName.equalsIgnoreCase("delete")) {
-            checkArguments(method, args, 1);
             E entity = checkEntity(method, args[0]);
             ID uniqueId = checkUniqueId(method, getUniqueId(entity));
             Bson idFilter = createIdFilter(uniqueId);
@@ -84,17 +79,14 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
             return result.wasAcknowledged();
         }
         if (methodName.equalsIgnoreCase("deleteById")) {
-            checkArguments(method, args, 1);
             ID uniqueId = checkUniqueId(method, args[0]);
             Bson idFilter = createIdFilter(uniqueId);
             DeleteResult result = collection.deleteOne(idFilter);
             return result.wasAcknowledged();
         }
         if (methodName.equalsIgnoreCase("deleteAll")) {
-            checkArguments(method, args, 1);
             List<E> entityList = checkEntityList(method, args[0]);
             for (E entity : entityList) {
-                checkArguments(method, args, 1);
                 ID uniqueId = checkUniqueId(method, getUniqueId(entity));
                 Bson idFilter = createIdFilter(uniqueId);
                 DeleteResult result = collection.deleteOne(idFilter);
@@ -102,16 +94,14 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
             return true;
         }
         if (methodName.equalsIgnoreCase("drop")) {
-            checkArguments(method, args, 0);
             collection.drop();
             return true;
         }
         if (methodName.equalsIgnoreCase("save")) {
-            checkArguments(method, args, 1);
             E entity = checkEntity(method, args[0]);
             ID uniqueId = checkUniqueId(method, getUniqueId(entity));
             Bson idFilter = createIdFilter(uniqueId);
-            if (createIterable(idFilter).limit(1).first() != null) {
+            if (collection.countDocuments(idFilter) > 0) {
                 UpdateResult result = collection.replaceOne(idFilter, entity, new ReplaceOptions().upsert(true));
                 return result.wasAcknowledged();
             }
@@ -119,12 +109,11 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
             return true;
         }
         if (methodName.equalsIgnoreCase("saveAll")) {
-            checkArguments(method, args, 1);
             List<E> entityList = checkEntityList(method, args[0]);
             for (E entity : entityList) {
                 ID uniqueId = checkUniqueId(method, getUniqueId(entity));
                 Bson idFilter = createIdFilter(uniqueId);
-                if (createIterable(idFilter).limit(1).first() != null) {
+                if (collection.countDocuments(idFilter) > 0) {
                     UpdateResult result = collection.replaceOne(idFilter, entity, new ReplaceOptions().upsert(true));
                     return result.wasAcknowledged();
                 }
@@ -133,14 +122,12 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
             return true;
         }
         if (methodName.equalsIgnoreCase("exists")) {
-            checkArguments(method, args, 1);
             E entity = checkEntity(method, args[0]);
             ID uniqueId = checkUniqueId(method, getUniqueId(entity));
             Bson idFilter = createIdFilter(uniqueId);
             return collection.find(idFilter).limit(1).first() != null;
         }
         if (methodName.equalsIgnoreCase("existsById")) {
-            checkArguments(method, args, 1);
             ID uniqueId = checkUniqueId(method, args[0]);
             Bson idFilter = createIdFilter(uniqueId);
             return collection.find(idFilter).limit(1).first() != null;
@@ -200,23 +187,14 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
             }
         }
         if (methodOperator == MethodOperator.DELETE) {
-            if (GenericUtils.isTypeOf(Boolean.class, returnTypeClass)) {
-                DeleteResult deleteResult = collection.deleteMany(filter);
-                return deleteResult.wasAcknowledged();
-            }
+            DeleteResult deleteResult = collection.deleteMany(filter);
+            return deleteResult.wasAcknowledged();
         }
         if (methodOperator == MethodOperator.EXISTS) {
-            if (GenericUtils.isTypeOf(Boolean.class, returnTypeClass)) {
-                FindIterable<E> findIterable = collection.find(filter);
-                findIterable = applySortAnnotations(method, findIterable);
-                E entity = findIterable.limit(1).first();
-                return entity != null;
-            }
+            return collection.countDocuments(filter) > 0;
         }
         if (methodOperator == MethodOperator.COUNT) {
-            if (GenericUtils.isTypeOf(Long.class, returnTypeClass)) {
-                return collection.countDocuments(filter);
-            }
+            return collection.countDocuments(filter);
         }
         throw new RepositoryInvalidCallException(method, repoClass);
     }
