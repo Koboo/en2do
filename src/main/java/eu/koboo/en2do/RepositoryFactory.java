@@ -8,6 +8,8 @@ import eu.koboo.en2do.index.CompoundIndex;
 import eu.koboo.en2do.index.Id;
 import eu.koboo.en2do.index.Index;
 import eu.koboo.en2do.index.NonIndex;
+import eu.koboo.en2do.repository.DropEntitiesOnStart;
+import eu.koboo.en2do.repository.DropIndexesOnStart;
 import eu.koboo.en2do.sort.annotation.Limit;
 import eu.koboo.en2do.sort.annotation.Skip;
 import eu.koboo.en2do.sort.annotation.SortBy;
@@ -120,6 +122,16 @@ public class RepositoryFactory {
         }
         String entityCollectionName = collectionAnnotation.value();
         MongoCollection<E> entityCollection = manager.getDatabase().getCollection(entityCollectionName, entityClass);
+
+        // Drop all entities on start if annotation is present.
+        if(repoClass.isAnnotationPresent(DropEntitiesOnStart.class)) {
+            entityCollection.drop();
+        }
+
+        // Drop all indexes on start if annotation is present.
+        if(repoClass.isAnnotationPresent(DropIndexesOnStart.class)) {
+            entityCollection.dropIndexes();
+        }
 
         // Creating an index on the uniqueIdentifier field of the entity to speed up queries,
         // but only if wanted. Users can disable that with the annotation.
