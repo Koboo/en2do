@@ -13,41 +13,42 @@ import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Properties;
-
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MongoManager {
-
-    private static final String FILE_NAME = "credentials.properties";
 
     MongoClient client;
     MongoDatabase database;
     RepositoryFactory factory;
 
-    public MongoManager(String connectString, String databaseString) {
+    public MongoManager(Credentials credentials) {
 
-        if (connectString == null && databaseString == null) {
-            String[] credentials = readConfig();
-            if (credentials == null) {
-                throw new NullPointerException("No credentials given! Please make sure to provide " +
-                        "accessible credentials.");
-            }
-            connectString = credentials[0];
-            databaseString = credentials[1];
+        // If no credentials given, try loading them from default file.
+        if (credentials == null) {
+            credentials = Credentials.fromFile();
         }
+        // If no credentials given, try loading them from default resource.
+        if (credentials == null) {
+            credentials = Credentials.fromResource();
+        }
+        // If no credentials given, throw exception.
+        if(credentials == null) {
+            throw new NullPointerException("No credentials given! Please make sure to provide " +
+                    "accessible credentials.");
+        }
+
+        String connectString = credentials.connectString();
+        // If credentials connectString is null, throw exception
         if (connectString == null) {
             throw new NullPointerException("No connectString given! Please make sure to provide a " +
                     "accessible connectString.");
         }
+        // If credentials databaseString is null, throw exception
+        String databaseString = credentials.database();
         if (databaseString == null) {
             throw new NullPointerException("No databaseString given! Please make sure to provide a " +
                     "accessible databaseString.");
         }
+
         ConnectionString connection = new ConnectionString(connectString);
 
         CodecRegistry pojoCodec = CodecRegistries.fromProviders(PojoCodecProvider.builder()
@@ -69,7 +70,7 @@ public class MongoManager {
     }
 
     public MongoManager() {
-        this(null, null);
+        this(null);
     }
 
     protected MongoDatabase getDatabase() {
@@ -92,41 +93,5 @@ public class MongoManager {
             e.printStackTrace();
             return false;
         }
-    }
-
-    private static String[] readConfig() {
-        File diskFile = new File(FILE_NAME);
-        if (diskFile.exists()) {
-            try (InputStream inputStream = new FileInputStream(diskFile)) {
-                return readProperties(inputStream);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-        Class<MongoManager> managerClass = MongoManager.class;
-        URL resourceFile = managerClass.getResource(FILE_NAME);
-        if (resourceFile != null) {
-            try (InputStream inputStream = managerClass.getResourceAsStream(FILE_NAME)) {
-                return readProperties(inputStream);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
-    }
-
-    private static String[] readProperties(InputStream inputStream) {
-        try {
-            Properties properties = new Properties();
-            properties.load(inputStream);
-            return new String[]{
-                    properties.getProperty("mongodb.connect"),
-                    properties.getProperty("mongodb.database")
-            };
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 }
