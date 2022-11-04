@@ -28,7 +28,6 @@ public class AlienSaveAndFindTest {
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        assertTrue(repository.drop());
         List<Alien> customerList = repository.findAll();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());

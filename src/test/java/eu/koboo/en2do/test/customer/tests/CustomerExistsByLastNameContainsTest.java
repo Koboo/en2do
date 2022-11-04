@@ -30,7 +30,6 @@ public class CustomerExistsByLastNameContainsTest {
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        assertTrue(repository.drop());
         List<Customer> customerList = repository.findAll();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
