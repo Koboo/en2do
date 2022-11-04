@@ -69,7 +69,7 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
             checkArguments(method, args, 1);
             ID uniqueId = checkUniqueId(method, args[0]);
             Bson idFilter = createIdFilter(uniqueId);
-            return collection.find(idFilter).first();
+            return collection.find(idFilter).limit(0).first();
         }
         if (methodName.equalsIgnoreCase("findAll")) {
             checkArguments(method, args, 0);
@@ -111,7 +111,7 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
             E entity = checkEntity(method, args[0]);
             ID uniqueId = checkUniqueId(method, getUniqueId(entity));
             Bson idFilter = createIdFilter(uniqueId);
-            if (createIterable(idFilter).first() != null) {
+            if (createIterable(idFilter).limit(1).first() != null) {
                 UpdateResult result = collection.replaceOne(idFilter, entity, new ReplaceOptions().upsert(true));
                 return result.wasAcknowledged();
             }
@@ -124,7 +124,7 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
             for (E entity : entityList) {
                 ID uniqueId = checkUniqueId(method, getUniqueId(entity));
                 Bson idFilter = createIdFilter(uniqueId);
-                if (createIterable(idFilter).first() != null) {
+                if (createIterable(idFilter).limit(1).first() != null) {
                     UpdateResult result = collection.replaceOne(idFilter, entity, new ReplaceOptions().upsert(true));
                     return result.wasAcknowledged();
                 }
@@ -137,13 +137,13 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
             E entity = checkEntity(method, args[0]);
             ID uniqueId = checkUniqueId(method, getUniqueId(entity));
             Bson idFilter = createIdFilter(uniqueId);
-            return collection.find(idFilter).first() != null;
+            return collection.find(idFilter).limit(1).first() != null;
         }
         if (methodName.equalsIgnoreCase("existsById")) {
             checkArguments(method, args, 1);
             ID uniqueId = checkUniqueId(method, args[0]);
             Bson idFilter = createIdFilter(uniqueId);
-            return collection.find(idFilter).first() != null;
+            return collection.find(idFilter).limit(1).first() != null;
         }
 
         // Start of the dynamic methods
@@ -196,7 +196,7 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
                 FindIterable<E> findIterable = collection.find(filter);
                 findIterable = applySortObject(method, findIterable, args);
                 findIterable = applySortAnnotations(method, findIterable);
-                return findIterable.first();
+                return findIterable.limit(1).first();
             }
         }
         if (methodOperator == MethodOperator.DELETE) {
@@ -209,7 +209,7 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
             if (GenericUtils.isTypeOf(Boolean.class, returnTypeClass)) {
                 FindIterable<E> findIterable = collection.find(filter);
                 findIterable = applySortAnnotations(method, findIterable);
-                E entity = findIterable.first();
+                E entity = findIterable.limit(1).first();
                 return entity != null;
             }
         }
