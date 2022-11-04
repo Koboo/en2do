@@ -311,8 +311,10 @@ Indexing allows faster access to entities based on the fields specified in the i
 
 ## Identifier indexing
 
-Basically the ``@Id`` of an entity is indexed. This can be disabled via ``@NonIndex`` if access should mostly be
-performed on other fields than the index.
+By default, the ``@Id`` field of an entity is indexed. This can be disabled via ``@NonIndex`` if access should mostly be
+performed on other fields/queries than the unique identifier.
+
+This should also be done if the ``@Id`` field isn't unique!
 
 **_Code-Example:_**
 ````java
@@ -337,12 +339,12 @@ public class Customer {
 Since the access does not always necessarily take place on the unique identifier, there is also the possibility to
 combine several fields at the same time to an index. This annotation is used for this function:
 
-- ``@EntityIndex(value = {"fieldName1", "fieldName2"}, ascending = false)``
+- ``@CompoundIndex(value = { @Index("fieldName1"), @Index(value = "fieldName2", ascending = false) }, uniqueIndex = true)``
 
 In the example, an index is created on the ``firstName`` and ``lastName`` of the ``Customer`` entity, which would speed
 up the method ``findByFirstNameAndLastName(String first, String last);``.
 
-It's possible to add multiple ``@EntityIndex`` annotations in one entity.
+It's possible to add multiple ``@CompoundIndex`` annotations in one entity.
 
 ````java
 @Getter // lombok
@@ -350,7 +352,8 @@ It's possible to add multiple ``@EntityIndex`` annotations in one entity.
 @NoArgsConstructor // lombok
 @FieldDefaults(level = AccessLevel.PRIVATE) // lombok
 @ToString // lombok
-@EntityIndex(value = {"firstName", "lastName"}, ascending = false) // en2do
+@CompoundIndex({ @Index("firstName"), @Index(value = "lastName", ascending = false) }) // en2do
+@CompoundIndex(value = { @Index("uniqueId"), @Index("firstName") }, uniqueIndex = true) // en2do
 public class Customer {
 
     @Id // en2do
@@ -373,4 +376,5 @@ public class Customer {
 - [MongoDB MapCodec GitHub](https://github.com/benjamonnguyen/mongodb-bson-codec)
 - [MongoDB MapCodec StackOverflow](https://stackoverflow.com/questions/67849754/mongodb-mapk-v-codec-maps-must-have-string-keys-fix)
 - [Spring MongoDB Repositories](https://docs.spring.io/spring-data/mongodb/docs/1.2.0.RELEASE/reference/html/mongo.repositories.html)
+- [Advanced MongoDB Performance Tuning](https://medium.com/idealo-tech-blog/advanced-mongodb-performance-tuning-2ddcd01a27d2)
 - [WTFPL License About](http://www.wtfpl.net/)
