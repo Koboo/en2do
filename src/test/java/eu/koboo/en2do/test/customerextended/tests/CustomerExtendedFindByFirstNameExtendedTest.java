@@ -12,7 +12,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CustomerFindByFirstNameExtendedTest extends CustomerExtendedRepositoryTest {
+public class CustomerExtendedFindByFirstNameExtendedTest extends CustomerExtendedRepositoryTest {
 
     @Test
     @Order(1)
