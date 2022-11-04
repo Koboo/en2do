@@ -307,6 +307,8 @@ MongoDB gives the user the possibility to index desired fields of a document.
 
 en2do also enables this feature, but a bit smaller than in native MongoDB.
 
+Indexing allows faster access to entities based on the fields specified in the index.
+
 ## Identifier indexing
 
 Basically the ``@Id`` of an entity is indexed. This can be disabled via ``@NonIndex`` if access should mostly be
@@ -331,15 +333,16 @@ public class Customer {
 ````
 
 ## Multi-Field indexing
+
 Since the access does not always necessarily take place on the unique identifier, there is also the possibility to
 combine several fields at the same time to an index. This annotation is used for this function:
 
 - ``@EntityIndex(value = {"fieldName1", "fieldName2"}, ascending = false)``
 
-In the example, an index is created on the ``firstName`` and ``lastName`` of the ``Customer``, which would speed
+In the example, an index is created on the ``firstName`` and ``lastName`` of the ``Customer`` entity, which would speed
 up the method ``findByFirstNameAndLastName(String first, String last);``.
 
-You can also add multiple ``@EntityIndex`` annotations in one entity.
+It's possible to add multiple ``@EntityIndex`` annotations in one entity.
 
 ````java
 @Getter // lombok
