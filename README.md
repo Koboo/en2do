@@ -34,6 +34,7 @@ This framework is heavily inspired by [Spring Data](https://spring.io/projects/s
 - Repositories by proxy classes to simplify usage and method declaration
 - Load credentials from files, resources or hardcoded Strings
 - Multiple ways to sort static or dynamic without implementing filters ([Learn more](#sorting))
+- Compound Indexes of entity fields ([Learn more](#indexing))
 
 ## Add as dependency
 
