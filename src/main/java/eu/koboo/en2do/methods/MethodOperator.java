@@ -12,15 +12,14 @@ import java.util.List;
 @Getter
 public enum MethodOperator {
 
-    FIND("findBy", List.class),
-    DELETE("deleteBy", boolean.class),
-    EXISTS("existsBy", boolean.class),
-    COUNT("countBy", long.class);
+    FIND("findBy"),
+    DELETE("deleteBy"),
+    EXISTS("existsBy"),
+    COUNT("countBy");
 
     public static final MethodOperator[] VALUES = MethodOperator.values();
 
     String keyword;
-    Class<?> returnTypes;
 
     public String removeOperatorFrom(String textWithOperator) {
         return textWithOperator.replaceFirst(getKeyword(), "");
