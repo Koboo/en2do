@@ -1,5 +1,7 @@
 package eu.koboo.en2do.utility;
 
+import lombok.experimental.UtilityClass;
+
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -8,9 +10,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 
+@UtilityClass
 public class EntityUtils {
 
-    public static void copyProperties(Object from, Object to) {
+    public void copyProperties(Object from, Object to) {
         Class<?> fromClass = from.getClass();
         Class<?> toClass = to.getClass();
 

@@ -1,19 +1,22 @@
 package eu.koboo.en2do.utility;
 
+import lombok.experimental.UtilityClass;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
+@UtilityClass
 public class GenericUtils {
 
-    public static Class<?> getGenericTypeOfReturnList(Method method) {
+    public Class<?> getGenericTypeOfReturnList(Method method) {
         Type returnType = method.getGenericReturnType();
         ParameterizedType type = (ParameterizedType) returnType;
         return (Class<?>) type.getActualTypeArguments()[0];
     }
 
-    public static Class<?>[] getGenericTypeOfReturnMap(Method method) {
+    public Class<?>[] getGenericTypeOfReturnMap(Method method) {
         Type returnType = method.getGenericReturnType();
         ParameterizedType type = (ParameterizedType) returnType;
         return (Class<?>[]) new Class[]{
@@ -22,14 +25,14 @@ public class GenericUtils {
         };
     }
 
-    public static Class<?> getGenericTypeOfParameterList(Method method, int paramIndex) {
+    public Class<?> getGenericTypeOfParameterList(Method method, int paramIndex) {
         Parameter parameter = method.getParameters()[paramIndex];
         Type parameterType = parameter.getParameterizedType();
         ParameterizedType type = (ParameterizedType) parameterType;
         return (Class<?>) type.getActualTypeArguments()[0];
     }
 
-    public static Class<?>[] getGenericTypeOfParameterMap(Method method, int paramIndex) {
+    public Class<?>[] getGenericTypeOfParameterMap(Method method, int paramIndex) {
         Parameter parameter = method.getParameters()[paramIndex];
         Type parameterType = parameter.getParameterizedType();
         ParameterizedType type = (ParameterizedType) parameterType;
@@ -39,7 +42,7 @@ public class GenericUtils {
         };
     }
 
-    public static boolean isTypeOf(Class<?> class1, Class<?> class2) {
+    public boolean isTypeOf(Class<?> class1, Class<?> class2) {
         if (isBoolean(class1) && isBoolean(class2)) {
             return true;
         }
@@ -64,31 +67,31 @@ public class GenericUtils {
         return class1.isAssignableFrom(class2);
     }
 
-    private static boolean isBoolean(Class<?> clazz) {
+    private boolean isBoolean(Class<?> clazz) {
         return clazz.isAssignableFrom(Boolean.class) || clazz.isAssignableFrom(boolean.class);
     }
 
-    private static boolean isShort(Class<?> clazz) {
+    private boolean isShort(Class<?> clazz) {
         return clazz.isAssignableFrom(Short.class) || clazz.isAssignableFrom(short.class);
     }
 
-    private static boolean isFloat(Class<?> clazz) {
+    private boolean isFloat(Class<?> clazz) {
         return clazz.isAssignableFrom(Float.class) || clazz.isAssignableFrom(float.class);
     }
 
-    private static boolean isInteger(Class<?> clazz) {
+    private boolean isInteger(Class<?> clazz) {
         return clazz.isAssignableFrom(Integer.class) || clazz.isAssignableFrom(int.class);
     }
 
-    private static boolean isLong(Class<?> clazz) {
+    private boolean isLong(Class<?> clazz) {
         return clazz.isAssignableFrom(Long.class) || clazz.isAssignableFrom(long.class);
     }
 
-    private static boolean isDouble(Class<?> clazz) {
+    private boolean isDouble(Class<?> clazz) {
         return clazz.isAssignableFrom(Double.class) || clazz.isAssignableFrom(double.class);
     }
 
-    private static boolean isChar(Class<?> clazz) {
+    private boolean isChar(Class<?> clazz) {
         return clazz.isAssignableFrom(Character.class) || clazz.isAssignableFrom(char.class);
     }
 }
