@@ -66,7 +66,7 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
         if (methodName.equalsIgnoreCase("findById")) {
             ID uniqueId = checkUniqueId(method, args[0]);
             Bson idFilter = createIdFilter(uniqueId);
-            return collection.find(idFilter).limit(0).first();
+            return collection.find(idFilter).limit(1).first();
         }
         if (methodName.equalsIgnoreCase("findAll")) {
             return collection.find().into(new ArrayList<>());
@@ -199,16 +199,6 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
         throw new RepositoryInvalidCallException(method, repoClass);
     }
 
-    private void checkArguments(Method method, Object[] args, int expectedLength) throws Exception {
-        if (args == null && expectedLength == 0) {
-            return;
-        }
-        if (args == null || args.length != expectedLength) {
-            int length = args == null ? -1 : args.length;
-            throw new MethodParameterCountException(method, repoClass, expectedLength, length);
-        }
-    }
-
     private E checkEntity(Method method, Object argument) {
         E entity = entityClass.cast(argument);
         if (entity == null) {
@@ -244,10 +234,6 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
 
     private Bson createIdFilter(ID uniqueId) {
         return Filters.eq(entityUniqueIdField.getName(), uniqueId);
-    }
-
-    private FindIterable<E> createIterable(Bson filter) {
-        return collection.find(filter);
     }
 
     private FindIterable<E> applySortObject(Method method, FindIterable<E> findIterable, Object[] args) {
