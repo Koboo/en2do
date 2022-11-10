@@ -18,6 +18,8 @@ import eu.koboo.en2do.sort.annotation.Skip;
 import eu.koboo.en2do.sort.annotation.SortBy;
 import eu.koboo.en2do.sort.annotation.SortByArray;
 import eu.koboo.en2do.sort.object.Sort;
+import eu.koboo.en2do.utility.AnnotationUtils;
+import eu.koboo.en2do.utility.FieldUtils;
 import eu.koboo.en2do.utility.GenericUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -29,6 +31,15 @@ import java.util.regex.Pattern;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RepositoryFactory {
+
+    // These methods are ignored by our methods processing.
+    private static List<String> IGNORED_REPOSITORY_METHODS = Arrays.asList(
+            // Predefined methods by Repository interface
+            "getCollectionName", "getUniqueId", "getEntityClass", "getEntityUniqueIdClass",
+            "findById", "findAll", "delete", "deleteById", "deleteAll", "drop",
+            "save", "saveAll", "exists", "existsById",
+            // Predefined methods by Java objects
+            "toString", "hashCode", "equals", "notify", "notifyAll", "wait", "finalize", "clone");
 
     MongoManager manager;
     Map<Class<?>, Repository<?, ?>> repoRegistry;
@@ -45,7 +56,8 @@ public class RepositoryFactory {
             return (R) repoRegistry.get(repoClass);
         }
 
-        // Parse Entity and UniqueId type classes (Yea, it's very hacky, but works)
+        // Parse Entity and UniqueId type classes by generic repository arguments
+        // (Yea, it's very hacky, but works)
         Type[] repoGenericTypeArray = repoClass.getGenericInterfaces();
         Type repoGenericTypeParams = null;
         for (Type type : repoGenericTypeArray) {
@@ -58,55 +70,58 @@ public class RepositoryFactory {
             throw new RepositoryNoTypeException(repoClass);
         }
 
-        String entityClassName = repoGenericTypeParams.getTypeName().split("<")[1].split(",")[0];
+        // Searching for entity class and after that their declared fields
         Class<E> entityClass;
-        Class<ID> entityUniqueIdClass = null;
-        Set<String> entityFieldNameSet = new HashSet<>();
-        Field entityUniqueIdField = null;
-
-        Set<Field> allFields;
-
-        // Searching for the actual classes by their respective names
         try {
+            // get class name of generic type arguments
+            String entityClassName = repoGenericTypeParams.getTypeName().split("<")[1].split(",")[0];
             entityClass = (Class<E>) Class.forName(entityClassName);
-
-            allFields = getAllFields(entityClass);
-            if (allFields.size() == 0) {
-                throw new RepositoryNoFieldsException(repoClass);
-            }
-            for (Field field : allFields) {
-                String lowerFieldName = field.getName().toLowerCase(Locale.ROOT);
-                if (entityFieldNameSet.contains(lowerFieldName)) {
-                    throw new RepositoryDuplicatedFieldException(field, repoClass);
-                }
-                entityFieldNameSet.add(lowerFieldName);
-                if (Modifier.isFinal(field.getModifiers())) {
-                    throw new RepositoryFinalFieldException(field, repoClass);
-                }
-                if (!field.isAnnotationPresent(Id.class)) {
-                    continue;
-                }
-                entityUniqueIdClass = (Class<ID>) field.getType();
-                entityUniqueIdField = field;
-                entityUniqueIdField.setAccessible(true);
-            }
-            if (entityUniqueIdClass == null) {
-                throw new RepositoryIdNotFoundException(entityClass);
-            }
         } catch (ClassNotFoundException e) {
             throw new RepositoryEntityNotFoundException(repoClass, e);
         }
 
-        // These methods are ignored by our methods processing.
-        List<String> ignoredMethods = Arrays.asList(
-                // Predefined methods by Repository interface
-                "getCollectionName", "getUniqueId", "getEntityClass", "getEntityUniqueIdClass",
-                "findById", "findAll", "delete", "deleteById", "deleteAll", "drop",
-                "save", "saveAll", "exists", "existsById",
-                // Predefined methods by Java objects
-                "toString", "hashCode", "equals", "notify", "notifyAll", "wait", "finalize", "clone");
+        // Collect all fields recursively
+        Set<Field> allFields = FieldUtils.collectFields(entityClass);
+        if (allFields.size() == 0) {
+            throw new RepositoryNoFieldsException(repoClass);
+        }
+
+        // Predefine some variables for further validation
+        Set<String> entityFieldNameSet = new HashSet<>();
+        Class<ID> entityUniqueIdClass = null;
+        Field entityUniqueIdField = null;
+        for (Field field : allFields) {
+
+            // Check for duplicated lower-case field names
+            String lowerFieldName = field.getName().toLowerCase(Locale.ROOT);
+            if (entityFieldNameSet.contains(lowerFieldName)) {
+                throw new RepositoryDuplicatedFieldException(field, repoClass);
+            }
+            entityFieldNameSet.add(lowerFieldName);
+
+            // Check if field has final declaration
+            if (Modifier.isFinal(field.getModifiers())) {
+                throw new RepositoryFinalFieldException(field, repoClass);
+            }
+
+            // Check for @Id annotation to find unique identifier of entity
+            if (!field.isAnnotationPresent(Id.class)) {
+                continue;
+            }
+            entityUniqueIdClass = (Class<ID>) field.getType();
+            entityUniqueIdField = field;
+            entityUniqueIdField.setAccessible(true);
+        }
+        // Check if we found any unique identifier.
+        if (entityUniqueIdClass == null) {
+            throw new RepositoryIdNotFoundException(entityClass);
+        }
+        entityFieldNameSet.clear();
+
+        // Iterate through the repository methods
         for (Method method : repoClass.getMethods()) {
-            if (ignoredMethods.contains(method.getName())) {
+            // Skip if the method should be ignored
+            if (IGNORED_REPOSITORY_METHODS.contains(method.getName())) {
                 continue;
             }
             // Check for the return-types of the methods, and their defined names to match our pattern.
@@ -138,7 +153,7 @@ public class RepositoryFactory {
         if (!entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
             entityCollection.createIndex(Indexes.ascending(entityUniqueIdField.getName()), new IndexOptions().unique(true));
         }
-        Set<CompoundIndex> compoundIndexList = getAllEntityIndecies(entityClass);
+        Set<CompoundIndex> compoundIndexList = AnnotationUtils.collectAnnotations(entityClass, CompoundIndex.class);
         for (CompoundIndex compoundIndex : compoundIndexList) {
             // Checking if the field in the annotation exists in the entity class.
             Index[] fieldIndexes = compoundIndex.value();
@@ -304,21 +319,11 @@ public class RepositoryFactory {
         }
         String expectedField = filterOperator.removeOperatorFrom(operatorString);
         expectedField = expectedField.endsWith("Not") ? expectedField.replaceFirst("Not", "") : expectedField;
-        Field field = findExpectedField(entityClass, expectedField, fieldSet);
+        Field field = FieldUtils.findFieldByName(expectedField, fieldSet);
         if (field == null) {
             throw new MethodFieldNotFoundException(expectedField, method, entityClass, repoClass);
         }
         return new FilterType(field, filterOperator);
-    }
-
-    private <E> Field findExpectedField(Class<E> entityClass, String expectedField, Set<Field> fieldSet) {
-        for (Field field : fieldSet) {
-            if (!field.getName().equalsIgnoreCase(expectedField)) {
-                continue;
-            }
-            return field;
-        }
-        return null;
     }
 
     private <E> void checkSortOptions(Method method, Class<E> entityClass, Class<?> repoClass, Set<Field> fieldSet) throws Exception {
@@ -341,37 +346,9 @@ public class RepositoryFactory {
         if (fieldName == null) {
             return;
         }
-        Field field = findExpectedField(entityClass, fieldName, fieldSet);
+        Field field = FieldUtils.findFieldByName(fieldName, fieldSet);
         if (field == null) {
             throw new MethodSortFieldNotFoundException(fieldName, method, entityClass, repoClass);
         }
-    }
-
-    private <E> Set<Field> getAllFields(Class<E> typeClass) {
-        Set<Field> fields = new HashSet<>();
-        Class<?> clazz = typeClass;
-        while (clazz != Object.class) {
-            Field[] declaredFields = clazz.getDeclaredFields();
-            clazz = clazz.getSuperclass();
-            if (declaredFields.length == 0) {
-                continue;
-            }
-            fields.addAll(Arrays.asList(declaredFields));
-        }
-        return fields;
-    }
-
-    private <E> Set<CompoundIndex> getAllEntityIndecies(Class<E> entityClass) {
-        Set<CompoundIndex> compoundIndexList = new HashSet<>();
-        Class<?> clazz = entityClass;
-        while (clazz != Object.class) {
-            CompoundIndex[] indexArray = clazz.getAnnotationsByType(CompoundIndex.class);
-            clazz = clazz.getSuperclass();
-            if (indexArray.length == 0) {
-                continue;
-            }
-            compoundIndexList.addAll(Arrays.asList(indexArray));
-        }
-        return compoundIndexList;
     }
 }
