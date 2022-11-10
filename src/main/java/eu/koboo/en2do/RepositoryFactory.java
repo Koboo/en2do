@@ -224,16 +224,10 @@ public class RepositoryFactory {
             throw new MethodDuplicatedChainException(method, entityClass);
         }
         int expectedParameters = countExpectedParameters(entityClass, repoClass, method, fieldFilterName, fieldSet);
-        Debugger.print("Method: " + method.getName());
-        Debugger.print("ExpParams: " + expectedParameters);
         int parameterCount = method.getParameterCount();
-        Debugger.print("ActParams: " + parameterCount);
         if (expectedParameters != parameterCount) {
             if (parameterCount > 0) {
                 Class<?> lastParam = method.getParameterTypes()[parameterCount - 1];
-                Debugger.print("lastParam: " + lastParam.getName());
-                Debugger.print("AddParam: " + (expectedParameters + 1));
-                Debugger.print("Assignable: " + lastParam.isAssignableFrom(Sort.class));
                 if (lastParam.isAssignableFrom(Sort.class) && (expectedParameters + 1) != parameterCount) {
                     throw new MethodParameterCountException(method, repoClass, (expectedParameters + 1), parameterCount);
                 }
@@ -271,7 +265,6 @@ public class RepositoryFactory {
 
     private void checkParameterType(Method method, FilterType filterType, int startIndex, Class<?> repoClass) throws Exception {
         int expectedParamCount = filterType.operator().getExpectedParameterCount();
-        Debugger.print("Check params for " + filterType.operator().name());
         for (int i = 0; i < expectedParamCount; i++) {
             int paramIndex = startIndex + i;
             Class<?> paramClass = method.getParameters()[paramIndex].getType();

@@ -169,7 +169,6 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
                     .replaceFirst(filterType.field().getName().toLowerCase(Locale.ROOT), "").startsWith("not");
             filter = createBsonFilter(method, filterType, isNot, 0, args);
         }
-        Debugger.print("BsonFilter: " + filter);
 
         Class<?> returnTypeClass = method.getReturnType();
         if (methodOperator == MethodOperator.FIND) {
