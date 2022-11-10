@@ -2,6 +2,8 @@ package eu.koboo.en2do.test;
 
 import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.Repository;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 
@@ -11,10 +13,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Slf4j
+@FieldDefaults(level = AccessLevel.PROTECTED)
 public abstract class RepositoryTest<E, ID, R extends Repository<E, ID>> {
 
-    protected MongoManager manager;
-    protected R repository;
+    MongoManager manager;
+    R repository;
 
     @BeforeAll
     public void setup() {

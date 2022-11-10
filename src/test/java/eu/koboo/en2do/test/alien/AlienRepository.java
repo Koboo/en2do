@@ -11,5 +11,4 @@ import java.util.UUID;
 @DropIndexesOnStart
 @DropEntitiesOnStart
 public interface AlienRepository extends Repository<Alien, UUID> {
-
 }
