@@ -240,8 +240,8 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
         if (parameterCount <= 0) {
             return findIterable;
         }
-        Class<?> lastParam = method.getParameterTypes()[method.getParameterCount() - 1];
-        if (!lastParam.isAssignableFrom(Sort.class)) {
+        Class<?> lastParamType = method.getParameterTypes()[method.getParameterCount() - 1];
+        if (!lastParamType.isAssignableFrom(Sort.class)) {
             return findIterable;
         }
         Object lastParamObject = args == null ? null : args[args.length - 1];

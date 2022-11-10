@@ -1,6 +1,5 @@
 package eu.koboo.en2do.utility;
 
-import eu.koboo.en2do.index.CompoundIndex;
 import lombok.experimental.UtilityClass;
 
 import java.lang.annotation.Annotation;

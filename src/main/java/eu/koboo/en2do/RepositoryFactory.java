@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 public class RepositoryFactory {
 
     // These methods are ignored by our methods processing.
-    private static List<String> IGNORED_REPOSITORY_METHODS = Arrays.asList(
+    private static final List<String> IGNORED_REPOSITORY_METHODS = Arrays.asList(
             // Predefined methods by Repository interface
             "getCollectionName", "getUniqueId", "getEntityClass", "getEntityUniqueIdClass",
             "findById", "findAll", "delete", "deleteById", "deleteAll", "drop",
