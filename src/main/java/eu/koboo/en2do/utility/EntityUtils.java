@@ -41,7 +41,6 @@ public class EntityUtils {
                     continue;
                 }
                 toPropDesc.getWriteMethod().invoke(to, fromPropDesc.getReadMethod().invoke(from));
-
             }
         } catch (IntrospectionException | InvocationTargetException | IllegalAccessException |
                  IllegalArgumentException e) {

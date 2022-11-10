@@ -1,7 +1,5 @@
 package eu.koboo.en2do;
 
-import com.mongodb.client.model.search.DateRangeSearchOperatorBase;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
