@@ -11,9 +11,9 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor // lombok
 @FieldDefaults(level = AccessLevel.PRIVATE) // lombok
 @ToString // lombok
-@CompoundIndex({ @Index("orderStatus"), @Index(value = "lockStatus", ascending = false) }) // en2do
-@CompoundIndex({ @Index("customerId") }) // en2do
-@CompoundIndex(value = { @Index("firstName"), @Index("lastName") }, uniqueIndex = true)  // en2do
+@CompoundIndex({@Index("orderStatus"), @Index(value = "lockStatus", ascending = false)}) // en2do
+@CompoundIndex({@Index("customerId")}) // en2do
+@CompoundIndex(value = {@Index("firstName"), @Index("lastName")}, uniqueIndex = true)  // en2do
 public class CustomerExtended extends Customer {
 
     String orderStatus;

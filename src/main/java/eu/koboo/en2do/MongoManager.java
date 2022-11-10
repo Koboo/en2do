@@ -31,7 +31,7 @@ public class MongoManager {
             credentials = Credentials.fromResource();
         }
         // If no credentials given, throw exception.
-        if(credentials == null) {
+        if (credentials == null) {
             throw new NullPointerException("No credentials given! Please make sure to provide " +
                     "accessible credentials.");
         }

@@ -124,12 +124,12 @@ public class RepositoryFactory {
         MongoCollection<E> entityCollection = manager.getDatabase().getCollection(entityCollectionName, entityClass);
 
         // Drop all entities on start if annotation is present.
-        if(repoClass.isAnnotationPresent(DropEntitiesOnStart.class)) {
+        if (repoClass.isAnnotationPresent(DropEntitiesOnStart.class)) {
             entityCollection.drop();
         }
 
         // Drop all indexes on start if annotation is present.
-        if(repoClass.isAnnotationPresent(DropIndexesOnStart.class)) {
+        if (repoClass.isAnnotationPresent(DropIndexesOnStart.class)) {
             entityCollection.dropIndexes();
         }
 

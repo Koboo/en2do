@@ -8,5 +8,6 @@ import java.lang.annotation.*;
 public @interface CompoundIndex {
 
     Index[] value();
+
     boolean uniqueIndex() default false;
 }
