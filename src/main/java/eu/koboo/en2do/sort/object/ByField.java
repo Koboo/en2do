@@ -9,5 +9,4 @@ public record ByField(String fieldName, boolean ascending) {
     public static ByField of(String field) {
         return new ByField(field, false);
     }
-
 }

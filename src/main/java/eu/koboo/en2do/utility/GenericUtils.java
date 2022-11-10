@@ -16,30 +16,11 @@ public class GenericUtils {
         return (Class<?>) type.getActualTypeArguments()[0];
     }
 
-    public Class<?>[] getGenericTypeOfReturnMap(Method method) {
-        Type returnType = method.getGenericReturnType();
-        ParameterizedType type = (ParameterizedType) returnType;
-        return (Class<?>[]) new Class[]{
-                (Class<?>) type.getActualTypeArguments()[0],
-                (Class<?>) type.getActualTypeArguments()[1]
-        };
-    }
-
     public Class<?> getGenericTypeOfParameterList(Method method, int paramIndex) {
         Parameter parameter = method.getParameters()[paramIndex];
         Type parameterType = parameter.getParameterizedType();
         ParameterizedType type = (ParameterizedType) parameterType;
         return (Class<?>) type.getActualTypeArguments()[0];
-    }
-
-    public Class<?>[] getGenericTypeOfParameterMap(Method method, int paramIndex) {
-        Parameter parameter = method.getParameters()[paramIndex];
-        Type parameterType = parameter.getParameterizedType();
-        ParameterizedType type = (ParameterizedType) parameterType;
-        return (Class<?>[]) new Class[]{
-                (Class<?>) type.getActualTypeArguments()[0],
-                (Class<?>) type.getActualTypeArguments()[1]
-        };
     }
 
     public boolean isTypeOf(Class<?> class1, Class<?> class2) {

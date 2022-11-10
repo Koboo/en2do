@@ -36,5 +36,4 @@ public class Sort {
         this.skip = skip;
         return this;
     }
-
 }
