@@ -25,12 +25,11 @@ public class MapCodecProvider implements PropertyCodecProvider {
 
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public <T> Codec<T> get(final TypeWithTypeParameters<T> type, final PropertyCodecRegistry registry) {
+    public <T> Codec<T> get(TypeWithTypeParameters<T> type, PropertyCodecRegistry registry) {
         if (Map.class.isAssignableFrom(type.getType()) && type.getTypeParameters().size() == 2) {
             return new GenericMapCodec(type.getType(), registry.get(type.getTypeParameters().get(0)), registry.get(type.getTypeParameters().get(1)));
-        } else {
-            return null;
         }
+        return null;
     }
 
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -43,7 +42,8 @@ public class MapCodecProvider implements PropertyCodecProvider {
         Codec<K> keyCodec;
         Codec<T> valueCodec;
 
-        GenericMapCodec(final Class<Map<K, T>> encoderClass, final Codec<K> keyCodec, final Codec<T> valueCodec,
+        GenericMapCodec(Class<Map<K, T>> encoderClass,
+                        Codec<K> keyCodec, Codec<T> valueCodec,
                         Map<Class<?>, Class<? extends PropertyEditor>> map) {
             this.encoderClass = encoderClass;
             this.keyCodec = keyCodec;
@@ -52,19 +52,19 @@ public class MapCodecProvider implements PropertyCodecProvider {
             map.forEach(PropertyEditorManager::registerEditor);
         }
 
-        GenericMapCodec(final Class<Map<K, T>> encoderClass, final Codec<K> keyCodec, final Codec<T> valueCodec) {
+        GenericMapCodec(Class<Map<K, T>> encoderClass, Codec<K> keyCodec, Codec<T> valueCodec) {
             this.encoderClass = encoderClass;
             this.keyCodec = keyCodec;
             this.valueCodec = valueCodec;
         }
 
         @Override
-        public void encode(final BsonWriter writer, final Map<K, T> map, final EncoderContext encoderContext) {
-            try (var dummyWriter = new BsonDocumentWriter(new BsonDocument())) {
-                dummyWriter.writeStartDocument();
+        public void encode(BsonWriter writer, Map<K, T> map, EncoderContext encoderContext) {
+            try (BsonDocumentWriter documentWriter = new BsonDocumentWriter(new BsonDocument())) {
+                documentWriter.writeStartDocument();
                 writer.writeStartDocument();
 
-                for (final Map.Entry<K, T> entry : map.entrySet()) {
+                for (Map.Entry<K, T> entry : map.entrySet()) {
                     PropertyEditor editor = PropertyEditorManager.findEditor(keyCodec.getEncoderClass());
                     if (editor != null) {
                         LOGGER.fine("Found PropertyEditor for class: " + keyCodec.getEncoderClass().getName());
@@ -72,15 +72,15 @@ public class MapCodecProvider implements PropertyCodecProvider {
                         editor.setValue(entry.getKey());
                         writer.writeName(editor.getAsText());
                     } else {
-                        String dummyId = UUID.randomUUID().toString();
-                        dummyWriter.writeName(dummyId);
-                        keyCodec.encode(dummyWriter, entry.getKey(), encoderContext);
-                        writer.writeName(dummyWriter.getDocument().asDocument().get(dummyId).asString().getValue());
+                        String documentId = UUID.randomUUID().toString();
+                        documentWriter.writeName(documentId);
+                        keyCodec.encode(documentWriter, entry.getKey(), encoderContext);
+                        writer.writeName(documentWriter.getDocument().asDocument().get(documentId).asString().getValue());
                     }
 
                     valueCodec.encode(writer, entry.getValue(), encoderContext);
                 }
-                dummyWriter.writeEndDocument();
+                documentWriter.writeEndDocument();
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "Failed to encode map: " + map, e);
                 throw new IllegalArgumentException(e);
@@ -90,7 +90,7 @@ public class MapCodecProvider implements PropertyCodecProvider {
 
         @Override
         @SuppressWarnings("unchecked")
-        public Map<K, T> decode(final BsonReader reader, final DecoderContext context) {
+        public Map<K, T> decode(BsonReader reader, DecoderContext context) {
             reader.readStartDocument();
             Map<K, T> map = getInstance();
             while (!BsonType.END_OF_DOCUMENT.equals(reader.readBsonType())) {
@@ -101,14 +101,15 @@ public class MapCodecProvider implements PropertyCodecProvider {
                     editor.setAsText(reader.readName());
                     key = (K) editor.getValue();
                 } else {
-                    var dummyReader = new JsonReader(String.format("\"key\": \"%s\"", reader.readName()));
-                    key = keyCodec.decode(dummyReader, context);
+                    JsonReader jsonReader = new JsonReader(String.format("\"key\": \"%s\"", reader.readName()));
+                    key = keyCodec.decode(jsonReader, context);
                 }
 
-                map.put(key,
-                        (!BsonType.NULL.equals(reader.getCurrentBsonType()))
-                                ? valueCodec.decode(reader, context)
-                                : null);
+                T value = null;
+                if (!BsonType.NULL.equals(reader.getCurrentBsonType())) {
+                    value = valueCodec.decode(reader, context);
+                }
+                map.put(key, value);
             }
             reader.readEndDocument();
             return map;
@@ -120,10 +121,9 @@ public class MapCodecProvider implements PropertyCodecProvider {
             }
             try {
                 return encoderClass.getDeclaredConstructor().newInstance();
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 throw new CodecConfigurationException(e.getMessage(), e);
             }
         }
     }
-
 }
