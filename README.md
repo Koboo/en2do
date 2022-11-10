@@ -81,9 +81,36 @@ If no credentials are found, an exception is thrown.
 **_Default ``credentials.properties``:_**
 
 ````properties
-mongodb.connect=mongodb://<username>:<password>@<host>:<port>/?<options>
-mongodb.database=<database>
+en2do.connectString=mongodb://<username>:<password>@<host>:<port>/?<options>
+en2do.database=<database>
 ````
+
+You can also create credentials through various other methods:
+
+**_Code-Example:_**
+```java
+public class Application {
+    public static void main(String[] args) {
+        Credentials credentials;
+
+        // Keys are "en2do.connectString" and "en2do.database"
+        credentials = Credentials.fromResource(); // loads /resources/credentials.properties
+        credentials = Credentials.fromResource("/path/to/resources.properties"); // loads from given path
+
+        // Keys are "en2do.connectString" and "en2do.database"
+        credentials = Credentials.fromFile(); // loads from {jar-directory}/credentials.properties
+        credentials = Credentials.fromFile("/path/to/file.properties"); // loads from given path
+
+        // Keys are "en2do.connectString" and "en2do.database"
+        credentials = Credentials.fromSystemProperties();
+
+        // Keys are "EN2DO_CONNECTSTRING" and "EN2DO_DATABASE"
+        credentials = Credentials.fromSystemProperties();
+
+        credentials = Credentials.of("connectString", "database");
+    }
+}
+```
 
 The credentials can also hardcoded.
 
@@ -92,7 +119,7 @@ The credentials can also hardcoded.
 ````java
 public class Application {
     public static void main(String[] args) {
-        MongoManager manager = new MongoManager("connectString", "databaseName");
+        MongoManager manager = new MongoManager(Credentials.of("connectString", "databaseName"));
     }
 }
 ````
