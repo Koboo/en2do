@@ -109,10 +109,6 @@ public class MongoManager {
         this(null);
     }
 
-    protected MongoDatabase getDatabase() {
-        return database;
-    }
-
     public boolean close() {
         try {
             client.close();
@@ -123,6 +119,7 @@ public class MongoManager {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public <E, ID, R extends Repository<E, ID>> R create(Class<R> repoClass) {
         try {
 
@@ -200,7 +197,18 @@ public class MongoManager {
                     continue;
                 }
                 // Check for the return-types of the methods, and their defined names to match our pattern.
-                checkReturnTypes(method, entityClass, repoClass);
+                Class<?> returnType = method.getReturnType();
+                String methodName = method.getName();
+
+                // Parse the MethodOperator by the methodName
+                MethodOperator methodOperator = MethodOperator.parseMethodStartsWith(methodName);
+                if (methodOperator == null) {
+                    throw new MethodNoMethodOperatorException(method, repoClass);
+                }
+
+                // Check the returnTypes by using the predefined validator.
+                methodOperator.getReturnTypeValidator().check(method, returnType, entityClass, repoClass);
+
                 checkMethodOperation(method, entityClass, repoClass, allFields);
                 checkSortOptions(method, entityClass, repoClass, allFields);
             }
@@ -266,41 +274,6 @@ public class MongoManager {
             return (R) repository;
         } catch (Exception e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private <E> void checkReturnTypes(Method method, Class<E> entityClass, Class<?> repoClass) throws Exception {
-        Class<?> returnTypeClass = method.getReturnType();
-        String methodName = method.getName();
-        MethodOperator methodOperator = MethodOperator.parseMethodStartsWith(methodName);
-        if (methodOperator == null) {
-            throw new MethodNoMethodOperatorException(method, repoClass);
-        }
-        switch (methodOperator) {
-            case FIND -> {
-                if (GenericUtils.isTypeOf(List.class, returnTypeClass)) {
-                    Class<?> listType = GenericUtils.getGenericTypeOfReturnList(method);
-                    if (!listType.isAssignableFrom(entityClass)) {
-                        throw new MethodFindListTypeException(method, entityClass, listType);
-                    }
-                    return;
-                }
-                if (GenericUtils.isTypeOf(entityClass, returnTypeClass)) {
-                    return;
-                }
-                throw new MethodFindReturnTypeException(method, entityClass, repoClass);
-            }
-            case DELETE, EXISTS -> {
-                if (!GenericUtils.isTypeOf(Boolean.class, returnTypeClass)) {
-                    throw new MethodBooleanReturnTypeException(method, repoClass);
-                }
-            }
-            case COUNT -> {
-                if (!GenericUtils.isTypeOf(Long.class, returnTypeClass)) {
-                    throw new MethodLongReturnTypeException(method, repoClass);
-                }
-            }
-            default -> throw new MethodUnsupportedReturnTypeException(returnTypeClass, methodName, entityClass);
         }
     }
 
