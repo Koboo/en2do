@@ -3,6 +3,7 @@ package eu.koboo.en2do.methods.registry;
 import com.mongodb.client.model.Filters;
 import eu.koboo.en2do.Repository;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import org.bson.conversions.Bson;
 
@@ -16,20 +17,23 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
+    @Getter
     Class<R> repositoryClass;
+    @Getter
     Class<E> entityClass;
 
+    @Getter
     Set<Field> entityFieldSet;
 
+    @Getter
     Class<ID> entityUniqueIdClass;
+    @Getter
     Field entityUniqueIdField;
-
-    String collectionName;
 
     Map<String, MethodHandler<E>> methodRegistry;
 
     public RepositoryMeta(Class<R> repositoryClass, Class<E> entityClass, Set<Field> entityFieldSet,
-                          Class<ID> entityUniqueIdClass, Field entityUniqueIdField, String collectionName) {
+                          Class<ID> entityUniqueIdClass, Field entityUniqueIdField) {
         this.repositoryClass = repositoryClass;
         this.entityClass = entityClass;
 
@@ -37,8 +41,6 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
         this.entityUniqueIdClass = entityUniqueIdClass;
         this.entityUniqueIdField = entityUniqueIdField;
-
-        this.collectionName = collectionName;
 
         this.methodRegistry = new HashMap<>();
     }
