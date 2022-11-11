@@ -25,7 +25,7 @@ public class CustomerFindManyCustomerIdNotInTest extends CustomerRepositoryTest 
     @Test
     @Order(2)
     public void saveCustomer() {
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 10; i++) {
             Customer customer = Const.createNewCustomer();
             customer.setUniqueId(UUID.randomUUID());
             customer.setCustomerId(i);
@@ -40,7 +40,7 @@ public class CustomerFindManyCustomerIdNotInTest extends CustomerRepositoryTest 
         List<Customer> customerList = repository.findManyByCustomerIdNotIn(Arrays.asList(1, 2, 3, 4, 5));
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());
-        assertEquals(25, customerList.size());
+        assertEquals(5, customerList.size());
         for (Customer customer : customerList) {
             assertNotNull(customer);
             assertNotEquals(1, customer.getCustomerId());

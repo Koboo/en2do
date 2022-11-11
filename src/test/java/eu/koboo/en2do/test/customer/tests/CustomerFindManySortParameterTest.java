@@ -26,7 +26,7 @@ public class CustomerFindManySortParameterTest extends CustomerRepositoryTest {
     @Test
     @Order(2)
     public void saveCustomer() {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 15; i++) {
             Customer customer = Const.createNewCustomer();
             customer.setUniqueId(UUID.randomUUID());
             customer.setCustomerId(i);
@@ -41,12 +41,12 @@ public class CustomerFindManySortParameterTest extends CustomerRepositoryTest {
         List<Customer> customerList = repository.findManyByCustomerIdNot(17,
                 Sort.create()
                         .order(ByField.of("customerId", true))
-                        .limit(20)
-                        .skip(10)
+                        .limit(10)
+                        .skip(5)
         );
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());
-        assertEquals(20, customerList.size());
+        assertEquals(10, customerList.size());
         for (Customer customer : customerList) {
             assertNotNull(customer);
             assertNotEquals(17, customer.getCustomerId());

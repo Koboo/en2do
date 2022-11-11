@@ -59,9 +59,9 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
     List<Customer> findManyByCustomerIdNotIn(List<Integer> customerIdList);
 
     @SortBy(field = "customerId")
-    @SortBy(field = "balance")
-    @Limit(20)
-    @Skip(10)
+    @SortBy(field = "balance", ascending = true)
+    @Limit(10)
+    @Skip(5)
     List<Customer> findManyByCustomerIdExists();
 
     List<Customer> findManyByCustomerIdNot(int customerId, Sort sort);

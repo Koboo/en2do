@@ -24,7 +24,7 @@ public class CustomerFindManySortAnnotationTest extends CustomerRepositoryTest {
     @Test
     @Order(2)
     public void saveCustomer() {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 15; i++) {
             Customer customer = Const.createNewCustomer();
             customer.setUniqueId(UUID.randomUUID());
             customer.setCustomerId(i);
@@ -39,7 +39,7 @@ public class CustomerFindManySortAnnotationTest extends CustomerRepositoryTest {
         List<Customer> customerList = repository.findManyByCustomerIdExists();
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());
-        assertEquals(20, customerList.size());
+        assertEquals(10, customerList.size());
         for (Customer customer : customerList) {
             assertNotNull(customer);
             assertEquals(Const.FIRST_NAME, customer.getFirstName());
