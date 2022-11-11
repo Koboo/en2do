@@ -2,6 +2,7 @@ package eu.koboo.en2do;
 
 import java.util.List;
 
+@SuppressWarnings("unused")
 public interface Repository<E, ID> {
 
     String getCollectionName();
