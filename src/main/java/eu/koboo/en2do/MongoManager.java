@@ -269,8 +269,7 @@ public class MongoManager {
             RepositoryMeta<E, ID, R> repositoryMeta = new RepositoryMeta<>(
                     repositoryClass, entityClass,
                     entityFieldSet,
-                    entityUniqueIdClass, entityUniqueIdField,
-                    entityCollectionName
+                    entityUniqueIdClass, entityUniqueIdField
             );
 
             // Define default methods with handler into the meta registry
@@ -357,9 +356,7 @@ public class MongoManager {
             ClassLoader repoClassLoader = repositoryClass.getClassLoader();
             Class<?>[] interfaces = new Class[]{repositoryClass};
             Repository<E, ID> repository = (Repository<E, ID>) Proxy.newProxyInstance(repoClassLoader, interfaces,
-                    new RepositoryInvocationHandler<>(this, repositoryMeta, entityCollectionName, entityCollection,
-                            repositoryClass, entityClass, entityFieldSet, entityUniqueIdClass,
-                            entityUniqueIdField));
+                    new RepositoryInvocationHandler<>(this, repositoryMeta, entityCollection));
             repoRegistry.put(repositoryClass, repository);
             return (R) repository;
         } catch (Exception e) {
