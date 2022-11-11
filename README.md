@@ -1,6 +1,6 @@
 # _// En2Do_
 
-Sync/Async entity framework for MongoDB in Java 17
+Entity framework for MongoDB in Java 17.
 
 **_En2Do_** is short for **_Entity-To-Document_**.
 
@@ -59,7 +59,7 @@ To make it easier to get started with en2do, here is a guide how to start using 
 
 ### Create an instance of the ``MongoManager``
 
-In byField to connect to the mongo database, a new instance of ``MongoManager`` must be created.
+First of all, you need to connect to the mongo database. Do that by creating a new instance of ``MongoManager``.
 
 **_Code Example:_**
 
@@ -78,6 +78,8 @@ If a ``MongoManager`` is created without arguments, the credentials are read fro
 
 If no credentials are found, an exception is thrown.
 
+Here you can see the default keys of the two required properties.
+
 **_Default ``credentials.properties``:_**
 
 ````properties
@@ -85,7 +87,7 @@ en2do.connectString=mongodb://<username>:<password>@<host>:<port>/?<options>
 en2do.database=<database>
 ````
 
-You can also create credentials through various other methods:
+You can also create credentials through various other methods.
 
 **_Code-Example:_**
 ```java
@@ -112,7 +114,7 @@ public class Application {
 }
 ```
 
-The credentials can also hardcoded.
+After you created a ``Credentials`` object, just pass it into the ``MongoManager`` constructor.
 
 **_Code Example:_**
 
@@ -123,15 +125,12 @@ public class Application {
     }
 }
 ````
-
-[MongoDB Manual (ConnectionString)](https://www.mongodb.com/docs/manual/reference/connection-string/)
+[Learn more about the MongoDB ConnectionString](https://www.mongodb.com/docs/manual/reference/connection-string/)
 
 ### Define an Entity class
 
-An ``Entity`` can use almost any Java data type. However, there are some special features which are not possible due to
-MongoDB.
-
-**_Restrictions:_**
+An ``Entity`` can use almost any Java data type. However, there are can be some special cases which are
+not possible. If you found one, let me know and I'll try to implement it.
 
 **The standard PojoCodec of mongodb only allows Strings as keys in maps.**
 
@@ -171,17 +170,19 @@ public class Customer {
 }
 ````
 
-There are also some annotations directly from MongoDB, but only one is supported.
+There are also some mapping annotations directly from MongoDB, but en2do only supports one.
 
-- ``@BsonIgnore``, to ignore a sortBy in the entity
+- ``@BsonIgnore``, to ignore a field in the entity
 
-**_ATTENTION: You shouldn't use the other annotations, because it could break your entity!_**
+**_ATTENTION: You shouldn't use the other annotations, because it could break the mapping of your entity!_**
 
 ### Create the Repository for the Entity
 
-In byField to access the database and apply operations to any entity, a repository must be defined.
+If you want to access the database and apply operations to your entity, a repository must be defined.
 To ensure type safety, the type of the entity and the type of the identifier must be specified
 as type parameters.
+
+**_ATTENTION: First type is the ENTITY, Second type is the KEY of the ENTITY_**
 
 **_Code Example:_**
 
@@ -198,7 +199,7 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
 
 ### Create object instances
 
-Now all important classes have been created, and you can start instantiating the objects.
+Now all important classes have been created, and you bring things together.
 
 **_Code Example:_**
 
@@ -214,12 +215,13 @@ public class Application {
 ## Implementation
 
 Here the implementations and keywords are listed and explained.
-If a developer should make a mistake, the biggest issues are caught via exception throwing and output as an error.
+If a developer should make a mistake, the biggest issues are caught via exceptions
+and an error is thrown.
 
 To explain the implemented methods, the [Customer Entity](src/test/java/eu/koboo/en2do/test/customer/Customer.java)
 from the [test units](src/test/java/eu/koboo/en2do/test/cases) is used as an example.
 
-Find more examples in [CustomerRepository](src/test/java/eu/koboo/en2do/test/customer/CustomerRepository.java).
+Find more examples of method declarations in [CustomerRepository](src/test/java/eu/koboo/en2do/test/customer/CustomerRepository.java).
 
 ## Method keywords
 
@@ -229,10 +231,10 @@ applied.
 
 | Keyword         | Example                                                  | Method equivalent                               |
 |-----------------|----------------------------------------------------------|-------------------------------------------------|
-| **findFirstBy** | ``Customer findFirstByFirstName(String firstName)``      | ``collection.find(..).first()``                 |
+| **findFirstBy** | ``Customer findFirstByFirstName(String firstName)``      | ``collection.find(..).limit(1).first()``        |
 | **findManyBy**  | ``List<Customer> findManyByFirstName(String firstName)`` | ``collection.find(..).into(new ArrayList<>())`` |
 | **deleteBy**    | ``boolean deleteByFirstName(String firstName)``          | ``collection.deleteMany(..).wasAcknowledged``   |
-| **existsBy**    | ``boolean existsByFirstName(String firstName)``          | ``collection.find(..).first() != null``         |
+| **existsBy**    | ``boolean existsByFirstName(String firstName)``          | ``collection.countDocuments(..) > 0``           |
 | **countBy**     | ``long countByFirstName(String firstName)``              | ``collection.countDocuments(..)``               |
 
 ## Filter keywords
@@ -276,7 +278,7 @@ Due to wrong validation checks, this could also occur unintentionally or not at 
 
 ## Sorting
 
-The framework allows sorting in 2 ways. These two ways cannot be used at the same time.
+The framework allows sorting and limiting in 2 ways. These two ways cannot be used at the same time.
 
 ## Static sorting via Annotations
 
@@ -320,7 +322,7 @@ public class Application {
         List<Customer> customerList = repository.findManyByCustomerIdNot(17,
                 Sort.create()
                         .order(ByField.of("customerId", true))
-                        .order(ByField.of("balance", true))
+                        .order(ByField.of("balance"))
                         .limit(20)
                         .skip(10)
         );
