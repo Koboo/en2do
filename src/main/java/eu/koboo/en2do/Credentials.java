@@ -66,13 +66,20 @@ public record Credentials(String connectString, String database) {
     }
 
     public static Credentials fromSystemProperties() {
-        return new Credentials(System.getProperty(CONNECT_KEY), System.getProperty(DATABASE_KEY));
+        return fromSystemProperties(CONNECT_KEY, DATABASE_KEY);
+    }
+
+    public static Credentials fromSystemProperties(String propertyConnectKey, String propertyDatabaseKey) {
+        return new Credentials(System.getProperty(propertyConnectKey), System.getProperty(propertyDatabaseKey));
     }
 
     public static Credentials fromSystemEnvVars() {
-        return new Credentials(
-                System.getenv(CONNECT_KEY.toUpperCase(Locale.ROOT).replaceFirst("\\.", "_")),
-                System.getenv(DATABASE_KEY.toUpperCase(Locale.ROOT).replaceFirst("\\.", "_")));
+        return fromSystemEnvVars(CONNECT_KEY.toUpperCase(Locale.ROOT).replaceFirst("\\.", "_"),
+                DATABASE_KEY.toUpperCase(Locale.ROOT).replaceFirst("\\.", "_"));
+    }
+
+    public static Credentials fromSystemEnvVars(String envVarConnectKey, String envVarDatabaseKey) {
+        return new Credentials(System.getenv(envVarConnectKey), System.getenv(envVarDatabaseKey));
     }
 
     public static Credentials of(String connectString, String database) {
