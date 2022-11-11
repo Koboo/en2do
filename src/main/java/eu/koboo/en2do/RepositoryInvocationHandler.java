@@ -50,37 +50,37 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         if (methodOperator == null) {
             throw new MethodNoMethodOperatorException(method, repositoryMeta.getRepositoryClass());
         }
-        String operatorRootString = methodOperator.removeOperatorFrom(methodName);
-        if (operatorRootString == null) {
+        String methodNameWithoutOperator = methodOperator.removeOperatorFrom(methodName);
+        if (methodNameWithoutOperator == null) {
             throw new MethodInvalidSignatureException(method, repositoryMeta.getEntityClass());
         }
 
         // Bson filter conversion from method name
         Bson filter = null;
-        if (operatorRootString.contains("And") || operatorRootString.contains("Or")) {
+        if (methodNameWithoutOperator.contains("And") || methodNameWithoutOperator.contains("Or")) {
             List<Bson> filterList = new ArrayList<>();
-            String[] operatorStringArray = operatorRootString.contains("And") ?
-                    operatorRootString.split("And") : operatorRootString.split("Or");
-            int nextIndex = 0;
-            for (int i = 0; i < operatorStringArray.length; i++) {
-                String operatorString = operatorStringArray[i];
+            String[] filterNamesArray = methodNameWithoutOperator.contains("And") ?
+                    methodNameWithoutOperator.split("And") : methodNameWithoutOperator.split("Or");
+            int nextParameterIndex = 0;
+            for (int i = 0; i < filterNamesArray.length; i++) {
+                String filterOperatorString = filterNamesArray[i];
                 FilterType filterType = manager.createFilterType(repositoryMeta.getEntityClass(),
-                        repositoryMeta.getRepositoryClass(), method, operatorString,
+                        repositoryMeta.getRepositoryClass(), method, filterOperatorString,
                         repositoryMeta.getEntityFieldSet());
-                boolean isNot = operatorString.replaceFirst(filterType.field().getName(), "").startsWith("Not");
-                filterList.add(createBsonFilter(method, filterType, isNot, nextIndex, args));
-                nextIndex = i + filterType.operator().getExpectedParameterCount();
+                boolean isNot = filterOperatorString.replaceFirst(filterType.field().getName(), "").startsWith("Not");
+                filterList.add(createBsonFilter(method, filterType, isNot, nextParameterIndex, args));
+                nextParameterIndex = i + filterType.operator().getExpectedParameterCount();
             }
-            if (operatorRootString.contains("And")) {
+            if (methodNameWithoutOperator.contains("And")) {
                 filter = Filters.and(filterList);
             } else {
                 filter = Filters.or(filterList);
             }
         } else {
             FilterType filterType = manager.createFilterType(repositoryMeta.getEntityClass(),
-                    repositoryMeta.getRepositoryClass(), method, operatorRootString,
+                    repositoryMeta.getRepositoryClass(), method, methodNameWithoutOperator,
                     repositoryMeta.getEntityFieldSet());
-            boolean isNot = operatorRootString.toLowerCase(Locale.ROOT)
+            boolean isNot = methodNameWithoutOperator.toLowerCase(Locale.ROOT)
                     .replaceFirst(filterType.field().getName().toLowerCase(Locale.ROOT), "").startsWith("not");
             filter = createBsonFilter(method, filterType, isNot, 0, args);
         }
