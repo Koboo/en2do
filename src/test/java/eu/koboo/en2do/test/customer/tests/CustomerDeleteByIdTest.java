@@ -15,7 +15,7 @@ public class CustomerDeleteByIdTest extends CustomerRepositoryTest {
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        List<Customer> customerList = repository.findAll();
+        List<Customer> customerList = repository.findMany();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
     }

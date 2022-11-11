@@ -18,7 +18,7 @@ public class CustomerFindByCustomerIdNotSortParameterTest extends CustomerReposi
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        List<Customer> customerList = repository.findAll();
+        List<Customer> customerList = repository.findMany();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
     }
@@ -38,7 +38,7 @@ public class CustomerFindByCustomerIdNotSortParameterTest extends CustomerReposi
     @Test
     @Order(3)
     public void findCustomer() {
-        List<Customer> customerList = repository.findByCustomerIdNot(17,
+        List<Customer> customerList = repository.findManyByCustomerIdNot(17,
                 Sort.create()
                         .order(ByField.of("customerId", true))
                         .limit(20)

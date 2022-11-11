@@ -17,7 +17,7 @@ public class CustomerFindByCustomerIdNotInTest extends CustomerRepositoryTest {
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        List<Customer> customerList = repository.findAll();
+        List<Customer> customerList = repository.findMany();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
     }
@@ -37,7 +37,7 @@ public class CustomerFindByCustomerIdNotInTest extends CustomerRepositoryTest {
     @Test
     @Order(3)
     public void findCustomer() {
-        List<Customer> customerList = repository.findByCustomerIdNotIn(Arrays.asList(1, 2, 3, 4, 5));
+        List<Customer> customerList = repository.findManyByCustomerIdNotIn(Arrays.asList(1, 2, 3, 4, 5));
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());
         assertEquals(25, customerList.size());

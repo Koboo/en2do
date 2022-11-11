@@ -12,5 +12,5 @@ import java.util.UUID;
 @DropEntitiesOnStart
 public interface CustomerExtendedRepository extends Repository<CustomerExtended, UUID> {
 
-    CustomerExtended findByFirstName(String firstName);
+    CustomerExtended findFirstByFirstName(String firstName);
 }

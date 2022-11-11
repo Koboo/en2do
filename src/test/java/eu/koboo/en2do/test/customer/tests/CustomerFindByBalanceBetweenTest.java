@@ -15,7 +15,7 @@ public class CustomerFindByBalanceBetweenTest extends CustomerRepositoryTest {
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        List<Customer> customerList = repository.findAll();
+        List<Customer> customerList = repository.findMany();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
     }
@@ -32,7 +32,7 @@ public class CustomerFindByBalanceBetweenTest extends CustomerRepositoryTest {
     @Test
     @Order(3)
     public void operationTest() {
-        List<Customer> customerList = repository.findByBalanceBetweenAndCustomerId(100, 600, 1);
+        List<Customer> customerList = repository.findManyByBalanceBetweenAndCustomerId(100, 600, 1);
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());
         assertEquals(1, customerList.size());

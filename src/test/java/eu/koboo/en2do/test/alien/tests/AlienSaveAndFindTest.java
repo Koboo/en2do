@@ -15,7 +15,7 @@ public class AlienSaveAndFindTest extends AlienRepositoryTest {
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        List<Alien> customerList = repository.findAll();
+        List<Alien> customerList = repository.findMany();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
     }
@@ -34,7 +34,7 @@ public class AlienSaveAndFindTest extends AlienRepositoryTest {
     @Order(3)
     public void findCustomer() {
         assertTrue(repository.existsById(Const.UNIQUE_ID));
-        Alien alien = repository.findById(Const.UNIQUE_ID);
+        Alien alien = repository.findFirstById(Const.UNIQUE_ID);
         assertNotNull(alien);
         assertEquals(3, alien.getUfoIdList().size());
         assertEquals(3, alien.getPlanetTimeMap().size());

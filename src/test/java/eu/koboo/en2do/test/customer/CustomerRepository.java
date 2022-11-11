@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 @DropEntitiesOnStart
 public interface CustomerRepository extends Repository<Customer, UUID> {
 
-    Customer findByFirstName(String firstName);
+    Customer findFirstByFirstName(String firstName);
 
     long countByFirstName(String firstName);
 
@@ -30,39 +30,39 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
 
     boolean existsByLastNameContains(String lastNamePart);
 
-    Customer findByFirstNameIgn(String firstname);
+    Customer findFirstByFirstNameIgn(String firstname);
 
-    Customer findByBalanceGreaterThan(double balance);
+    Customer findFirstByBalanceGreaterThan(double balance);
 
-    Customer findByBalanceLessThan(double balance);
+    Customer findFirstByBalanceLessThan(double balance);
 
-    Customer findByBalanceGreaterEq(double balance);
+    Customer findFirstByBalanceGreaterEq(double balance);
 
-    Customer findByBalanceLessEq(double balance);
+    Customer findFirstByBalanceLessEq(double balance);
 
-    Customer findByFirstNameRegex(String namePart);
+    Customer findFirstByFirstNameRegex(String namePart);
 
-    Customer findByFirstNameRegex(Pattern pattern);
+    Customer findFirstByFirstNameRegex(Pattern pattern);
 
-    Customer findByFirstNameExists();
+    Customer findFirstByFirstNameExists();
 
-    Customer findByFirstNameContains(String partOfFirstName);
+    Customer findFirstByFirstNameContains(String partOfFirstName);
 
-    List<Customer> findByBalanceBetweenAndCustomerId(double from, double to, int customerId);
+    List<Customer> findManyByBalanceBetweenAndCustomerId(double from, double to, int customerId);
 
-    Customer findByFirstNameAndBalanceNotBetweenAndCustomerId(String firstName, double from, double to, int customerId);
+    Customer findFirstByFirstNameAndBalanceNotBetweenAndCustomerId(String firstName, double from, double to, int customerId);
 
-    List<Customer> findByCustomerIdOrCustomerId(int customerId1, int customerId2);
+    List<Customer> findManyByCustomerIdOrCustomerId(int customerId1, int customerId2);
 
-    List<Customer> findByCustomerIdIn(List<Integer> customerIdList);
+    List<Customer> findManyByCustomerIdIn(List<Integer> customerIdList);
 
-    List<Customer> findByCustomerIdNotIn(List<Integer> customerIdList);
+    List<Customer> findManyByCustomerIdNotIn(List<Integer> customerIdList);
 
     @SortBy(field = "customerId")
     @SortBy(field = "balance")
     @Limit(20)
     @Skip(10)
-    List<Customer> findByCustomerIdExists();
+    List<Customer> findManyByCustomerIdExists();
 
-    List<Customer> findByCustomerIdNot(int customerId, Sort sort);
+    List<Customer> findManyByCustomerIdNot(int customerId, Sort sort);
 }

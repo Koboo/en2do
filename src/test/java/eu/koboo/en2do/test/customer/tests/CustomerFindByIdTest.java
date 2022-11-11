@@ -15,7 +15,7 @@ public class CustomerFindByIdTest extends CustomerRepositoryTest {
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        List<Customer> customerList = repository.findAll();
+        List<Customer> customerList = repository.findMany();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
     }
@@ -34,7 +34,7 @@ public class CustomerFindByIdTest extends CustomerRepositoryTest {
     @Order(3)
     public void findCustomer() {
         assertTrue(repository.existsById(Const.UNIQUE_ID));
-        Customer customer = repository.findById(Const.UNIQUE_ID);
+        Customer customer = repository.findFirstById(Const.UNIQUE_ID);
         assertNotNull(customer);
         assertEquals(Const.FIRST_NAME, customer.getFirstName());
         assertEquals(Const.LAST_NAME, customer.getLastName());

@@ -16,7 +16,7 @@ public class CustomerFindByCustomerIdExistsSortAnnotationTest extends CustomerRe
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        List<Customer> customerList = repository.findAll();
+        List<Customer> customerList = repository.findMany();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
     }
@@ -36,7 +36,7 @@ public class CustomerFindByCustomerIdExistsSortAnnotationTest extends CustomerRe
     @Test
     @Order(3)
     public void findCustomer() {
-        List<Customer> customerList = repository.findByCustomerIdExists();
+        List<Customer> customerList = repository.findManyByCustomerIdExists();
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());
         assertEquals(20, customerList.size());

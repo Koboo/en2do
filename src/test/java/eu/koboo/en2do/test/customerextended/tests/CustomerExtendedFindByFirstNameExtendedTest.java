@@ -17,7 +17,7 @@ public class CustomerExtendedFindByFirstNameExtendedTest extends CustomerExtende
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        List<CustomerExtended> customerList = repository.findAll();
+        List<CustomerExtended> customerList = repository.findMany();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
     }
@@ -36,7 +36,7 @@ public class CustomerExtendedFindByFirstNameExtendedTest extends CustomerExtende
     @Test
     @Order(3)
     public void operationTest() {
-        CustomerExtended customer = repository.findByFirstName(Const.FIRST_NAME);
+        CustomerExtended customer = repository.findFirstByFirstName(Const.FIRST_NAME);
         assertNotNull(customer);
         assertEquals(Const.CUSTOMER_ID, customer.getCustomerId());
         assertEquals(Const.FIRST_NAME, customer.getFirstName());
