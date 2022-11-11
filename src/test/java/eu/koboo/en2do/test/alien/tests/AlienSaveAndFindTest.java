@@ -15,7 +15,7 @@ public class AlienSaveAndFindTest extends AlienRepositoryTest {
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        List<Alien> customerList = repository.findMany();
+        List<Alien> customerList = repository.findAll();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
     }

@@ -17,7 +17,7 @@ public class CustomerExtendedFindFirstByFirstNameTest extends CustomerExtendedRe
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        List<CustomerExtended> customerList = repository.findMany();
+        List<CustomerExtended> customerList = repository.findAll();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
     }

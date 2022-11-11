@@ -47,7 +47,7 @@ public class MongoManager {
     private static final List<String> IGNORED_REPOSITORY_METHODS = Arrays.asList(
             // Predefined methods by Repository interface
             "getCollectionName", "getUniqueId", "getEntityClass", "getEntityUniqueIdClass",
-            "findFirstById", "findMany", "delete", "deleteById", "deleteAll", "drop",
+            "findFirstById", "findAll", "delete", "deleteById", "deleteAll", "drop",
             "save", "saveAll", "exists", "existsById",
             // Predefined methods by Java objects
             "toString", "hashCode", "equals", "notify", "notifyAll", "wait", "finalize", "clone");

@@ -18,7 +18,7 @@ public class CustomerFindManySortParameterTest extends CustomerRepositoryTest {
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        List<Customer> customerList = repository.findMany();
+        List<Customer> customerList = repository.findAll();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
     }

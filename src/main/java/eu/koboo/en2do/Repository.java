@@ -14,7 +14,7 @@ public interface Repository<E, ID> {
 
     E findFirstById(ID identifier);
 
-    List<E> findMany();
+    List<E> findAll();
 
     boolean delete(E entity);
 
