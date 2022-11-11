@@ -330,16 +330,22 @@ public class MongoManager {
             });
             repositoryMeta.registerHandler("saveAll", (method, arguments) -> {
                 List<E> entityList = repositoryMeta.checkEntityList(method, arguments[0]);
+                List<E> insertList = new ArrayList<>();
+                // Iterate through entities and check if it already exists by uniqueidentifier.
+                ReplaceOptions replaceOptions = new ReplaceOptions().upsert(true);
                 for (E entity : entityList) {
                     ID uniqueId = repositoryMeta.checkUniqueId(method, repositoryMeta.getUniqueId(entity));
                     Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
                     if (entityCollection.countDocuments(idFilter) > 0) {
-                        ReplaceOptions replaceOptions = new ReplaceOptions().upsert(true);
-                        UpdateResult result = entityCollection.replaceOne(idFilter, entity, replaceOptions);
-                        return result.wasAcknowledged();
+                        // Entity exists, so we want to update the existing document.
+                        entityCollection.replaceOne(idFilter, entity, replaceOptions);
+                        continue;
                     }
-                    entityCollection.insertOne(entity);
+                    // Entity doesn't exist, so we want to insert a new document.
+                    insertList.add(entity);
                 }
+                // Using "insertMany" should speed up inserting performance drastically
+                entityCollection.insertMany(insertList);
                 return true;
             });
             repositoryMeta.registerHandler("exists", (method, arguments) -> {
