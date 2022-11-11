@@ -20,6 +20,8 @@ import eu.koboo.en2do.index.NonIndex;
 import eu.koboo.en2do.methods.FilterOperator;
 import eu.koboo.en2do.methods.FilterType;
 import eu.koboo.en2do.methods.MethodOperator;
+import eu.koboo.en2do.methods.registry.DynamicMethod;
+import eu.koboo.en2do.methods.registry.MethodFilterPart;
 import eu.koboo.en2do.methods.registry.RepositoryMeta;
 import eu.koboo.en2do.repository.DropEntitiesOnStart;
 import eu.koboo.en2do.repository.DropIndexesOnStart;
@@ -196,6 +198,12 @@ public class MongoManager {
             Field entityUniqueIdField = tempEntityUniqueIdField;
             entityFieldNameSet.clear();
 
+            RepositoryMeta<E, ID, R> repositoryMeta = new RepositoryMeta<>(
+                    repositoryClass, entityClass,
+                    entityFieldSet,
+                    entityUniqueIdClass, entityUniqueIdField
+            );
+
             // Iterate through the repository methods
             for (Method method : repositoryClass.getMethods()) {
                 // Skip if the method should be ignored
@@ -215,8 +223,89 @@ public class MongoManager {
                 // Check the returnTypes by using the predefined validator.
                 methodOperator.getReturnTypeValidator().check(method, returnType, entityClass, repositoryClass);
 
-                checkMethodOperation(method, entityClass, repositoryClass, entityFieldSet);
+                String methodNameWithoutOperator = methodOperator.removeOperatorFrom(methodName);
+                if (methodName.contains("And") && methodName.contains("Or")) {
+                    throw new MethodDuplicatedChainException(method, entityClass);
+                }
+
+                boolean multipleFilter = methodNameWithoutOperator.contains("And") || methodNameWithoutOperator.contains("Or");
+                boolean andFilter = methodNameWithoutOperator.contains("And");
+                String[] methodFilterPartArray;
+                if (andFilter) {
+                    methodFilterPartArray = methodNameWithoutOperator.split("And");
+                } else {
+                    methodFilterPartArray = methodNameWithoutOperator.split("Or");
+                }
+
+                // Count for further validation
+                int expectedParameterCount = 0;
+
+                int nextParameterIndex = 0;
+                int itemCount = 0;
+                List<MethodFilterPart> filterPartList = new LinkedList<>();
+                for (String filterOperatorString : methodFilterPartArray) {
+                    FilterType filterType = createFilterType(entityClass, repositoryClass, method, filterOperatorString,
+                            entityFieldSet);
+                    int filterTypeParameterCount = filterType.operator().getExpectedParameterCount();
+                    for (int i = 0; i < filterTypeParameterCount; i++) {
+                        int paramIndex = nextParameterIndex + i;
+                        Class<?> paramClass = method.getParameters()[paramIndex].getType();
+                        if (paramClass == null) {
+                            throw new MethodParameterNotFoundException(method, repositoryClass, (paramIndex + filterTypeParameterCount),
+                                    method.getParameterCount());
+                        }
+                        // Special checks for some operators
+                        Class<?> fieldClass = filterType.field().getType();
+                        switch (filterType.operator()) {
+                            case REGEX -> {
+                                if (!GenericUtils.isTypeOf(String.class, paramClass) && !GenericUtils.isTypeOf(Pattern.class, paramClass)) {
+                                    throw new MethodInvalidRegexParameterException(method, repositoryClass, paramClass);
+                                }
+                            }
+                            case IN -> {
+                                if (!GenericUtils.isTypeOf(List.class, paramClass)) {
+                                    throw new MethodMismatchingTypeException(method, repositoryClass, List.class, paramClass);
+                                }
+                                Class<?> listType = GenericUtils.getGenericTypeOfParameterList(method, paramIndex);
+                                if (!GenericUtils.isTypeOf(fieldClass, listType)) {
+                                    throw new MethodInvalidListParameterException(method, repositoryClass, fieldClass, listType);
+                                }
+                            }
+                            default -> {
+                                if (!GenericUtils.isTypeOf(fieldClass, paramClass)) {
+                                    throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
+                                }
+                            }
+                        }
+                    }
+                    MethodFilterPart filterPart = new MethodFilterPart(filterType, nextParameterIndex);
+                    filterPartList.add(filterPart);
+                    // Further validation
+                    expectedParameterCount += filterTypeParameterCount;
+                    nextParameterIndex = itemCount + filterTypeParameterCount;
+                    itemCount += 1;
+                }
+
+                int methodParameterCount = method.getParameterCount();
+                // Validate the parameterCount of the filters and the method parameters itself.
+                if (expectedParameterCount != methodParameterCount) {
+                    if (methodParameterCount > 0) {
+                        // Subtract 1 from parameterCount. This object could be the Sort object.
+                        // That means, the expectedParameterCount is less than the acutalParameterCount.
+                        Class<?> lastMethodParameter = method.getParameterTypes()[methodParameterCount - 1];
+                        if (lastMethodParameter.isAssignableFrom(Sort.class) && (expectedParameterCount + 1) != methodParameterCount) {
+                            throw new MethodParameterCountException(method, repositoryClass, (expectedParameterCount + 1), methodParameterCount);
+                        }
+                    } else {
+                        throw new MethodParameterCountException(method, repositoryClass, expectedParameterCount, methodParameterCount);
+                    }
+                }
+
                 checkSortOptions(method, entityClass, repositoryClass, entityFieldSet);
+
+                DynamicMethod<E, ID, R> dynamicMethod = new DynamicMethod<>(method, repositoryMeta, methodOperator,
+                        multipleFilter, andFilter, filterPartList);
+                repositoryMeta.registerDynamicMethod(methodName, dynamicMethod);
             }
 
             // Parse annotated collection name and create pojo-related mongo collection
@@ -268,11 +357,11 @@ public class MongoManager {
                 entityCollection.createIndex(Indexes.compoundIndex(indexBsonList), indexOptions);
             }
 
-            RepositoryMeta<E, ID, R> repositoryMeta = new RepositoryMeta<>(
-                    repositoryClass, entityClass,
-                    entityFieldSet,
-                    entityUniqueIdClass, entityUniqueIdField
-            );
+            ///////////////////////////
+            //                       //
+            // Validation successful //
+            //                       //
+            ///////////////////////////
 
             // Define default methods with handler into the meta registry
             repositoryMeta.registerHandler("getCollectionName", (method, arguments) -> entityCollectionName);
@@ -364,7 +453,7 @@ public class MongoManager {
             ClassLoader repoClassLoader = repositoryClass.getClassLoader();
             Class<?>[] interfaces = new Class[]{repositoryClass};
             Repository<E, ID> repository = (Repository<E, ID>) Proxy.newProxyInstance(repoClassLoader, interfaces,
-                    new RepositoryInvocationHandler<>(this, repositoryMeta, entityCollection));
+                    new RepositoryInvocationHandler<>(repositoryMeta, entityCollection));
             repoRegistry.put(repositoryClass, repository);
             return (R) repository;
         } catch (Exception e) {
@@ -380,10 +469,12 @@ public class MongoManager {
         if (methodOperator == null) {
             throw new MethodNoMethodOperatorException(method, repoClass);
         }
+
         String fieldFilterName = methodOperator.removeOperatorFrom(methodName);
         if (methodName.contains("And") && methodName.contains("Or")) {
             throw new MethodDuplicatedChainException(method, entityClass);
         }
+
         int expectedParameters = countExpectedParameters(entityClass, repoClass, method, fieldFilterName, fieldSet);
         int parameterCount = method.getParameterCount();
         if (expectedParameters != parameterCount) {
@@ -396,6 +487,7 @@ public class MongoManager {
                 throw new MethodParameterCountException(method, repoClass, expectedParameters, parameterCount);
             }
         }
+
         String[] fieldFilterSplitByType = fieldFilterName.contains("And") ?
                 fieldFilterName.split("And") : fieldFilterName.split("Or");
         int nextIndex = 0;
@@ -458,18 +550,22 @@ public class MongoManager {
     }
 
     protected <E> FilterType createFilterType(Class<E> entityClass, Class<?> repoClass, Method method,
-                                              String operatorString, Set<Field> fieldSet) throws Exception {
-        FilterOperator filterOperator = FilterOperator.parseFilterEndsWith(operatorString);
+                                              String filterOperatorString, Set<Field> fieldSet) throws Exception {
+        FilterOperator filterOperator = FilterOperator.parseFilterEndsWith(filterOperatorString);
         if (filterOperator == null) {
             throw new MethodNoFilterOperatorException(method, repoClass);
         }
-        String expectedField = filterOperator.removeOperatorFrom(operatorString);
-        expectedField = expectedField.endsWith("Not") ? expectedField.replaceFirst("Not", "") : expectedField;
-        Field field = FieldUtils.findFieldByName(expectedField, fieldSet);
-        if (field == null) {
-            throw new MethodFieldNotFoundException(expectedField, method, entityClass, repoClass);
+        String expectedFieldName = filterOperator.removeOperatorFrom(filterOperatorString);
+        boolean notFilter = false;
+        if(expectedFieldName.endsWith("Not")) {
+            expectedFieldName = expectedFieldName.replaceFirst("Not", "");
+            notFilter = true;
         }
-        return new FilterType(field, filterOperator);
+        Field field = FieldUtils.findFieldByName(expectedFieldName, fieldSet);
+        if (field == null) {
+            throw new MethodFieldNotFoundException(expectedFieldName, method, entityClass, repoClass);
+        }
+        return new FilterType(field, notFilter, filterOperator);
     }
 
     private <E> void checkSortOptions(Method method, Class<E> entityClass, Class<?> repoClass, Set<Field> fieldSet) throws Exception {
