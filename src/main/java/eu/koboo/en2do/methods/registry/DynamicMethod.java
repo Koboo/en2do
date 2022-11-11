@@ -5,7 +5,7 @@ import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.exception.MethodInvalidRegexParameterException;
 import eu.koboo.en2do.exception.MethodUnsupportedFilterException;
 import eu.koboo.en2do.methods.FilterType;
-import eu.koboo.en2do.methods.MethodOperator;
+import eu.koboo.en2do.methods.operators.MethodOperator;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

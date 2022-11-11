@@ -1,6 +1,7 @@
-package eu.koboo.en2do.methods;
+package eu.koboo.en2do.methods.operators;
 
 import eu.koboo.en2do.exception.*;
+import eu.koboo.en2do.methods.ReturnTypeValidator;
 import eu.koboo.en2do.utility.GenericUtils;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

@@ -1,4 +1,4 @@
-package eu.koboo.en2do.methods;
+package eu.koboo.en2do.methods.operators;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
