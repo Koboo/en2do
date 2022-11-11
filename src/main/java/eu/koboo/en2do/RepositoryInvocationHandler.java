@@ -15,7 +15,6 @@ import eu.koboo.en2do.sort.annotation.Skip;
 import eu.koboo.en2do.sort.annotation.SortBy;
 import eu.koboo.en2do.sort.object.ByField;
 import eu.koboo.en2do.sort.object.Sort;
-import eu.koboo.en2do.utility.GenericUtils;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;

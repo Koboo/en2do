@@ -15,12 +15,12 @@ import java.util.List;
 public enum MethodOperator {
 
     FIND_FIRST("findFirstBy", (method, returnType, entityClass, repoClass) -> {
-        if(!GenericUtils.isTypeOf(entityClass, returnType)) {
+        if (!GenericUtils.isTypeOf(entityClass, returnType)) {
             throw new MethodFindReturnTypeException(method, entityClass, repoClass);
         }
     }),
     FIND_MANY("findManyBy", (method, returnType, entityClass, repoClass) -> {
-        if(!GenericUtils.isTypeOf(List.class, entityClass)) {
+        if (!GenericUtils.isTypeOf(List.class, entityClass)) {
             throw new MethodFindListReturnTypeException(method, entityClass, repoClass);
         }
         Class<?> listType = GenericUtils.getGenericTypeOfReturnList(method);
