@@ -18,12 +18,12 @@ import eu.koboo.en2do.index.Id;
 import eu.koboo.en2do.index.Index;
 import eu.koboo.en2do.index.NonIndex;
 import eu.koboo.en2do.meta.RepositoryInvocationHandler;
+import eu.koboo.en2do.meta.RepositoryMeta;
 import eu.koboo.en2do.meta.operators.FilterOperator;
-import eu.koboo.en2do.meta.registry.FilterType;
 import eu.koboo.en2do.meta.operators.MethodOperator;
 import eu.koboo.en2do.meta.registry.DynamicMethod;
+import eu.koboo.en2do.meta.registry.FilterType;
 import eu.koboo.en2do.meta.registry.MethodFilterPart;
-import eu.koboo.en2do.meta.RepositoryMeta;
 import eu.koboo.en2do.meta.startup.DropEntitiesOnStart;
 import eu.koboo.en2do.meta.startup.DropIndexesOnStart;
 import eu.koboo.en2do.sort.annotation.Limit;
@@ -304,14 +304,14 @@ public class MongoManager {
 
                 // Check if the field from sort annotation exists.
                 SortBy sortAnnotation = method.getAnnotation(SortBy.class);
-                if(sortAnnotation != null) {
+                if (sortAnnotation != null) {
                     String sortFieldName = sortAnnotation.field();
                     Field field = FieldUtils.findFieldByName(sortFieldName, entityFieldSet);
                     if (field == null) {
                         throw new MethodSortFieldNotFoundException(sortFieldName, method, entityClass, repositoryClass);
                     }
                 }
-                if(methodParameterCount > 0) {
+                if (methodParameterCount > 0) {
                     Class<?> lastMethodParameter = method.getParameterTypes()[methodParameterCount - 1];
                     // Check if both Sort types are used.
                     // This is not allowed, even if it is possible internally.
@@ -485,7 +485,7 @@ public class MongoManager {
     }
 
     private <E> FilterType createFilterType(Class<E> entityClass, Class<?> repoClass, Method method,
-                                              String filterOperatorString, Set<Field> fieldSet) throws Exception {
+                                            String filterOperatorString, Set<Field> fieldSet) throws Exception {
         FilterOperator filterOperator = FilterOperator.parseFilterEndsWith(filterOperatorString);
         if (filterOperator == null) {
             throw new MethodNoFilterOperatorException(method, repoClass);
