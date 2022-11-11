@@ -1,18 +1,19 @@
 package eu.koboo.en2do.test.customer.tests;
 
+import eu.koboo.en2do.sort.object.ByField;
+import eu.koboo.en2do.sort.object.Sort;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CustomerFindByCustomerIdNotInTest extends CustomerRepositoryTest {
+public class CustomerFindManySortParameterTest extends CustomerRepositoryTest {
 
     @Test
     @Order(1)
@@ -25,7 +26,7 @@ public class CustomerFindByCustomerIdNotInTest extends CustomerRepositoryTest {
     @Test
     @Order(2)
     public void saveCustomer() {
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 100; i++) {
             Customer customer = Const.createNewCustomer();
             customer.setUniqueId(UUID.randomUUID());
             customer.setCustomerId(i);
@@ -37,17 +38,18 @@ public class CustomerFindByCustomerIdNotInTest extends CustomerRepositoryTest {
     @Test
     @Order(3)
     public void findCustomer() {
-        List<Customer> customerList = repository.findManyByCustomerIdNotIn(Arrays.asList(1, 2, 3, 4, 5));
+        List<Customer> customerList = repository.findManyByCustomerIdNot(17,
+                Sort.create()
+                        .order(ByField.of("customerId", true))
+                        .limit(20)
+                        .skip(10)
+        );
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());
-        assertEquals(25, customerList.size());
+        assertEquals(20, customerList.size());
         for (Customer customer : customerList) {
             assertNotNull(customer);
-            assertNotEquals(1, customer.getCustomerId());
-            assertNotEquals(2, customer.getCustomerId());
-            assertNotEquals(3, customer.getCustomerId());
-            assertNotEquals(4, customer.getCustomerId());
-            assertNotEquals(5, customer.getCustomerId());
+            assertNotEquals(17, customer.getCustomerId());
             assertEquals(Const.FIRST_NAME, customer.getFirstName());
             assertEquals(Const.LAST_NAME, customer.getLastName());
             assertEquals(Const.BIRTHDAY, customer.getBirthday());

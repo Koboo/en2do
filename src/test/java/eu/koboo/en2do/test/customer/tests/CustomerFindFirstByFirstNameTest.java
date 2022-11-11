@@ -1,10 +1,8 @@
-package eu.koboo.en2do.test.customerextended.tests;
+package eu.koboo.en2do.test.customer.tests;
 
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
-import eu.koboo.en2do.test.customerextended.CustomerExtended;
-import eu.koboo.en2do.test.customerextended.CustomerExtendedRepositoryTest;
-import eu.koboo.en2do.utility.EntityUtils;
+import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
@@ -12,12 +10,12 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CustomerExtendedFindByFirstNameExtendedTest extends CustomerExtendedRepositoryTest {
+public class CustomerFindFirstByFirstNameTest extends CustomerRepositoryTest {
 
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        List<CustomerExtended> customerList = repository.findMany();
+        List<Customer> customerList = repository.findMany();
         assertNotNull(customerList);
         assertTrue(customerList.isEmpty());
     }
@@ -26,17 +24,15 @@ public class CustomerExtendedFindByFirstNameExtendedTest extends CustomerExtende
     @Order(2)
     public void saveCustomer() {
         Customer customer = Const.createNewCustomer();
-        CustomerExtended customerExtended = new CustomerExtended();
-        EntityUtils.copyProperties(customer, customerExtended);
-        assertNotNull(customerExtended);
-        assertTrue(repository.save(customerExtended));
-        assertTrue(repository.exists(customerExtended));
+        assertNotNull(customer);
+        assertTrue(repository.save(customer));
+        assertTrue(repository.exists(customer));
     }
 
     @Test
     @Order(3)
     public void operationTest() {
-        CustomerExtended customer = repository.findFirstByFirstName(Const.FIRST_NAME);
+        Customer customer = repository.findFirstByFirstName(Const.FIRST_NAME);
         assertNotNull(customer);
         assertEquals(Const.CUSTOMER_ID, customer.getCustomerId());
         assertEquals(Const.FIRST_NAME, customer.getFirstName());
@@ -44,7 +40,5 @@ public class CustomerExtendedFindByFirstNameExtendedTest extends CustomerExtende
         assertEquals(Const.BIRTHDAY, customer.getBirthday());
         assertEquals(Const.PHONE_NUMBER, customer.getPhoneNumber());
         assertEquals(Const.ORDERS.size(), customer.getOrders().size());
-        assertNull(customer.getOrderStatus());
-        assertNull(customer.getLockStatus());
     }
 }

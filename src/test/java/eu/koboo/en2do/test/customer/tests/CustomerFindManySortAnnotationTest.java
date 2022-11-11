@@ -11,7 +11,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CustomerFindByCustomerIdExistsSortAnnotationTest extends CustomerRepositoryTest {
+public class CustomerFindManySortAnnotationTest extends CustomerRepositoryTest {
 
     @Test
     @Order(1)
