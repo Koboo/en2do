@@ -302,7 +302,29 @@ public class MongoManager {
                     }
                 }
 
-                checkSortOptions(method, entityClass, repositoryClass, entityFieldSet);
+                // Check if the field from sort annotation exists.
+                SortBy sortAnnotation = method.getAnnotation(SortBy.class);
+                if(sortAnnotation != null) {
+                    String sortFieldName = sortAnnotation.field();
+                    Field field = FieldUtils.findFieldByName(sortFieldName, entityFieldSet);
+                    if (field == null) {
+                        throw new MethodSortFieldNotFoundException(sortFieldName, method, entityClass, repositoryClass);
+                    }
+                }
+                if(methodParameterCount > 0) {
+                    Class<?> lastMethodParameter = method.getParameterTypes()[methodParameterCount - 1];
+                    // Check if both Sort types are used.
+                    // This is not allowed, even if it is possible internally.
+                    boolean hasAnySortAnnotation = method.isAnnotationPresent(Limit.class)
+                            || method.isAnnotationPresent(Skip.class)
+                            || method.isAnnotationPresent(SortBy.class)
+                            || method.isAnnotationPresent(SortByArray.class);
+                    if (hasAnySortAnnotation && lastMethodParameter.isAssignableFrom(Sort.class)) {
+                        throw new MethodMixedSortException(method, repositoryClass);
+                    }
+                    // We can't check the field, because it's a parameter, we can only check it, on executing
+                    // while runtime
+                }
 
                 DynamicMethod<E, ID, R> dynamicMethod = new DynamicMethod<>(method, repositoryMeta, methodOperator,
                         multipleFilter, andFilter, filterPartList);
@@ -462,7 +484,7 @@ public class MongoManager {
         }
     }
 
-    protected <E> FilterType createFilterType(Class<E> entityClass, Class<?> repoClass, Method method,
+    private <E> FilterType createFilterType(Class<E> entityClass, Class<?> repoClass, Method method,
                                               String filterOperatorString, Set<Field> fieldSet) throws Exception {
         FilterOperator filterOperator = FilterOperator.parseFilterEndsWith(filterOperatorString);
         if (filterOperator == null) {
@@ -479,31 +501,5 @@ public class MongoManager {
             throw new MethodFieldNotFoundException(expectedFieldName, method, entityClass, repoClass);
         }
         return new FilterType(field, notFilter, filterOperator);
-    }
-
-    private <E> void checkSortOptions(Method method, Class<E> entityClass, Class<?> repoClass, Set<Field> fieldSet) throws Exception {
-        String fieldName = null;
-        if (method.isAnnotationPresent(SortBy.class)) {
-            SortBy sortBy = method.getAnnotation(SortBy.class);
-            fieldName = sortBy.field();
-        }
-        int parameterCount = method.getParameterCount();
-        if (parameterCount > 0) {
-            Class<?> lastParam = method.getParameterTypes()[parameterCount - 1];
-            boolean hasAnySortAnnotation = method.isAnnotationPresent(Limit.class)
-                    || method.isAnnotationPresent(Skip.class)
-                    || method.isAnnotationPresent(SortBy.class)
-                    || method.isAnnotationPresent(SortByArray.class);
-            if (hasAnySortAnnotation && lastParam.isAssignableFrom(Sort.class)) {
-                throw new MethodMixedSortException(method, repoClass);
-            }
-        }
-        if (fieldName == null) {
-            return;
-        }
-        Field field = FieldUtils.findFieldByName(fieldName, fieldSet);
-        if (field == null) {
-            throw new MethodSortFieldNotFoundException(fieldName, method, entityClass, repoClass);
-        }
     }
 }
