@@ -1,7 +1,7 @@
 package eu.koboo.en2do.exception;
 
 import eu.koboo.en2do.sort.annotation.SortBy;
-import eu.koboo.en2do.sort.object.Sort;
+import eu.koboo.en2do.sort.parameter.Sort;
 
 import java.lang.reflect.Method;
 

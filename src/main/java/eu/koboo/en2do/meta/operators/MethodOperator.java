@@ -1,4 +1,4 @@
-package eu.koboo.en2do.methods.operators;
+package eu.koboo.en2do.meta.operators;
 
 import eu.koboo.en2do.exception.*;
 import eu.koboo.en2do.utility.GenericUtils;

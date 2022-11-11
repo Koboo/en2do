@@ -1,4 +1,4 @@
-package eu.koboo.en2do.sort.object;
+package eu.koboo.en2do.sort.parameter;
 
 public record ByField(String fieldName, boolean ascending) {
 

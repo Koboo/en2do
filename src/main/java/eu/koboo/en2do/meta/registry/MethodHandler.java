@@ -1,4 +1,4 @@
-package eu.koboo.en2do.methods.registry;
+package eu.koboo.en2do.meta.registry;
 
 import java.lang.reflect.Method;
 

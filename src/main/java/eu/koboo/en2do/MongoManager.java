@@ -17,19 +17,19 @@ import eu.koboo.en2do.index.CompoundIndex;
 import eu.koboo.en2do.index.Id;
 import eu.koboo.en2do.index.Index;
 import eu.koboo.en2do.index.NonIndex;
-import eu.koboo.en2do.methods.operators.FilterOperator;
-import eu.koboo.en2do.methods.FilterType;
-import eu.koboo.en2do.methods.operators.MethodOperator;
-import eu.koboo.en2do.methods.registry.DynamicMethod;
-import eu.koboo.en2do.methods.registry.MethodFilterPart;
-import eu.koboo.en2do.methods.registry.RepositoryMeta;
-import eu.koboo.en2do.repository.DropEntitiesOnStart;
-import eu.koboo.en2do.repository.DropIndexesOnStart;
+import eu.koboo.en2do.meta.operators.FilterOperator;
+import eu.koboo.en2do.meta.registry.FilterType;
+import eu.koboo.en2do.meta.operators.MethodOperator;
+import eu.koboo.en2do.meta.registry.DynamicMethod;
+import eu.koboo.en2do.meta.registry.MethodFilterPart;
+import eu.koboo.en2do.meta.RepositoryMeta;
+import eu.koboo.en2do.meta.startup.DropEntitiesOnStart;
+import eu.koboo.en2do.meta.startup.DropIndexesOnStart;
 import eu.koboo.en2do.sort.annotation.Limit;
 import eu.koboo.en2do.sort.annotation.Skip;
 import eu.koboo.en2do.sort.annotation.SortBy;
 import eu.koboo.en2do.sort.annotation.SortByArray;
-import eu.koboo.en2do.sort.object.Sort;
+import eu.koboo.en2do.sort.parameter.Sort;
 import eu.koboo.en2do.utility.AnnotationUtils;
 import eu.koboo.en2do.utility.FieldUtils;
 import eu.koboo.en2do.utility.GenericUtils;
@@ -221,7 +221,7 @@ public class MongoManager {
                 }
 
                 // Check the returnTypes by using the predefined validator.
-                methodOperator.getReturnTypeValidator().check(method, returnType, entityClass, repositoryClass);
+                methodOperator.validate(method, returnType, entityClass, repositoryClass);
 
                 String methodNameWithoutOperator = methodOperator.removeOperatorFrom(methodName);
                 if (methodName.contains("And") && methodName.contains("Or")) {

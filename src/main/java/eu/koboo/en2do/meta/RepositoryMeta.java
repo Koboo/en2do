@@ -1,7 +1,9 @@
-package eu.koboo.en2do.methods.registry;
+package eu.koboo.en2do.meta;
 
 import com.mongodb.client.model.Filters;
 import eu.koboo.en2do.Repository;
+import eu.koboo.en2do.meta.registry.DynamicMethod;
+import eu.koboo.en2do.meta.registry.MethodHandler;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
@@ -30,7 +32,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     @Getter
     Field entityUniqueIdField;
 
-    Map<String, MethodHandler<E>> methodRegistry;
+    Map<String, MethodHandler> methodRegistry;
     Map<String, DynamicMethod<E, ID, R>> dynamicMethodRegistry;
 
     public RepositoryMeta(Class<R> repositoryClass, Class<E> entityClass, Set<Field> entityFieldSet,
@@ -47,14 +49,14 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         this.dynamicMethodRegistry = new HashMap<>();
     }
 
-    public void registerHandler(String methodName, MethodHandler<E> methodHandler) {
+    public void registerHandler(String methodName, MethodHandler methodHandler) {
         if (methodRegistry.containsKey(methodName)) {
             throw new RuntimeException("Already registered method with name \"" + methodName + "\".");
         }
         methodRegistry.put(methodName, methodHandler);
     }
 
-    public MethodHandler<E> lookupHandler(String methodName) {
+    public MethodHandler lookupHandler(String methodName) {
         return methodRegistry.get(methodName);
     }
 

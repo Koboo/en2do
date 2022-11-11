@@ -5,14 +5,14 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
 import eu.koboo.en2do.exception.RepositoryInvalidCallException;
-import eu.koboo.en2do.methods.registry.DynamicMethod;
-import eu.koboo.en2do.methods.registry.MethodHandler;
-import eu.koboo.en2do.methods.registry.RepositoryMeta;
+import eu.koboo.en2do.meta.registry.DynamicMethod;
+import eu.koboo.en2do.meta.registry.MethodHandler;
+import eu.koboo.en2do.meta.RepositoryMeta;
 import eu.koboo.en2do.sort.annotation.Limit;
 import eu.koboo.en2do.sort.annotation.Skip;
 import eu.koboo.en2do.sort.annotation.SortBy;
-import eu.koboo.en2do.sort.object.ByField;
-import eu.koboo.en2do.sort.object.Sort;
+import eu.koboo.en2do.sort.parameter.ByField;
+import eu.koboo.en2do.sort.parameter.Sort;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -35,7 +35,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         String methodName = method.getName();
 
         // Get and check if a static handler for the methodName is available.
-        MethodHandler<E> methodHandler = repositoryMeta.lookupHandler(methodName);
+        MethodHandler methodHandler = repositoryMeta.lookupHandler(methodName);
         if (methodHandler != null) {
             // Just handle the arguments and return the object
             return methodHandler.handle(method, arguments);
