@@ -8,6 +8,9 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
+import com.mongodb.client.model.ReplaceOptions;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 import eu.koboo.en2do.codec.MapCodecProvider;
 import eu.koboo.en2do.exception.*;
 import eu.koboo.en2do.index.CompoundIndex;
@@ -17,6 +20,7 @@ import eu.koboo.en2do.index.NonIndex;
 import eu.koboo.en2do.methods.FilterOperator;
 import eu.koboo.en2do.methods.FilterType;
 import eu.koboo.en2do.methods.MethodOperator;
+import eu.koboo.en2do.methods.registry.RepositoryMeta;
 import eu.koboo.en2do.repository.DropEntitiesOnStart;
 import eu.koboo.en2do.repository.DropIndexesOnStart;
 import eu.koboo.en2do.sort.annotation.Limit;
@@ -24,9 +28,7 @@ import eu.koboo.en2do.sort.annotation.Skip;
 import eu.koboo.en2do.sort.annotation.SortBy;
 import eu.koboo.en2do.sort.annotation.SortByArray;
 import eu.koboo.en2do.sort.object.Sort;
-import eu.koboo.en2do.utility.AnnotationUtils;
-import eu.koboo.en2do.utility.FieldUtils;
-import eu.koboo.en2do.utility.GenericUtils;
+import eu.koboo.en2do.utility.*;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.bson.UuidRepresentation;
@@ -120,17 +122,17 @@ public class MongoManager {
     }
 
     @SuppressWarnings("unchecked")
-    public <E, ID, R extends Repository<E, ID>> R create(Class<R> repoClass) {
+    public <E, ID, R extends Repository<E, ID>> R create(Class<R> repositoryClass) {
         try {
 
             // Check for already created repository to avoid multiply instances of the same repository
-            if (repoRegistry.containsKey(repoClass)) {
-                return (R) repoRegistry.get(repoClass);
+            if (repoRegistry.containsKey(repositoryClass)) {
+                return (R) repoRegistry.get(repositoryClass);
             }
 
             // Parse Entity and UniqueId type classes by generic repository arguments
             // (Yea, it's very hacky, but works)
-            Type[] repoGenericTypeArray = repoClass.getGenericInterfaces();
+            Type[] repoGenericTypeArray = repositoryClass.getGenericInterfaces();
             Type repoGenericTypeParams = null;
             for (Type type : repoGenericTypeArray) {
                 if (type.getTypeName().split("<")[0].equalsIgnoreCase(Repository.class.getName())) {
@@ -139,7 +141,7 @@ public class MongoManager {
                 }
             }
             if (repoGenericTypeParams == null) {
-                throw new RepositoryNoTypeException(repoClass);
+                throw new RepositoryNoTypeException(repositoryClass);
             }
 
             // Searching for entity class and after that their declared fields
@@ -149,49 +151,51 @@ public class MongoManager {
                 String entityClassName = repoGenericTypeParams.getTypeName().split("<")[1].split(",")[0];
                 entityClass = (Class<E>) Class.forName(entityClassName);
             } catch (ClassNotFoundException e) {
-                throw new RepositoryEntityNotFoundException(repoClass, e);
+                throw new RepositoryEntityNotFoundException(repositoryClass, e);
             }
 
             // Collect all fields recursively
-            Set<Field> allFields = FieldUtils.collectFields(entityClass);
-            if (allFields.size() == 0) {
-                throw new RepositoryNoFieldsException(repoClass);
+            Set<Field> entityFieldSet = FieldUtils.collectFields(entityClass);
+            if (entityFieldSet.size() == 0) {
+                throw new RepositoryNoFieldsException(repositoryClass);
             }
 
             // Predefine some variables for further validation
             Set<String> entityFieldNameSet = new HashSet<>();
-            Class<ID> entityUniqueIdClass = null;
-            Field entityUniqueIdField = null;
-            for (Field field : allFields) {
+            Class<ID> tempEntityUniqueIdClass = null;
+            Field tempEntityUniqueIdField = null;
+            for (Field field : entityFieldSet) {
 
                 // Check for duplicated lower-case field names
                 String lowerFieldName = field.getName().toLowerCase(Locale.ROOT);
                 if (entityFieldNameSet.contains(lowerFieldName)) {
-                    throw new RepositoryDuplicatedFieldException(field, repoClass);
+                    throw new RepositoryDuplicatedFieldException(field, repositoryClass);
                 }
                 entityFieldNameSet.add(lowerFieldName);
 
                 // Check if field has final declaration
                 if (Modifier.isFinal(field.getModifiers())) {
-                    throw new RepositoryFinalFieldException(field, repoClass);
+                    throw new RepositoryFinalFieldException(field, repositoryClass);
                 }
 
                 // Check for @Id annotation to find unique identifier of entity
                 if (!field.isAnnotationPresent(Id.class)) {
                     continue;
                 }
-                entityUniqueIdClass = (Class<ID>) field.getType();
-                entityUniqueIdField = field;
-                entityUniqueIdField.setAccessible(true);
+                tempEntityUniqueIdClass = (Class<ID>) field.getType();
+                tempEntityUniqueIdField = field;
+                tempEntityUniqueIdField.setAccessible(true);
             }
             // Check if we found any unique identifier.
-            if (entityUniqueIdClass == null) {
+            if (tempEntityUniqueIdClass == null) {
                 throw new RepositoryIdNotFoundException(entityClass);
             }
+            Class<ID> entityUniqueIdClass = tempEntityUniqueIdClass;
+            Field entityUniqueIdField = tempEntityUniqueIdField;
             entityFieldNameSet.clear();
 
             // Iterate through the repository methods
-            for (Method method : repoClass.getMethods()) {
+            for (Method method : repositoryClass.getMethods()) {
                 // Skip if the method should be ignored
                 if (IGNORED_REPOSITORY_METHODS.contains(method.getName())) {
                     continue;
@@ -203,31 +207,31 @@ public class MongoManager {
                 // Parse the MethodOperator by the methodName
                 MethodOperator methodOperator = MethodOperator.parseMethodStartsWith(methodName);
                 if (methodOperator == null) {
-                    throw new MethodNoMethodOperatorException(method, repoClass);
+                    throw new MethodNoMethodOperatorException(method, repositoryClass);
                 }
 
                 // Check the returnTypes by using the predefined validator.
-                methodOperator.getReturnTypeValidator().check(method, returnType, entityClass, repoClass);
+                methodOperator.getReturnTypeValidator().check(method, returnType, entityClass, repositoryClass);
 
-                checkMethodOperation(method, entityClass, repoClass, allFields);
-                checkSortOptions(method, entityClass, repoClass, allFields);
+                checkMethodOperation(method, entityClass, repositoryClass, entityFieldSet);
+                checkSortOptions(method, entityClass, repositoryClass, entityFieldSet);
             }
 
             // Parse annotated collection name and create pojo-related mongo collection
-            Collection collectionAnnotation = repoClass.getAnnotation(Collection.class);
+            Collection collectionAnnotation = repositoryClass.getAnnotation(Collection.class);
             if (collectionAnnotation == null) {
-                throw new RepositoryNameNotFoundException(repoClass);
+                throw new RepositoryNameNotFoundException(repositoryClass);
             }
             String entityCollectionName = collectionAnnotation.value();
             MongoCollection<E> entityCollection = database.getCollection(entityCollectionName, entityClass);
 
             // Drop all entities on start if annotation is present.
-            if (repoClass.isAnnotationPresent(DropEntitiesOnStart.class)) {
+            if (repositoryClass.isAnnotationPresent(DropEntitiesOnStart.class)) {
                 entityCollection.drop();
             }
 
             // Drop all indexes on start if annotation is present.
-            if (repoClass.isAnnotationPresent(DropIndexesOnStart.class)) {
+            if (repositoryClass.isAnnotationPresent(DropIndexesOnStart.class)) {
                 entityCollection.dropIndexes();
             }
 
@@ -241,8 +245,8 @@ public class MongoManager {
                 // Checking if the field in the annotation exists in the entity class.
                 Index[] fieldIndexes = compoundIndex.value();
                 for (Index fieldIndex : fieldIndexes) {
-                    if (allFields.stream().map(Field::getName).noneMatch(fieldName -> fieldIndex.value().equalsIgnoreCase(fieldName))) {
-                        throw new RepositoryIndexFieldNotFoundException(repoClass, fieldIndex.value());
+                    if (entityFieldSet.stream().map(Field::getName).noneMatch(fieldName -> fieldIndex.value().equalsIgnoreCase(fieldName))) {
+                        throw new RepositoryIndexFieldNotFoundException(repositoryClass, fieldIndex.value());
                     }
                 }
                 // Validated all fields and creating the indexes on the collection.
@@ -262,15 +266,101 @@ public class MongoManager {
                 entityCollection.createIndex(Indexes.compoundIndex(indexBsonList), indexOptions);
             }
 
+            RepositoryMeta<E, ID, R> repositoryMeta = new RepositoryMeta<>(
+                    repositoryClass, entityClass,
+                    entityFieldSet,
+                    entityUniqueIdClass, entityUniqueIdField,
+                    entityCollectionName
+            );
+
+            // Define default methods with handler into the meta registry
+            repositoryMeta.registerHandler("getCollectionName", (method, arguments) -> entityCollectionName);
+            repositoryMeta.registerHandler("getClass", (method, arguments) -> repositoryClass);
+            repositoryMeta.registerHandler("getEntityClass", (method, arguments) -> entityClass);
+            repositoryMeta.registerHandler("getEntityUniqueIdClass", (method, arguments) -> entityUniqueIdClass);
+            repositoryMeta.registerHandler("getUniqueId", (method, arguments) -> {
+                E entity = repositoryMeta.checkEntity(method, arguments[0]);
+                Object identifier = entityUniqueIdField.get(entity);
+                return repositoryMeta.checkUniqueId(method, identifier);
+            });
+            repositoryMeta.registerHandler("findFirstById", (method, arguments) -> {
+                ID uniqueId = repositoryMeta.checkUniqueId(method, arguments[0]);
+                Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
+                return entityCollection.find(idFilter).limit(1).first();
+            });
+            repositoryMeta.registerHandler("findAll", (method, arguments) -> entityCollection.find().into(new ArrayList<>()));
+            repositoryMeta.registerHandler("delete", (method, arguments) -> {
+                E entity = repositoryMeta.checkEntity(method, arguments[0]);
+                ID uniqueId = repositoryMeta.checkUniqueId(method, repositoryMeta.getUniqueId(entity));
+                Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
+                DeleteResult result = entityCollection.deleteOne(idFilter);
+                return result.wasAcknowledged();
+            });
+            repositoryMeta.registerHandler("deleteById", (method, arguments) -> {
+                ID uniqueId = repositoryMeta.checkUniqueId(method, arguments[0]);
+                Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
+                DeleteResult result = entityCollection.deleteOne(idFilter);
+                return result.wasAcknowledged();
+            });
+            repositoryMeta.registerHandler("deleteAll", ((method, arguments) -> {
+                List<E> entityList = repositoryMeta.checkEntityList(method, arguments[0]);
+                for (E entity : entityList) {
+                    ID uniqueId = repositoryMeta.checkUniqueId(method, repositoryMeta.getUniqueId(entity));
+                    Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
+                    entityCollection.deleteOne(idFilter);
+                }
+                return true;
+            }));
+            repositoryMeta.registerHandler("drop", (method, arguments) -> {
+                entityCollection.drop();
+                return true;
+            });
+            repositoryMeta.registerHandler("save", (method, arguments) -> {
+                E entity = repositoryMeta.checkEntity(method, arguments[0]);
+                ID uniqueId = repositoryMeta.checkUniqueId(method, repositoryMeta.getUniqueId(entity));
+                Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
+                if (entityCollection.countDocuments(idFilter) > 0) {
+                    ReplaceOptions replaceOptions = new ReplaceOptions().upsert(true);
+                    UpdateResult result = entityCollection.replaceOne(idFilter, entity, replaceOptions);
+                    return result.wasAcknowledged();
+                }
+                entityCollection.insertOne(entity);
+                return true;
+            });
+            repositoryMeta.registerHandler("saveAll", (method, arguments) -> {
+                List<E> entityList = repositoryMeta.checkEntityList(method, arguments[0]);
+                for (E entity : entityList) {
+                    ID uniqueId = repositoryMeta.checkUniqueId(method, repositoryMeta.getUniqueId(entity));
+                    Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
+                    if (entityCollection.countDocuments(idFilter) > 0) {
+                        ReplaceOptions replaceOptions = new ReplaceOptions().upsert(true);
+                        UpdateResult result = entityCollection.replaceOne(idFilter, entity, replaceOptions);
+                        return result.wasAcknowledged();
+                    }
+                    entityCollection.insertOne(entity);
+                }
+                return true;
+            });
+            repositoryMeta.registerHandler("exists", (method, arguments) -> {
+                E entity = repositoryMeta.checkEntity(method, arguments[0]);
+                ID uniqueId = repositoryMeta.checkUniqueId(method, repositoryMeta.getUniqueId(entity));
+                Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
+                return entityCollection.countDocuments(idFilter) > 0;
+            });
+            repositoryMeta.registerHandler("existsById", (method, arguments) -> {
+                ID uniqueId = repositoryMeta.checkUniqueId(method, arguments[0]);
+                Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
+                return entityCollection.countDocuments(idFilter) > 0;
+            });
+
             // Create dynamic repository proxy object
-            ClassLoader repoClassLoader = repoClass.getClassLoader();
-            Class<?>[] interfaces = new Class[]{repoClass};
-            Class<Repository<E, ID>> actualClass = (Class<Repository<E, ID>>) repoClass;
+            ClassLoader repoClassLoader = repositoryClass.getClassLoader();
+            Class<?>[] interfaces = new Class[]{repositoryClass};
             Repository<E, ID> repository = (Repository<E, ID>) Proxy.newProxyInstance(repoClassLoader, interfaces,
-                    new RepositoryInvocationHandler<>(this, entityCollectionName, entityCollection,
-                            actualClass, entityClass, allFields, entityUniqueIdClass,
+                    new RepositoryInvocationHandler<>(this, repositoryMeta, entityCollectionName, entityCollection,
+                            repositoryClass, entityClass, entityFieldSet, entityUniqueIdClass,
                             entityUniqueIdField));
-            repoRegistry.put(repoClass, repository);
+            repoRegistry.put(repositoryClass, repository);
             return (R) repository;
         } catch (Exception e) {
             throw new RuntimeException(e);
