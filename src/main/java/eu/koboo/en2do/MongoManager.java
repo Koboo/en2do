@@ -259,21 +259,21 @@ public class MongoManager {
                         Class<?> fieldClass = filterType.field().getType();
                         switch (filterType.operator()) {
                             case REGEX -> {
-                                if (!GenericUtils.isTypeOf(String.class, paramClass) && !GenericUtils.isTypeOf(Pattern.class, paramClass)) {
+                                if (GenericUtils.isNotTypeOf(String.class, paramClass) && GenericUtils.isNotTypeOf(Pattern.class, paramClass)) {
                                     throw new MethodInvalidRegexParameterException(method, repositoryClass, paramClass);
                                 }
                             }
                             case IN -> {
-                                if (!GenericUtils.isTypeOf(List.class, paramClass)) {
+                                if (GenericUtils.isNotTypeOf(List.class, paramClass)) {
                                     throw new MethodMismatchingTypeException(method, repositoryClass, List.class, paramClass);
                                 }
                                 Class<?> listType = GenericUtils.getGenericTypeOfParameterList(method, paramIndex);
-                                if (!GenericUtils.isTypeOf(fieldClass, listType)) {
+                                if (GenericUtils.isNotTypeOf(fieldClass, listType)) {
                                     throw new MethodInvalidListParameterException(method, repositoryClass, fieldClass, listType);
                                 }
                             }
                             default -> {
-                                if (!GenericUtils.isTypeOf(fieldClass, paramClass)) {
+                                if (GenericUtils.isNotTypeOf(fieldClass, paramClass)) {
                                     throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
                                 }
                             }

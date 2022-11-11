@@ -15,12 +15,12 @@ import java.util.List;
 public enum MethodOperator {
 
     FIND_FIRST("findFirstBy", (method, returnType, entityClass, repoClass) -> {
-        if (!GenericUtils.isTypeOf(entityClass, returnType)) {
+        if (GenericUtils.isNotTypeOf(entityClass, returnType)) {
             throw new MethodFindReturnTypeException(method, entityClass, repoClass);
         }
     }),
     FIND_MANY("findManyBy", (method, returnType, entityClass, repoClass) -> {
-        if (!GenericUtils.isTypeOf(List.class, returnType)) {
+        if (GenericUtils.isNotTypeOf(List.class, returnType)) {
             throw new MethodFindListReturnTypeException(method, entityClass, repoClass);
         }
         Class<?> listType = GenericUtils.getGenericTypeOfReturnList(method);
@@ -29,17 +29,17 @@ public enum MethodOperator {
         }
     }),
     DELETE("deleteBy", (method, returnType, entityClass, repoClass) -> {
-        if (!GenericUtils.isTypeOf(Boolean.class, returnType)) {
+        if (GenericUtils.isNotTypeOf(Boolean.class, returnType)) {
             throw new MethodBooleanReturnTypeException(method, repoClass);
         }
     }),
     EXISTS("existsBy", (method, returnType, entityClass, repoClass) -> {
-        if (!GenericUtils.isTypeOf(Boolean.class, returnType)) {
+        if (GenericUtils.isNotTypeOf(Boolean.class, returnType)) {
             throw new MethodBooleanReturnTypeException(method, repoClass);
         }
     }),
     COUNT("countBy", ((method, returnType, entityClass, repoClass) -> {
-        if (!GenericUtils.isTypeOf(Long.class, returnType)) {
+        if (GenericUtils.isNotTypeOf(Long.class, returnType)) {
             throw new MethodLongReturnTypeException(method, repoClass);
         }
     }));

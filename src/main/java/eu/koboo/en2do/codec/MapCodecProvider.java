@@ -3,6 +3,7 @@ package eu.koboo.en2do.codec;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.java.Log;
 import org.bson.*;
 import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
@@ -19,8 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
+@Log
 public class MapCodecProvider implements PropertyCodecProvider {
 
     @Override
@@ -33,24 +34,12 @@ public class MapCodecProvider implements PropertyCodecProvider {
     }
 
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-    private static class GenericMapCodec<K, T> implements Codec<Map<K, T>> {
-
-        private static final Logger LOGGER = Logger.getLogger(GenericMapCodec.class.getName());
+    private static final class GenericMapCodec<K, T> implements Codec<Map<K, T>> {
 
         @Getter
         Class<Map<K, T>> encoderClass;
         Codec<K> keyCodec;
         Codec<T> valueCodec;
-
-        GenericMapCodec(Class<Map<K, T>> encoderClass,
-                        Codec<K> keyCodec, Codec<T> valueCodec,
-                        Map<Class<?>, Class<? extends PropertyEditor>> map) {
-            this.encoderClass = encoderClass;
-            this.keyCodec = keyCodec;
-            this.valueCodec = valueCodec;
-
-            map.forEach(PropertyEditorManager::registerEditor);
-        }
 
         GenericMapCodec(Class<Map<K, T>> encoderClass, Codec<K> keyCodec, Codec<T> valueCodec) {
             this.encoderClass = encoderClass;
@@ -67,7 +56,7 @@ public class MapCodecProvider implements PropertyCodecProvider {
                 for (Map.Entry<K, T> entry : map.entrySet()) {
                     PropertyEditor editor = PropertyEditorManager.findEditor(keyCodec.getEncoderClass());
                     if (editor != null) {
-                        LOGGER.fine("Found PropertyEditor for class: " + keyCodec.getEncoderClass().getName());
+                        log.fine("Found PropertyEditor for class: " + keyCodec.getEncoderClass().getName());
 
                         editor.setValue(entry.getKey());
                         writer.writeName(editor.getAsText());
@@ -82,7 +71,7 @@ public class MapCodecProvider implements PropertyCodecProvider {
                 }
                 documentWriter.writeEndDocument();
             } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Failed to encode map: " + map, e);
+                log.log(Level.SEVERE, "Failed to encode map: " + map, e);
                 throw new IllegalArgumentException(e);
             }
             writer.writeEndDocument();
@@ -97,7 +86,7 @@ public class MapCodecProvider implements PropertyCodecProvider {
                 K key;
                 PropertyEditor editor = PropertyEditorManager.findEditor(keyCodec.getEncoderClass());
                 if (editor != null) {
-                    LOGGER.fine("Found PropertyEditor for class: " + keyCodec.getEncoderClass().getName());
+                    log.fine("Found PropertyEditor for class: " + keyCodec.getEncoderClass().getName());
                     editor.setAsText(reader.readName());
                     key = (K) editor.getValue();
                 } else {

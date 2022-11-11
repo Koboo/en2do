@@ -8,6 +8,7 @@ import java.net.URL;
 import java.util.Locale;
 import java.util.Properties;
 
+@SuppressWarnings("unused")
 public record Credentials(String connectString, String database) {
 
     private static final String CONNECT_KEY = "en2do.connectstring";
