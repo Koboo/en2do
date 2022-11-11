@@ -557,7 +557,7 @@ public class MongoManager {
         }
         String expectedFieldName = filterOperator.removeOperatorFrom(filterOperatorString);
         boolean notFilter = false;
-        if(expectedFieldName.endsWith("Not")) {
+        if (expectedFieldName.endsWith("Not")) {
             expectedFieldName = expectedFieldName.replaceFirst("Not", "");
             notFilter = true;
         }

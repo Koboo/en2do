@@ -64,7 +64,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
             // 1. param type "String"
             // 2. param type "Pattern"
             // So there can be two methods with same name but different usages.
-            if(!methodName.contains("Regex")) {
+            if (!methodName.contains("Regex")) {
                 throw new RuntimeException("Already registered dynamicMethod with name \"" + methodName + "\".");
             }
         }

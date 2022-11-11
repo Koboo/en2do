@@ -3,11 +3,8 @@ package eu.koboo.en2do;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
-import eu.koboo.en2do.exception.*;
-import eu.koboo.en2do.methods.FilterType;
-import eu.koboo.en2do.methods.MethodOperator;
+import eu.koboo.en2do.exception.RepositoryInvalidCallException;
 import eu.koboo.en2do.methods.registry.DynamicMethod;
 import eu.koboo.en2do.methods.registry.MethodHandler;
 import eu.koboo.en2do.methods.registry.RepositoryMeta;
@@ -24,9 +21,6 @@ import org.bson.conversions.Bson;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.regex.Pattern;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @AllArgsConstructor
@@ -50,7 +44,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
 
         // Get and check if any dynamic method matches the methodName
         DynamicMethod<E, ID, R> dynamicMethod = repositoryMeta.lookupDynamicMethod(methodName);
-        if(dynamicMethod == null) {
+        if (dynamicMethod == null) {
             // No handling found for method with this name.
             throw new RepositoryInvalidCallException(method, repositoryMeta.getRepositoryClass());
         }
