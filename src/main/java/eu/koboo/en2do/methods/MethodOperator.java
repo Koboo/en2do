@@ -20,7 +20,7 @@ public enum MethodOperator {
         }
     }),
     FIND_MANY("findManyBy", (method, returnType, entityClass, repoClass) -> {
-        if (!GenericUtils.isTypeOf(List.class, entityClass)) {
+        if (!GenericUtils.isTypeOf(List.class, returnType)) {
             throw new MethodFindListReturnTypeException(method, entityClass, repoClass);
         }
         Class<?> listType = GenericUtils.getGenericTypeOfReturnList(method);
