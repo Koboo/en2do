@@ -48,7 +48,5 @@ public class CustomerExtendedFindFirstByFirstNameTest extends CustomerExtendedRe
         assertEquals(Const.BIRTHDAY, customer.getBirthday());
         assertEquals(Const.PHONE_NUMBER, customer.getPhoneNumber());
         assertEquals(Const.ORDERS.size(), customer.getOrders().size());
-        assertNull(customer.getOrderStatus());
-        assertNull(customer.getLockStatus());
     }
 }
