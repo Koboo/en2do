@@ -31,6 +31,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     Field entityUniqueIdField;
 
     Map<String, MethodHandler<E>> methodRegistry;
+    Map<String, DynamicMethod<E, ID, R>> dynamicMethodRegistry;
 
     public RepositoryMeta(Class<R> repositoryClass, Class<E> entityClass, Set<Field> entityFieldSet,
                           Class<ID> entityUniqueIdClass, Field entityUniqueIdField) {
@@ -43,6 +44,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         this.entityUniqueIdField = entityUniqueIdField;
 
         this.methodRegistry = new HashMap<>();
+        this.dynamicMethodRegistry = new HashMap<>();
     }
 
     public void registerHandler(String methodName, MethodHandler<E> methodHandler) {
@@ -54,6 +56,23 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
     public MethodHandler<E> lookupHandler(String methodName) {
         return methodRegistry.get(methodName);
+    }
+
+    public void registerDynamicMethod(String methodName, DynamicMethod<E, ID, R> dynamicMethod) {
+        if (dynamicMethodRegistry.containsKey(methodName)) {
+            // Regex methods can exist in two ways:
+            // 1. param type "String"
+            // 2. param type "Pattern"
+            // So there can be two methods with same name but different usages.
+            if(!methodName.contains("Regex")) {
+                throw new RuntimeException("Already registered dynamicMethod with name \"" + methodName + "\".");
+            }
+        }
+        dynamicMethodRegistry.put(methodName, dynamicMethod);
+    }
+
+    public DynamicMethod<E, ID, R> lookupDynamicMethod(String methodName) {
+        return dynamicMethodRegistry.get(methodName);
     }
 
     @SuppressWarnings("unchecked")
