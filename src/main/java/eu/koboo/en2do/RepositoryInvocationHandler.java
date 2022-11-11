@@ -4,9 +4,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.result.DeleteResult;
-import com.mongodb.client.result.UpdateResult;
 import eu.koboo.en2do.exception.*;
 import eu.koboo.en2do.methods.FilterType;
 import eu.koboo.en2do.methods.MethodOperator;
@@ -22,13 +20,11 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.bson.conversions.Bson;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -37,13 +33,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
 
     MongoManager manager;
     RepositoryMeta<E, ID, R> repositoryMeta;
-    String entityCollectionName;
     MongoCollection<E> collection;
-    Class<R> repoClass;
-    Class<E> entityClass;
-    Set<Field> entityFieldSet;
-    Class<ID> entityUniqueIdClass;
-    Field entityUniqueIdField;
 
     @Override
     @SuppressWarnings("all")
@@ -58,11 +48,11 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
 
         MethodOperator methodOperator = MethodOperator.parseMethodStartsWith(methodName);
         if (methodOperator == null) {
-            throw new MethodNoMethodOperatorException(method, repoClass);
+            throw new MethodNoMethodOperatorException(method, repositoryMeta.getRepositoryClass());
         }
         String operatorRootString = methodOperator.removeOperatorFrom(methodName);
         if (operatorRootString == null) {
-            throw new MethodInvalidSignatureException(method, entityClass);
+            throw new MethodInvalidSignatureException(method, repositoryMeta.getEntityClass());
         }
 
         // Bson filter conversion from method name
@@ -74,7 +64,9 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             int nextIndex = 0;
             for (int i = 0; i < operatorStringArray.length; i++) {
                 String operatorString = operatorStringArray[i];
-                FilterType filterType = manager.createFilterType(entityClass, repoClass, method, operatorString, entityFieldSet);
+                FilterType filterType = manager.createFilterType(repositoryMeta.getEntityClass(),
+                        repositoryMeta.getRepositoryClass(), method, operatorString,
+                        repositoryMeta.getEntityFieldSet());
                 boolean isNot = operatorString.replaceFirst(filterType.field().getName(), "").startsWith("Not");
                 filterList.add(createBsonFilter(method, filterType, isNot, nextIndex, args));
                 nextIndex = i + filterType.operator().getExpectedParameterCount();
@@ -85,7 +77,9 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 filter = Filters.or(filterList);
             }
         } else {
-            FilterType filterType = manager.createFilterType(entityClass, repoClass, method, operatorRootString, entityFieldSet);
+            FilterType filterType = manager.createFilterType(repositoryMeta.getEntityClass(),
+                    repositoryMeta.getRepositoryClass(), method, operatorRootString,
+                    repositoryMeta.getEntityFieldSet());
             boolean isNot = operatorRootString.toLowerCase(Locale.ROOT)
                     .replaceFirst(filterType.field().getName().toLowerCase(Locale.ROOT), "").startsWith("not");
             filter = createBsonFilter(method, filterType, isNot, 0, args);
@@ -115,43 +109,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 return collection.countDocuments(filter);
             }
         }
-        throw new RepositoryInvalidCallException(method, repoClass);
-    }
-
-    private E checkEntity(Method method, Object argument) {
-        E entity = entityClass.cast(argument);
-        if (entity == null) {
-            throw new NullPointerException("entity argument of method " + method.getName() + " from " +
-                    entityClass.getName() + " is null.");
-        }
-        return entity;
-    }
-
-    @SuppressWarnings("all")
-    private List<E> checkEntityList(Method method, Object argument) {
-        List<E> entity = (List<E>) argument;
-        if (entity == null) {
-            throw new NullPointerException("entityList argument of method " + method.getName() + " from " +
-                    entityClass.getName() + " is null.");
-        }
-        return entity;
-    }
-
-    private ID checkUniqueId(Method method, Object argument) {
-        ID uniqueId = entityUniqueIdClass.cast(argument);
-        if (uniqueId == null) {
-            throw new NullPointerException("uniqueId argument of method " + method.getName() + " from " +
-                    entityClass.getName() + " is null.");
-        }
-        return uniqueId;
-    }
-
-    private ID getUniqueId(E entity) throws IllegalAccessException {
-        return entityUniqueIdClass.cast(entityUniqueIdField.get(entity));
-    }
-
-    private Bson createIdFilter(ID uniqueId) {
-        return Filters.eq(entityUniqueIdField.getName(), uniqueId);
+        throw new RepositoryInvalidCallException(method, repositoryMeta.getRepositoryClass());
     }
 
     private FindIterable<E> applySortObject(Method method, FindIterable<E> findIterable, Object[] args) {
@@ -241,7 +199,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                     retFilter = Filters.regex(fieldName, pattern);
                 }
                 if (retFilter == null) {
-                    throw new MethodInvalidRegexParameterException(method, repoClass, value.getClass());
+                    throw new MethodInvalidRegexParameterException(method, repositoryMeta.getRepositoryClass(), value.getClass());
                 }
             }
             case EXISTS -> {
@@ -266,7 +224,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             }
             default -> {
                 // This filter is not supported. Throw exception.
-                throw new MethodUnsupportedFilterException(method, repoClass);
+                throw new MethodUnsupportedFilterException(method, repositoryMeta.getRepositoryClass());
             }
         }
         // Applying negotiating of the filter, if needed
