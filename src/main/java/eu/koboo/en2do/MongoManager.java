@@ -17,6 +17,7 @@ import eu.koboo.en2do.index.CompoundIndex;
 import eu.koboo.en2do.index.Id;
 import eu.koboo.en2do.index.Index;
 import eu.koboo.en2do.index.NonIndex;
+import eu.koboo.en2do.meta.RepositoryInvocationHandler;
 import eu.koboo.en2do.meta.operators.FilterOperator;
 import eu.koboo.en2do.meta.registry.FilterType;
 import eu.koboo.en2do.meta.operators.MethodOperator;

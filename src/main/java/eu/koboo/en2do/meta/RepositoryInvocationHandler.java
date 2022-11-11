@@ -1,13 +1,13 @@
-package eu.koboo.en2do;
+package eu.koboo.en2do.meta;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
+import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.exception.RepositoryInvalidCallException;
 import eu.koboo.en2do.meta.registry.DynamicMethod;
 import eu.koboo.en2do.meta.registry.MethodHandler;
-import eu.koboo.en2do.meta.RepositoryMeta;
 import eu.koboo.en2do.sort.annotation.Limit;
 import eu.koboo.en2do.sort.annotation.Skip;
 import eu.koboo.en2do.sort.annotation.SortBy;
