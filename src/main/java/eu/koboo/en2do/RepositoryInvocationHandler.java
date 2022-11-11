@@ -8,6 +8,7 @@ import com.mongodb.client.result.DeleteResult;
 import eu.koboo.en2do.exception.*;
 import eu.koboo.en2do.methods.FilterType;
 import eu.koboo.en2do.methods.MethodOperator;
+import eu.koboo.en2do.methods.registry.DynamicMethod;
 import eu.koboo.en2do.methods.registry.MethodHandler;
 import eu.koboo.en2do.methods.registry.RepositoryMeta;
 import eu.koboo.en2do.sort.annotation.Limit;
@@ -31,70 +32,42 @@ import java.util.regex.Pattern;
 @AllArgsConstructor
 public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> implements InvocationHandler {
 
-    MongoManager manager;
     RepositoryMeta<E, ID, R> repositoryMeta;
     MongoCollection<E> collection;
 
     @Override
     @SuppressWarnings("all")
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    public Object invoke(Object proxy, Method method, Object[] arguments) throws Throwable {
         String methodName = method.getName();
+
+        // Get and check if a static handler for the methodName is available.
         MethodHandler<E> methodHandler = repositoryMeta.lookupHandler(methodName);
         if (methodHandler != null) {
-            return methodHandler.handle(method, args);
+            // Just handle the arguments and return the object
+            return methodHandler.handle(method, arguments);
+        }
+        // No static handler found.
+
+        // Get and check if any dynamic method matches the methodName
+        DynamicMethod<E, ID, R> dynamicMethod = repositoryMeta.lookupDynamicMethod(methodName);
+        if(dynamicMethod == null) {
+            // No handling found for method with this name.
+            throw new RepositoryInvalidCallException(method, repositoryMeta.getRepositoryClass());
         }
 
-        // Start of the dynamic methods
-
-        MethodOperator methodOperator = MethodOperator.parseMethodStartsWith(methodName);
-        if (methodOperator == null) {
-            throw new MethodNoMethodOperatorException(method, repositoryMeta.getRepositoryClass());
-        }
-        String methodNameWithoutOperator = methodOperator.removeOperatorFrom(methodName);
-        if (methodNameWithoutOperator == null) {
-            throw new MethodInvalidSignatureException(method, repositoryMeta.getEntityClass());
-        }
-
-        // Bson filter conversion from method name
-        Bson filter = null;
-        if (methodNameWithoutOperator.contains("And") || methodNameWithoutOperator.contains("Or")) {
-            List<Bson> filterList = new ArrayList<>();
-            String[] filterNamesArray = methodNameWithoutOperator.contains("And") ?
-                    methodNameWithoutOperator.split("And") : methodNameWithoutOperator.split("Or");
-            int nextParameterIndex = 0;
-            for (int i = 0; i < filterNamesArray.length; i++) {
-                String filterOperatorString = filterNamesArray[i];
-                FilterType filterType = manager.createFilterType(repositoryMeta.getEntityClass(),
-                        repositoryMeta.getRepositoryClass(), method, filterOperatorString,
-                        repositoryMeta.getEntityFieldSet());
-                boolean isNot = filterOperatorString.replaceFirst(filterType.field().getName(), "").startsWith("Not");
-                filterList.add(createBsonFilter(method, filterType, isNot, nextParameterIndex, args));
-                nextParameterIndex = i + filterType.operator().getExpectedParameterCount();
-            }
-            if (methodNameWithoutOperator.contains("And")) {
-                filter = Filters.and(filterList);
-            } else {
-                filter = Filters.or(filterList);
-            }
-        } else {
-            FilterType filterType = manager.createFilterType(repositoryMeta.getEntityClass(),
-                    repositoryMeta.getRepositoryClass(), method, methodNameWithoutOperator,
-                    repositoryMeta.getEntityFieldSet());
-            boolean isNot = methodNameWithoutOperator.toLowerCase(Locale.ROOT)
-                    .replaceFirst(filterType.field().getName().toLowerCase(Locale.ROOT), "").startsWith("not");
-            filter = createBsonFilter(method, filterType, isNot, 0, args);
-        }
-
-        switch (methodOperator) {
+        // Generate bson filter by dynamic Method object.
+        Bson filter = dynamicMethod.createBsonFilter(arguments);
+        // Switch-case the method operator to use the correct mongo query.
+        switch (dynamicMethod.getMethodOperator()) {
             case FIND_FIRST -> {
                 FindIterable<E> findIterable = collection.find(filter);
-                findIterable = applySortObject(method, findIterable, args);
+                findIterable = applySortObject(method, findIterable, arguments);
                 findIterable = applySortAnnotations(method, findIterable);
                 return findIterable.limit(1).first();
             }
             case FIND_MANY -> {
                 FindIterable<E> findIterable = collection.find(filter);
-                findIterable = applySortObject(method, findIterable, args);
+                findIterable = applySortObject(method, findIterable, arguments);
                 findIterable = applySortAnnotations(method, findIterable);
                 return findIterable.into(new ArrayList<>());
             }
@@ -157,87 +130,5 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             findIterable = findIterable.skip(skip.value());
         }
         return findIterable;
-    }
-
-    @SuppressWarnings("all")
-    private Bson createBsonFilter(Method method, FilterType filterType, boolean isNot, int paramsIndexAt, Object[] args) throws Exception {
-        String fieldName = filterType.field().getName();
-        Bson retFilter = null;
-        switch (filterType.operator()) {
-            case EQUALS -> {
-                retFilter = Filters.eq(fieldName, getFilterableValue(args[paramsIndexAt]));
-            }
-            case EQUALS_IGNORE_CASE -> {
-                String patternString = "(?i)^" + getFilterableValue(args[paramsIndexAt]) + "$";
-                Pattern pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
-                retFilter = Filters.regex(fieldName, pattern);
-            }
-            case CONTAINS -> {
-                String patternString = ".*" + getFilterableValue(args[paramsIndexAt]) + ".*";
-                Pattern pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
-                retFilter = Filters.regex(fieldName, pattern);
-            }
-            case GREATER_THAN -> {
-                retFilter = Filters.gt(fieldName, getFilterableValue(args[paramsIndexAt]));
-            }
-            case LESS_THAN -> {
-                retFilter = Filters.lt(fieldName, getFilterableValue(args[paramsIndexAt]));
-            }
-            case GREATER_EQUALS -> {
-                retFilter = Filters.gte(fieldName, getFilterableValue(args[paramsIndexAt]));
-            }
-            case LESS_EQUALS -> {
-                retFilter = Filters.lte(fieldName, getFilterableValue(args[paramsIndexAt]));
-            }
-            case REGEX -> {
-                // MongoDB supports multiple types of regex filtering, so check which type is provided.
-                Object value = getFilterableValue(args[paramsIndexAt]);
-                if (value instanceof String patternString) {
-                    retFilter = Filters.regex(fieldName, patternString);
-                }
-                if (value instanceof Pattern pattern) {
-                    retFilter = Filters.regex(fieldName, pattern);
-                }
-                if (retFilter == null) {
-                    throw new MethodInvalidRegexParameterException(method, repositoryMeta.getRepositoryClass(), value.getClass());
-                }
-            }
-            case EXISTS -> {
-                retFilter = Filters.exists(fieldName);
-            }
-            case BETWEEN -> {
-                Object from = getFilterableValue(args[paramsIndexAt]);
-                Object to = args[paramsIndexAt + 1];
-                retFilter = Filters.and(Filters.gt(fieldName, from), Filters.lt(fieldName, to));
-            }
-            case BETWEEN_EQUALS -> {
-                Object from = getFilterableValue(args[paramsIndexAt]);
-                Object to = args[paramsIndexAt + 1];
-                retFilter = Filters.and(Filters.gte(fieldName, from), Filters.lte(fieldName, to));
-            }
-            case IN -> {
-                // MongoDB expects a Array and not a List, but for easier usage
-                // the framework wants a list. So just convert the list to an array and pass it to the filter
-                List<Object> objectList = (List<Object>) getFilterableValue(args[paramsIndexAt]);
-                Object[] objectArray = objectList.toArray(new Object[]{});
-                retFilter = Filters.in(fieldName, objectArray);
-            }
-            default -> {
-                // This filter is not supported. Throw exception.
-                throw new MethodUnsupportedFilterException(method, repositoryMeta.getRepositoryClass());
-            }
-        }
-        // Applying negotiating of the filter, if needed
-        if (isNot) {
-            return Filters.not(retFilter);
-        }
-        return retFilter;
-    }
-
-    private Object getFilterableValue(Object object) {
-        if (object instanceof Enum<?>) {
-            return ((Enum<?>) object).name();
-        }
-        return object;
     }
 }
