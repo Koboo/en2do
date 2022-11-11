@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 @AllArgsConstructor
 public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
 
-    RepositoryFactory factory;
+    MongoManager manager;
     String entityCollectionName;
     MongoCollection<E> collection;
     Class<Repository<E, ID>> repoClass;
@@ -153,7 +153,7 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
             int nextIndex = 0;
             for (int i = 0; i < operatorStringArray.length; i++) {
                 String operatorString = operatorStringArray[i];
-                FilterType filterType = factory.createFilterType(entityClass, repoClass, method, operatorString, entityFieldSet);
+                FilterType filterType = manager.createFilterType(entityClass, repoClass, method, operatorString, entityFieldSet);
                 boolean isNot = operatorString.replaceFirst(filterType.field().getName(), "").startsWith("Not");
                 filterList.add(createBsonFilter(method, filterType, isNot, nextIndex, args));
                 nextIndex = i + filterType.operator().getExpectedParameterCount();
@@ -164,7 +164,7 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
                 filter = Filters.or(filterList);
             }
         } else {
-            FilterType filterType = factory.createFilterType(entityClass, repoClass, method, operatorRootString, entityFieldSet);
+            FilterType filterType = manager.createFilterType(entityClass, repoClass, method, operatorRootString, entityFieldSet);
             boolean isNot = operatorRootString.toLowerCase(Locale.ROOT)
                     .replaceFirst(filterType.field().getName().toLowerCase(Locale.ROOT), "").startsWith("not");
             filter = createBsonFilter(method, filterType, isNot, 0, args);
