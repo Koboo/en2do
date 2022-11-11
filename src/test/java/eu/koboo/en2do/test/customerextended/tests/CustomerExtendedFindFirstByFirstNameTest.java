@@ -28,6 +28,8 @@ public class CustomerExtendedFindFirstByFirstNameTest extends CustomerExtendedRe
         Customer customer = Const.createNewCustomer();
         CustomerExtended customerExtended = new CustomerExtended();
         EntityUtils.copyProperties(customer, customerExtended);
+        customerExtended.setOrderStatus("Ordered");
+        customerExtended.setLockStatus("Not Locked");
         assertNotNull(customerExtended);
         assertTrue(repository.save(customerExtended));
         assertTrue(repository.exists(customerExtended));
@@ -38,6 +40,8 @@ public class CustomerExtendedFindFirstByFirstNameTest extends CustomerExtendedRe
     public void operationTest() {
         CustomerExtended customer = repository.findFirstByFirstName(Const.FIRST_NAME);
         assertNotNull(customer);
+        assertEquals("Ordered", customer.getOrderStatus());
+        assertEquals("Not Locked", customer.getLockStatus());
         assertEquals(Const.CUSTOMER_ID, customer.getCustomerId());
         assertEquals(Const.FIRST_NAME, customer.getFirstName());
         assertEquals(Const.LAST_NAME, customer.getLastName());
