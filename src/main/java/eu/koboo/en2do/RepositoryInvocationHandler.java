@@ -40,7 +40,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
         MethodHandler<E> methodHandler = repositoryMeta.lookupHandler(methodName);
-        if(methodHandler != null) {
+        if (methodHandler != null) {
             return methodHandler.handle(method, args);
         }
 

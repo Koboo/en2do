@@ -46,7 +46,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     }
 
     public void registerHandler(String methodName, MethodHandler<E> methodHandler) {
-        if(methodRegistry.containsKey(methodName)) {
+        if (methodRegistry.containsKey(methodName)) {
             throw new RuntimeException("Already registered method with name \"" + methodName + "\".");
         }
         methodRegistry.put(methodName, methodHandler);
