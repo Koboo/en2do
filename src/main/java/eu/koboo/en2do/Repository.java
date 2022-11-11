@@ -12,9 +12,9 @@ public interface Repository<E, ID> {
 
     Class<ID> getEntityUniqueIdClass();
 
-    E findById(ID identifier);
+    E findFirstById(ID identifier);
 
-    List<E> findAll();
+    List<E> findMany();
 
     boolean delete(E entity);
 

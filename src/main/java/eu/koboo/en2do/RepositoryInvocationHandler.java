@@ -63,12 +63,12 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
         if (methodName.equalsIgnoreCase("getEntityUniqueIdClass")) {
             return entityUniqueIdClass;
         }
-        if (methodName.equalsIgnoreCase("findById")) {
+        if (methodName.equalsIgnoreCase("findFirstById")) {
             ID uniqueId = checkUniqueId(method, args[0]);
             Bson idFilter = createIdFilter(uniqueId);
             return collection.find(idFilter).limit(1).first();
         }
-        if (methodName.equalsIgnoreCase("findAll")) {
+        if (methodName.equalsIgnoreCase("findMany")) {
             return collection.find().into(new ArrayList<>());
         }
         if (methodName.equalsIgnoreCase("delete")) {
@@ -170,30 +170,29 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
             filter = createBsonFilter(method, filterType, isNot, 0, args);
         }
 
-        Class<?> returnTypeClass = method.getReturnType();
-        if (methodOperator == MethodOperator.FIND) {
-            if (GenericUtils.isTypeOf(List.class, returnTypeClass)) {
-                FindIterable<E> findIterable = collection.find(filter);
-                findIterable = applySortObject(method, findIterable, args);
-                findIterable = applySortAnnotations(method, findIterable);
-                return findIterable.into(new ArrayList<>());
-            }
-            if (GenericUtils.isTypeOf(entityClass, returnTypeClass)) {
+        switch (methodOperator) {
+            case FIND_FIRST -> {
                 FindIterable<E> findIterable = collection.find(filter);
                 findIterable = applySortObject(method, findIterable, args);
                 findIterable = applySortAnnotations(method, findIterable);
                 return findIterable.limit(1).first();
             }
-        }
-        if (methodOperator == MethodOperator.DELETE) {
-            DeleteResult deleteResult = collection.deleteMany(filter);
-            return deleteResult.wasAcknowledged();
-        }
-        if (methodOperator == MethodOperator.EXISTS) {
-            return collection.countDocuments(filter) > 0;
-        }
-        if (methodOperator == MethodOperator.COUNT) {
-            return collection.countDocuments(filter);
+            case FIND_MANY -> {
+                FindIterable<E> findIterable = collection.find(filter);
+                findIterable = applySortObject(method, findIterable, args);
+                findIterable = applySortAnnotations(method, findIterable);
+                return findIterable.into(new ArrayList<>());
+            }
+            case DELETE -> {
+                DeleteResult deleteResult = collection.deleteMany(filter);
+                return deleteResult.wasAcknowledged();
+            }
+            case EXISTS -> {
+                return collection.countDocuments(filter) > 0;
+            }
+            case COUNT -> {
+                return collection.countDocuments(filter);
+            }
         }
         throw new RepositoryInvalidCallException(method, repoClass);
     }
