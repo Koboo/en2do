@@ -1,18 +1,17 @@
 package eu.koboo.en2do.methods.operators;
 
 import eu.koboo.en2do.exception.*;
-import eu.koboo.en2do.methods.ReturnTypeValidator;
 import eu.koboo.en2do.utility.GenericUtils;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Getter
 public enum MethodOperator {
 
     FIND_FIRST("findFirstBy", (method, returnType, entityClass, repoClass) -> {
@@ -47,11 +46,16 @@ public enum MethodOperator {
 
     public static final MethodOperator[] VALUES = MethodOperator.values();
 
+    @Getter
     String keyword;
     ReturnTypeValidator returnTypeValidator;
 
     public String removeOperatorFrom(String textWithOperator) {
         return textWithOperator.replaceFirst(getKeyword(), "");
+    }
+
+    public void validate(Method method, Class<?> returnType, Class<?> entityClass, Class<?> repoClass) throws Exception {
+        returnTypeValidator.check(method, returnType, entityClass, repoClass);
     }
 
     public static MethodOperator parseMethodStartsWith(String methodNamePart) {
@@ -62,5 +66,11 @@ public enum MethodOperator {
             return operator;
         }
         return null;
+    }
+
+    @FunctionalInterface
+    public interface ReturnTypeValidator {
+
+        void check(Method method, Class<?> returnType, Class<?> entityClass, Class<?> repoClass) throws Exception;
     }
 }
