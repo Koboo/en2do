@@ -10,6 +10,8 @@ import com.mongodb.client.result.UpdateResult;
 import eu.koboo.en2do.exception.*;
 import eu.koboo.en2do.methods.FilterType;
 import eu.koboo.en2do.methods.MethodOperator;
+import eu.koboo.en2do.methods.registry.MethodHandler;
+import eu.koboo.en2do.methods.registry.RepositoryMeta;
 import eu.koboo.en2do.sort.annotation.Limit;
 import eu.koboo.en2do.sort.annotation.Skip;
 import eu.koboo.en2do.sort.annotation.SortBy;
@@ -31,12 +33,13 @@ import java.util.regex.Pattern;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @AllArgsConstructor
-public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
+public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> implements InvocationHandler {
 
     MongoManager manager;
+    RepositoryMeta<E, ID, R> repositoryMeta;
     String entityCollectionName;
     MongoCollection<E> collection;
-    Class<Repository<E, ID>> repoClass;
+    Class<R> repoClass;
     Class<E> entityClass;
     Set<Field> entityFieldSet;
     Class<ID> entityUniqueIdClass;
@@ -46,90 +49,9 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
     @SuppressWarnings("all")
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
-        if (methodName.equalsIgnoreCase("getCollectionName")) {
-            return entityCollectionName;
-        }
-        if (methodName.equalsIgnoreCase("getUniqueId")) {
-            E entity = checkEntity(method, args[0]);
-            return checkUniqueId(method, getUniqueId(entity));
-        }
-        if (methodName.equalsIgnoreCase("getClass")) {
-            return repoClass;
-        }
-        if (methodName.equalsIgnoreCase("getEntityClass")) {
-            return entityClass;
-        }
-        if (methodName.equalsIgnoreCase("getEntityUniqueIdClass")) {
-            return entityUniqueIdClass;
-        }
-        if (methodName.equalsIgnoreCase("findFirstById")) {
-            ID uniqueId = checkUniqueId(method, args[0]);
-            Bson idFilter = createIdFilter(uniqueId);
-            return collection.find(idFilter).limit(1).first();
-        }
-        if (methodName.equalsIgnoreCase("findMany")) {
-            return collection.find().into(new ArrayList<>());
-        }
-        if (methodName.equalsIgnoreCase("delete")) {
-            E entity = checkEntity(method, args[0]);
-            ID uniqueId = checkUniqueId(method, getUniqueId(entity));
-            Bson idFilter = createIdFilter(uniqueId);
-            DeleteResult result = collection.deleteOne(idFilter);
-            return result.wasAcknowledged();
-        }
-        if (methodName.equalsIgnoreCase("deleteById")) {
-            ID uniqueId = checkUniqueId(method, args[0]);
-            Bson idFilter = createIdFilter(uniqueId);
-            DeleteResult result = collection.deleteOne(idFilter);
-            return result.wasAcknowledged();
-        }
-        if (methodName.equalsIgnoreCase("deleteAll")) {
-            List<E> entityList = checkEntityList(method, args[0]);
-            for (E entity : entityList) {
-                ID uniqueId = checkUniqueId(method, getUniqueId(entity));
-                Bson idFilter = createIdFilter(uniqueId);
-                DeleteResult result = collection.deleteOne(idFilter);
-            }
-            return true;
-        }
-        if (methodName.equalsIgnoreCase("drop")) {
-            collection.drop();
-            return true;
-        }
-        if (methodName.equalsIgnoreCase("save")) {
-            E entity = checkEntity(method, args[0]);
-            ID uniqueId = checkUniqueId(method, getUniqueId(entity));
-            Bson idFilter = createIdFilter(uniqueId);
-            if (collection.countDocuments(idFilter) > 0) {
-                UpdateResult result = collection.replaceOne(idFilter, entity, new ReplaceOptions().upsert(true));
-                return result.wasAcknowledged();
-            }
-            collection.insertOne(entity);
-            return true;
-        }
-        if (methodName.equalsIgnoreCase("saveAll")) {
-            List<E> entityList = checkEntityList(method, args[0]);
-            for (E entity : entityList) {
-                ID uniqueId = checkUniqueId(method, getUniqueId(entity));
-                Bson idFilter = createIdFilter(uniqueId);
-                if (collection.countDocuments(idFilter) > 0) {
-                    UpdateResult result = collection.replaceOne(idFilter, entity, new ReplaceOptions().upsert(true));
-                    return result.wasAcknowledged();
-                }
-                collection.insertOne(entity);
-            }
-            return true;
-        }
-        if (methodName.equalsIgnoreCase("exists")) {
-            E entity = checkEntity(method, args[0]);
-            ID uniqueId = checkUniqueId(method, getUniqueId(entity));
-            Bson idFilter = createIdFilter(uniqueId);
-            return collection.countDocuments(idFilter) > 0;
-        }
-        if (methodName.equalsIgnoreCase("existsById")) {
-            ID uniqueId = checkUniqueId(method, args[0]);
-            Bson idFilter = createIdFilter(uniqueId);
-            return collection.countDocuments(idFilter) > 0;
+        MethodHandler<E> methodHandler = repositoryMeta.lookupHandler(methodName);
+        if(methodHandler != null) {
+            return methodHandler.handle(method, args);
         }
 
         // Start of the dynamic methods
@@ -214,7 +136,6 @@ public class RepositoryInvocationHandler<E, ID> implements InvocationHandler {
         }
         return entity;
     }
-
 
     private ID checkUniqueId(Method method, Object argument) {
         ID uniqueId = entityUniqueIdClass.cast(argument);
