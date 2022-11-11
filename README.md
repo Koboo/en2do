@@ -1,6 +1,6 @@
 # _// En2Do_
 
-Sync/Async entity framework for mongodb in Java 17
+Sync/Async entity framework for MongoDB in Java 17
 
 **_En2Do_** is short for **_Entity-To-Document_**.
 
