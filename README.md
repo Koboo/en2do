@@ -297,7 +297,7 @@ which means that they can no longer be changed.
 ````java
 
 @Collection("customer_repository")
-public interface CustomerRepository extends Repo<Customer, UUID> {
+public interface CustomerRepository extends Repository<Customer, UUID> {
 
     @SortBy(field = "customerId")
     @SortBy(field = "balance")
