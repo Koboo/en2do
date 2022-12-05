@@ -109,7 +109,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
 
     private FindIterable<E> applySortAnnotations(Method method, FindIterable<E> findIterable) {
         SortBy[] sortAnnotations = method.getAnnotationsByType(SortBy.class);
-        if (sortAnnotations != null && sortAnnotations.length > 0) {
+        if (sortAnnotations != null) {
             for (SortBy sortBy : sortAnnotations) {
                 int orderType = sortBy.ascending() ? 1 : -1;
                 findIterable = findIterable.sort(new BasicDBObject(sortBy.field(), orderType));

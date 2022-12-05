@@ -28,7 +28,8 @@ public class MapCodecProvider implements PropertyCodecProvider {
     @SuppressWarnings({"rawtypes", "unchecked"})
     public <T> Codec<T> get(TypeWithTypeParameters<T> type, PropertyCodecRegistry registry) {
         if (Map.class.isAssignableFrom(type.getType()) && type.getTypeParameters().size() == 2) {
-            return new GenericMapCodec(type.getType(), registry.get(type.getTypeParameters().get(0)), registry.get(type.getTypeParameters().get(1)));
+            return new GenericMapCodec(type.getType(), registry.get(type.getTypeParameters().get(0)),
+                    registry.get(type.getTypeParameters().get(1)));
         }
         return null;
     }
