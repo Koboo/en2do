@@ -107,7 +107,7 @@ public class Application {
         credentials = Credentials.fromSystemProperties();
 
         // Keys are "EN2DO_CONNECTSTRING" and "EN2DO_DATABASE"
-        credentials = Credentials.fromSystemProperties();
+        credentials = Credentials.fromSystemEnvVars();
 
         credentials = Credentials.of("connectString", "database");
     }
