@@ -10,7 +10,7 @@ public @interface TTLIndex {
 
     String value();
 
-    long ttl();
+    long ttl() default 0;
 
     TimeUnit time() default TimeUnit.SECONDS;
 }
