@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-//@Disabled("Disabled, to speed up unit-testing.")
+@Disabled("Disabled, to speed up unit-testing.")
 public class CustomerTTLCreateExpirationTest extends CustomerRepositoryTest {
 
     @Test
