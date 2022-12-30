@@ -17,6 +17,7 @@ import eu.koboo.en2do.index.CompoundIndex;
 import eu.koboo.en2do.index.Id;
 import eu.koboo.en2do.index.Index;
 import eu.koboo.en2do.index.NonIndex;
+import eu.koboo.en2do.index.ttl.TTLIndex;
 import eu.koboo.en2do.meta.RepositoryInvocationHandler;
 import eu.koboo.en2do.meta.RepositoryMeta;
 import eu.koboo.en2do.meta.operators.FilterOperator;
@@ -354,8 +355,8 @@ public class MongoManager {
             if (!entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
                 entityCollection.createIndex(Indexes.ascending(entityUniqueIdField.getName()), new IndexOptions().unique(true));
             }
-            Set<CompoundIndex> compoundIndexList = AnnotationUtils.collectAnnotations(entityClass, CompoundIndex.class);
-            for (CompoundIndex compoundIndex : compoundIndexList) {
+            Set<CompoundIndex> compoundIndexSet = AnnotationUtils.collectAnnotations(entityClass, CompoundIndex.class);
+            for (CompoundIndex compoundIndex : compoundIndexSet) {
                 // Checking if the field in the annotation exists in the entity class.
                 Index[] fieldIndexes = compoundIndex.value();
                 for (Index fieldIndex : fieldIndexes) {
@@ -378,6 +379,29 @@ public class MongoManager {
                 IndexOptions indexOptions = new IndexOptions()
                         .unique(compoundIndex.uniqueIndex());
                 entityCollection.createIndex(Indexes.compoundIndex(indexBsonList), indexOptions);
+            }
+
+            Set<TTLIndex> ttlIndexSet = AnnotationUtils.collectAnnotations(entityClass, TTLIndex.class);
+            for (TTLIndex ttlIndex : ttlIndexSet) {
+                // Checking if the field in the annotation exists in the entity class.
+                String ttlField = ttlIndex.value();
+                boolean foundTTLField = false;
+                for (Field entityField : entityFieldSet) {
+                    if(!entityField.getName().equalsIgnoreCase(ttlField)) {
+                        continue;
+                    }
+                    if(GenericUtils.isNotTypeOf(entityField.getType(), Date.class)) {
+                        continue;
+                    }
+                    foundTTLField = true;
+                    break;
+                }
+                if(!foundTTLField) {
+                    throw new RepositoryTTLFieldNotFoundException(repositoryClass, ttlField);
+                }
+                IndexOptions indexOptions = new IndexOptions()
+                        .expireAfter(ttlIndex.ttl(), ttlIndex.time());
+                entityCollection.createIndex(Indexes.ascending(ttlField), indexOptions);
             }
 
             ///////////////////////////
