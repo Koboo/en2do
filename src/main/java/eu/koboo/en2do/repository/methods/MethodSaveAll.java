@@ -20,7 +20,7 @@ public class MethodSaveAll<E, ID, R extends Repository<E, ID>> extends Repositor
     @Override
     public Object handle(Method method, Object[] arguments) throws Exception {
         List<E> entityList = repositoryMeta.checkEntityList(method, arguments[0]);
-        if(entityList.isEmpty()) {
+        if (entityList.isEmpty()) {
             return true;
         }
         List<E> insertList = new ArrayList<>();
@@ -38,7 +38,7 @@ public class MethodSaveAll<E, ID, R extends Repository<E, ID>> extends Repositor
             insertList.add(entity);
         }
         // Using "insertMany" should speed up inserting performance drastically
-        if(!insertList.isEmpty()) {
+        if (!insertList.isEmpty()) {
             entityCollection.insertMany(insertList);
         }
         return true;

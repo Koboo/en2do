@@ -457,6 +457,7 @@ just write the method declaration into the annotation itself.
 No worries, en2do still validates all parts of the method name and treats it like a normal delcared method.
 
 **_Code-Example:_**
+
 ````java
 
 @Collection("customer_repository")

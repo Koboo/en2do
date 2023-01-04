@@ -36,7 +36,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         String methodName = method.getName();
 
         Transform transform = method.getAnnotation(Transform.class);
-        if(transform != null) {
+        if (transform != null) {
             methodName = transform.value();
         }
 

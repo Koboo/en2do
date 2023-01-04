@@ -117,16 +117,16 @@ public class MongoManager {
 
     public boolean close() {
         try {
-            if(repoRegistry != null) {
+            if (repoRegistry != null) {
                 repoRegistry.clear();
             }
-            if(repoMetaRegistry != null) {
+            if (repoMetaRegistry != null) {
                 for (RepositoryMeta<?, ?, ?> meta : repoMetaRegistry.values()) {
                     meta.destroy();
                 }
                 repoMetaRegistry.clear();
             }
-            if(client != null) {
+            if (client != null) {
                 client.close();
             }
             return true;
@@ -248,11 +248,11 @@ public class MongoManager {
                 String methodName = method.getName();
 
                 Transform transform = method.getAnnotation(Transform.class);
-                if(transform != null) {
+                if (transform != null) {
                     methodName = transform.value();
                 }
 
-                if(repositoryMeta.isRepositoryMethod(methodName)) {
+                if (repositoryMeta.isRepositoryMethod(methodName)) {
                     continue;
                 }
 
@@ -426,16 +426,16 @@ public class MongoManager {
                 String ttlField = ttlIndex.value();
                 boolean foundTTLField = false;
                 for (Field entityField : entityFieldSet) {
-                    if(!entityField.getName().equalsIgnoreCase(ttlField)) {
+                    if (!entityField.getName().equalsIgnoreCase(ttlField)) {
                         continue;
                     }
-                    if(GenericUtils.isNotTypeOf(entityField.getType(), Date.class)) {
+                    if (GenericUtils.isNotTypeOf(entityField.getType(), Date.class)) {
                         continue;
                     }
                     foundTTLField = true;
                     break;
                 }
-                if(!foundTTLField) {
+                if (!foundTTLField) {
                     throw new RepositoryTTLFieldNotFoundException(repositoryClass, ttlField);
                 }
                 IndexOptions indexOptions = new IndexOptions()
