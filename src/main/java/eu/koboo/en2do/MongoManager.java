@@ -8,9 +8,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import com.mongodb.client.model.ReplaceOptions;
-import com.mongodb.client.result.DeleteResult;
-import com.mongodb.client.result.UpdateResult;
 import eu.koboo.en2do.codec.MapCodecProvider;
 import eu.koboo.en2do.exception.*;
 import eu.koboo.en2do.index.CompoundIndex;
@@ -27,6 +24,7 @@ import eu.koboo.en2do.meta.registry.FilterType;
 import eu.koboo.en2do.meta.registry.MethodFilterPart;
 import eu.koboo.en2do.meta.startup.DropEntitiesOnStart;
 import eu.koboo.en2do.meta.startup.DropIndexesOnStart;
+import eu.koboo.en2do.repository.RepositoryMethod;
 import eu.koboo.en2do.repository.Transform;
 import eu.koboo.en2do.repository.methods.*;
 import eu.koboo.en2do.sort.annotation.Limit;
@@ -53,10 +51,6 @@ import java.util.regex.Pattern;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MongoManager {
 
-    //TODO: CountAll base method
-    //TODO: Method Declaration By Annotation
-    //TODO: Static Methods as classes
-
     // These methods are ignored by our methods processing.
     private static final List<String> IGNORED_REPOSITORY_METHODS = Arrays.asList(
             // Predefined methods by Repository interface
@@ -69,6 +63,7 @@ public class MongoManager {
     MongoClient client;
     MongoDatabase database;
     Map<Class<?>, Repository<?, ?>> repoRegistry;
+    Map<Class<?>, RepositoryMeta<?, ?, ?>> repoMetaRegistry;
 
     public MongoManager(Credentials credentials) {
 
@@ -117,6 +112,7 @@ public class MongoManager {
         database = client.getDatabase(databaseString);
 
         repoRegistry = new ConcurrentHashMap<>();
+        repoMetaRegistry = new ConcurrentHashMap<>();
     }
 
     public MongoManager() {
@@ -125,7 +121,18 @@ public class MongoManager {
 
     public boolean close() {
         try {
-            client.close();
+            if(repoRegistry != null) {
+                repoRegistry.clear();
+            }
+            if(repoMetaRegistry != null) {
+                for (RepositoryMeta<?, ?, ?> meta : repoMetaRegistry.values()) {
+                    meta.destroy();
+                }
+                repoMetaRegistry.clear();
+            }
+            if(client != null) {
+                client.close();
+            }
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -219,6 +226,26 @@ public class MongoManager {
                     entityUniqueIdClass, entityUniqueIdField,
                     entityCollectionName
             );
+
+            MongoCollection<E> entityCollection = database.getCollection(entityCollectionName, entityClass);
+
+            // Define default methods with handler into the meta registry
+            repositoryMeta.registerHandler(new MethodCountAll<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler(new MethodGetCollectionName<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler(new MethodGetClass<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler(new MethodGetEntityClass<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler(new MethodGetEntityUniqueIdClass<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler(new MethodGetUniqueIdClass<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler(new MethodFindFirstById<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler(new MethodFindAll<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler(new MethodDelete<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler(new MethodDeleteById<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler(new MethodDeleteAll<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler(new MethodDrop<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler(new MethodSave<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler(new MethodSaveAll<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler(new MethodExists<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler(new MethodExistsById<>(repositoryMeta, entityCollection));
 
             // Iterate through the repository methods
             for (Method method : repositoryClass.getMethods()) {
@@ -352,8 +379,6 @@ public class MongoManager {
                 repositoryMeta.registerDynamicMethod(methodName, dynamicMethod);
             }
 
-            MongoCollection<E> entityCollection = database.getCollection(entityCollectionName, entityClass);
-
             // Drop all entities on start if annotation is present.
             if (repositoryClass.isAnnotationPresent(DropEntitiesOnStart.class)) {
                 entityCollection.drop();
@@ -424,29 +449,13 @@ public class MongoManager {
             //                       //
             ///////////////////////////
 
-            // Define default methods with handler into the meta registry
-            repositoryMeta.registerHandler("getCollectionName", new MethodGetCollectionName<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler("getClass", new MethodGetClass<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler("getEntityClass", new MethodGetEntityClass<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler("getEntityUniqueIdClass", new MethodGetEntityUniqueIdClass<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler("getUniqueId", new MethodGetUniqueIdClass<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler("findFirstById", new MethodFindFirstById<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler("findAll", new MethodFindAll<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler("delete", new MethodDelete<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler("deleteById", new MethodDeleteById<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler("deleteAll", new MethodDeleteAll<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler("drop", new MethodDrop<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler("save", new MethodSave<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler("saveAll", new MethodSaveAll<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler("exists", new MethodExists<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler("existsById", new MethodExistsById<>(repositoryMeta, entityCollection));
-
             // Create dynamic repository proxy object
             ClassLoader repoClassLoader = repositoryClass.getClassLoader();
             Class<?>[] interfaces = new Class[]{repositoryClass};
             Repository<E, ID> repository = (Repository<E, ID>) Proxy.newProxyInstance(repoClassLoader, interfaces,
                     new RepositoryInvocationHandler<>(repositoryMeta, entityCollection));
             repoRegistry.put(repositoryClass, repository);
+            repoMetaRegistry.put(repositoryClass, repositoryMeta);
             return (R) repository;
         } catch (Exception e) {
             throw new RuntimeException(e);
