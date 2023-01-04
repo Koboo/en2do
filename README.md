@@ -428,9 +428,11 @@ After that you can decide between two ``TTLIndex`` options:
 import java.util.Date;
 
 // Lombok's annotations go here..
-@TTLIndex(value = "createTime", ttl = 10, unit = TimeUnit.SECONDS)
+
 // en2do - Expires 10 seconds after timeStamp of "createDate"
-@TTLIndex(value = "expireTime") //  en2do - Expires on timeStamp of "expireDate"
+@TTLIndex(value = "createTime", ttl = 10, unit = TimeUnit.SECONDS)
+// en2do - Expires on timeStamp of "expireDate"
+@TTLIndex(value = "expireTime")
 public class Customer {
 
     @Id // en2do
