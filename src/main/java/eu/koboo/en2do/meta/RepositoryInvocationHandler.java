@@ -104,6 +104,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         if (sortOptions.getSkip() != -1) {
             findIterable = findIterable.skip(sortOptions.getSkip());
         }
+        findIterable.allowDiskUse(true);
         return findIterable;
     }
 
@@ -123,6 +124,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             Skip skip = method.getAnnotation(Skip.class);
             findIterable = findIterable.skip(skip.value());
         }
+        findIterable.allowDiskUse(true);
         return findIterable;
     }
 }
