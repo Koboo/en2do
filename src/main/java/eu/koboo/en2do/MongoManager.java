@@ -466,6 +466,9 @@ public class MongoManager {
             });
             repositoryMeta.registerHandler("saveAll", (method, arguments) -> {
                 List<E> entityList = repositoryMeta.checkEntityList(method, arguments[0]);
+                if(entityList.isEmpty()) {
+                    return true;
+                }
                 List<E> insertList = new ArrayList<>();
                 // Iterate through entities and check if it already exists by uniqueidentifier.
                 ReplaceOptions replaceOptions = new ReplaceOptions().upsert(true);
@@ -481,7 +484,9 @@ public class MongoManager {
                     insertList.add(entity);
                 }
                 // Using "insertMany" should speed up inserting performance drastically
-                entityCollection.insertMany(insertList);
+                if(!insertList.isEmpty()) {
+                    entityCollection.insertMany(insertList);
+                }
                 return true;
             });
             repositoryMeta.registerHandler("exists", (method, arguments) -> {
