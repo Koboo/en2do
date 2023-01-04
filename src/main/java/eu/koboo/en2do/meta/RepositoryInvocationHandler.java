@@ -7,7 +7,7 @@ import com.mongodb.client.result.DeleteResult;
 import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.exception.RepositoryInvalidCallException;
 import eu.koboo.en2do.meta.registry.DynamicMethod;
-import eu.koboo.en2do.meta.registry.MethodHandler;
+import eu.koboo.en2do.repository.RepositoryMethod;
 import eu.koboo.en2do.repository.Transform;
 import eu.koboo.en2do.sort.annotation.Limit;
 import eu.koboo.en2do.sort.annotation.Skip;
@@ -41,7 +41,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         }
 
         // Get and check if a static handler for the methodName is available.
-        MethodHandler methodHandler = repositoryMeta.lookupHandler(methodName);
+        RepositoryMethod<E, ID, R> methodHandler = repositoryMeta.lookupHandler(methodName);
         if (methodHandler != null) {
             // Just handle the arguments and return the object
             return methodHandler.handle(method, arguments);
