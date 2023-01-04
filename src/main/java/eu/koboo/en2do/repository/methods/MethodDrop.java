@@ -12,7 +12,7 @@ import java.util.List;
 public class MethodDrop<E, ID, R extends Repository<E, ID>> extends RepositoryMethod<E, ID, R> {
 
     public MethodDrop(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
-        super(meta, entityCollection);
+        super("drop", meta, entityCollection);
     }
 
     @Override

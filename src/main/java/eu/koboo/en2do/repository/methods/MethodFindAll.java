@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class MethodFindAll<E, ID, R extends Repository<E, ID>> extends RepositoryMethod<E, ID, R> {
 
     public MethodFindAll(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
-        super(meta, entityCollection);
+        super("findAll", meta, entityCollection);
     }
 
     @Override

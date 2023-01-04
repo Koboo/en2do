@@ -10,7 +10,7 @@ import java.lang.reflect.Method;
 public class MethodGetEntityUniqueIdClass<E, ID, R extends Repository<E, ID>> extends RepositoryMethod<E, ID, R> {
 
     public MethodGetEntityUniqueIdClass(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
-        super(meta, entityCollection);
+        super("getEntityUniqueIdClass", meta, entityCollection);
     }
 
     @Override

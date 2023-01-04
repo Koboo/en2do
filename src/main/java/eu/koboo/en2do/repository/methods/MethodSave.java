@@ -13,7 +13,7 @@ import java.lang.reflect.Method;
 public class MethodSave<E, ID, R extends Repository<E, ID>> extends RepositoryMethod<E, ID, R> {
 
     public MethodSave(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
-        super(meta, entityCollection);
+        super("save", meta, entityCollection);
     }
 
     @Override

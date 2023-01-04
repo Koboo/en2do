@@ -10,7 +10,7 @@ import java.lang.reflect.Method;
 public class MethodGetClass<E, ID, R extends Repository<E, ID>> extends RepositoryMethod<E, ID, R> {
 
     public MethodGetClass(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
-        super(meta, entityCollection);
+        super("getClass", meta, entityCollection);
     }
 
     @Override

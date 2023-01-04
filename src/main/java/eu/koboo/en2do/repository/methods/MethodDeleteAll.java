@@ -13,7 +13,7 @@ import java.util.List;
 public class MethodDeleteAll<E, ID, R extends Repository<E, ID>> extends RepositoryMethod<E, ID, R> {
 
     public MethodDeleteAll(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
-        super(meta, entityCollection);
+        super("deleteAll", meta, entityCollection);
     }
 
     @Override

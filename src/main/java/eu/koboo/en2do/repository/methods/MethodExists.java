@@ -14,7 +14,7 @@ import java.util.List;
 public class MethodExists<E, ID, R extends Repository<E, ID>> extends RepositoryMethod<E, ID, R> {
 
     public MethodExists(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
-        super(meta, entityCollection);
+        super("exists", meta, entityCollection);
     }
 
     @Override

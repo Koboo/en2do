@@ -15,7 +15,7 @@ import java.util.List;
 public class MethodSaveAll<E, ID, R extends Repository<E, ID>> extends RepositoryMethod<E, ID, R> {
 
     public MethodSaveAll(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
-        super(meta, entityCollection);
+        super("saveAll", meta, entityCollection);
     }
 
     @Override

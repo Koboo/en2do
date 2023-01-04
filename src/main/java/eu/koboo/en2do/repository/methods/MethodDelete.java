@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
 public class MethodDelete<E, ID, R extends Repository<E, ID>> extends RepositoryMethod<E, ID, R> {
 
     public MethodDelete(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
-        super(meta, entityCollection);
+        super("delete", meta, entityCollection);
     }
 
     @Override

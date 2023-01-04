@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
 public class MethodFindFirstById<E, ID, R extends Repository<E, ID>> extends RepositoryMethod<E, ID, R> {
 
     public MethodFindFirstById(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
-        super(meta, entityCollection);
+        super("findFirstById", meta, entityCollection);
     }
 
     @Override
