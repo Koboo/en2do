@@ -7,10 +7,10 @@ import eu.koboo.en2do.repository.RepositoryMethod;
 
 import java.lang.reflect.Method;
 
-public class MethodGetUniqueIdClass<E, ID, R extends Repository<E, ID>> extends RepositoryMethod<E, ID, R> {
+public class MethodGetUniqueId<E, ID, R extends Repository<E, ID>> extends RepositoryMethod<E, ID, R> {
 
-    public MethodGetUniqueIdClass(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
-        super("getUniqueIdClass", meta, entityCollection);
+    public MethodGetUniqueId(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
+        super("getUniqueId", meta, entityCollection);
     }
 
     @Override
