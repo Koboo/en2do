@@ -27,6 +27,7 @@ import eu.koboo.en2do.meta.registry.FilterType;
 import eu.koboo.en2do.meta.registry.MethodFilterPart;
 import eu.koboo.en2do.meta.startup.DropEntitiesOnStart;
 import eu.koboo.en2do.meta.startup.DropIndexesOnStart;
+import eu.koboo.en2do.repository.Transform;
 import eu.koboo.en2do.repository.methods.*;
 import eu.koboo.en2do.sort.annotation.Limit;
 import eu.koboo.en2do.sort.annotation.Skip;
@@ -222,6 +223,12 @@ public class MongoManager {
             // Iterate through the repository methods
             for (Method method : repositoryClass.getMethods()) {
                 String methodName = method.getName();
+
+                Transform transform = method.getAnnotation(Transform.class);
+                if(transform != null) {
+                    methodName = transform.value();
+                }
+
                 // Skip if the method should be ignored
                 if (IGNORED_REPOSITORY_METHODS.contains(methodName)) {
                     continue;
