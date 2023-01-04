@@ -32,4 +32,6 @@ public interface Repository<E, ID> {
     boolean exists(E entity);
 
     boolean existsById(ID identifier);
+
+    long countAll();
 }

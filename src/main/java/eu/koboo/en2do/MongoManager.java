@@ -24,7 +24,6 @@ import eu.koboo.en2do.meta.registry.FilterType;
 import eu.koboo.en2do.meta.registry.MethodFilterPart;
 import eu.koboo.en2do.meta.startup.DropEntitiesOnStart;
 import eu.koboo.en2do.meta.startup.DropIndexesOnStart;
-import eu.koboo.en2do.repository.RepositoryMethod;
 import eu.koboo.en2do.repository.Transform;
 import eu.koboo.en2do.repository.methods.*;
 import eu.koboo.en2do.sort.annotation.Limit;
@@ -51,14 +50,11 @@ import java.util.regex.Pattern;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MongoManager {
 
-    // These methods are ignored by our methods processing.
-    private static final List<String> IGNORED_REPOSITORY_METHODS = Arrays.asList(
-            // Predefined methods by Repository interface
-            "getCollectionName", "getUniqueId", "getEntityClass", "getEntityUniqueIdClass",
-            "findFirstById", "findAll", "delete", "deleteById", "deleteAll", "drop",
-            "save", "saveAll", "exists", "existsById",
-            // Predefined methods by Java objects
-            "toString", "hashCode", "equals", "notify", "notifyAll", "wait", "finalize", "clone");
+    // Predefined methods by Java objects
+    // These methods are ignored by our method processing proxy / invocation handler.
+    private static final List<String> IGNORED_DEFAULT_METHODS = Arrays.asList(
+            "toString", "hashCode", "equals", "notify", "notifyAll", "wait", "finalize", "clone"
+    );
 
     MongoClient client;
     MongoDatabase database;
@@ -235,7 +231,7 @@ public class MongoManager {
             repositoryMeta.registerHandler(new MethodGetClass<>(repositoryMeta, entityCollection));
             repositoryMeta.registerHandler(new MethodGetEntityClass<>(repositoryMeta, entityCollection));
             repositoryMeta.registerHandler(new MethodGetEntityUniqueIdClass<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler(new MethodGetUniqueIdClass<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler(new MethodGetUniqueId<>(repositoryMeta, entityCollection));
             repositoryMeta.registerHandler(new MethodFindFirstById<>(repositoryMeta, entityCollection));
             repositoryMeta.registerHandler(new MethodFindAll<>(repositoryMeta, entityCollection));
             repositoryMeta.registerHandler(new MethodDelete<>(repositoryMeta, entityCollection));
@@ -256,8 +252,12 @@ public class MongoManager {
                     methodName = transform.value();
                 }
 
+                if(repositoryMeta.isRepositoryMethod(methodName)) {
+                    continue;
+                }
+
                 // Skip if the method should be ignored
-                if (IGNORED_REPOSITORY_METHODS.contains(methodName)) {
+                if (IGNORED_DEFAULT_METHODS.contains(methodName)) {
                     continue;
                 }
                 // Check for the return-types of the methods, and their defined names to match our pattern.

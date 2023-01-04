@@ -59,6 +59,10 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         dynamicMethodRegistry.clear();
     }
 
+    public boolean isRepositoryMethod(String methodName) {
+        return methodRegistry.containsKey(methodName);
+    }
+
     public void registerHandler(RepositoryMethod<E, ID, R> methodHandler) {
         String methodName = methodHandler.getMethodName();
         if (methodRegistry.containsKey(methodName)) {
