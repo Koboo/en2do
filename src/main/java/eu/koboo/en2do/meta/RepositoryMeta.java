@@ -20,6 +20,9 @@ import java.util.Set;
 public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
     @Getter
+    String collectionName;
+
+    @Getter
     Class<R> repositoryClass;
     @Getter
     Class<E> entityClass;
@@ -36,7 +39,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     Map<String, DynamicMethod<E, ID, R>> dynamicMethodRegistry;
 
     public RepositoryMeta(Class<R> repositoryClass, Class<E> entityClass, Set<Field> entityFieldSet,
-                          Class<ID> entityUniqueIdClass, Field entityUniqueIdField) {
+                          Class<ID> entityUniqueIdClass, Field entityUniqueIdField, String collectionName) {
         this.repositoryClass = repositoryClass;
         this.entityClass = entityClass;
 
@@ -44,6 +47,8 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
         this.entityUniqueIdClass = entityUniqueIdClass;
         this.entityUniqueIdField = entityUniqueIdField;
+
+        this.collectionName = collectionName;
 
         this.methodRegistry = new HashMap<>();
         this.dynamicMethodRegistry = new HashMap<>();
