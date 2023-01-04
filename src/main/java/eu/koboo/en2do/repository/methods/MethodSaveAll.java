@@ -2,7 +2,6 @@ package eu.koboo.en2do.repository.methods;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.ReplaceOptions;
-import com.mongodb.client.result.UpdateResult;
 import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.meta.RepositoryMeta;
 import eu.koboo.en2do.repository.RepositoryMethod;
