@@ -18,11 +18,13 @@ This framework is heavily inspired by [Spring Data](https://spring.io/projects/s
 - [Filter keywords](#filter-keywords)
 - [Method keywords](#method-keywords)
 - [Sorting](#sorting)
-  - [Sorting via Annotations](#static-sorting-via-annotations)
-  - [Sorting via Parameter](#dynamic-sorting-via-parameter)
+    - [Sorting via Annotations](#static-sorting-via-annotations)
+    - [Sorting via Parameter](#dynamic-sorting-via-parameter)
 - [Indexing](#indexing)
-  - [Identifier](#identifier-indexing)
-  - [Multi-Field](#multi-field-indexing)
+    - [Identifier](#identifier-indexing)
+    - [Multi-Field](#multi-field-indexing)
+    - [TTLIndex](#ttl-index)
+- [Transform](#transform)
 - [References](#references)
 - [WTFPL License](LICENSE)
 
@@ -90,6 +92,7 @@ en2do.database=<database>
 You can also create credentials through various other methods.
 
 **_Code-Example:_**
+
 ```java
 public class Application {
     public static void main(String[] args) {
@@ -125,6 +128,7 @@ public class Application {
     }
 }
 ````
+
 [Learn more about the MongoDB ConnectionString](https://www.mongodb.com/docs/manual/reference/connection-string/)
 
 ### Define an Entity class
@@ -138,6 +142,7 @@ This has been fixed via a **Custom MapCodec**.
 In the [references](#references) you can find all links which helped immensely.
 
 **_Code Example:_**
+
 ````java
 import eu.koboo.en2do.annotation.*;
 import lombok.*;
@@ -221,7 +226,8 @@ and an error is thrown.
 To explain the implemented methods, the [Customer Entity](src/test/java/eu/koboo/en2do/test/customer/Customer.java)
 from the [test units](src/test/java/eu/koboo/en2do/test/cases) is used as an example.
 
-Find more examples of method declarations in [CustomerRepository](src/test/java/eu/koboo/en2do/test/customer/CustomerRepository.java).
+Find more examples of method declarations
+in [CustomerRepository](src/test/java/eu/koboo/en2do/test/customer/CustomerRepository.java).
 
 ## Method keywords
 
@@ -257,21 +263,21 @@ applied.
 
 You can negate any filter with the keyword ``Not``.
 
-| Keyword             | Example                                            | Bson equivalent                                         |
-|---------------------|----------------------------------------------------|---------------------------------------------------------|
-| **Not(No keyword)** | ``findFirstByFirstNameNot(String firstName)``      | ``Filters.not`` + ``Filters.eq``                        |
-| **NotIgn**          | ``findFirstByFirstNameNotIgn(String firstName)``   | ``Filters.not`` + ``Filters.regex`` (``(?i)^[value]$``) |
-| ...                 | _This works with every keyword from above_         | ...                                                     |
+| Keyword             | Example                                          | Bson equivalent                                         |
+|---------------------|--------------------------------------------------|---------------------------------------------------------|
+| **Not(No keyword)** | ``findFirstByFirstNameNot(String firstName)``    | ``Filters.not`` + ``Filters.eq``                        |
+| **NotIgn**          | ``findFirstByFirstNameNotIgn(String firstName)`` | ``Filters.not`` + ``Filters.regex`` (``(?i)^[value]$``) |
+| ...                 | _This works with every keyword from above_       | ...                                                     |
 
 Filters can also be chained. For this purpose the keyword ``And`` or the keyword ``Or`` can be used per method.
 
 **_ATTENTION: The keywords ``And`` and ``Or`` must not be used in the same method!_**
 
-| Keyword                         | Example                                                                            | Bson equivalent                                                              |
-|---------------------------------|------------------------------------------------------------------------------------|------------------------------------------------------------------------------|
-| **Not(No keyword)AndGreaterEq** | ``findFirstByFirstNameNotAndBalanceGreaterEq(String firstName, double balance)``   | ``Filters.not`` + ``Filters.eq`` && ``Filters.gte``                          |
-| **IgnAndNotRegex**              | ``findFirstByFirstNameIgnAndLastNameNotRegex(String firstName, String lastName)``  | ``Filters.regex`` (``(?i)^[value]$``) && ``Filters.not`` + ``Filters.regex`` |
-| ...                             | _This works with every keyword from above_                                         | ...                                                                          |
+| Keyword                         | Example                                                                           | Bson equivalent                                                              |
+|---------------------------------|-----------------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| **Not(No keyword)AndGreaterEq** | ``findFirstByFirstNameNotAndBalanceGreaterEq(String firstName, double balance)``  | ``Filters.not`` + ``Filters.eq`` && ``Filters.gte``                          |
+| **IgnAndNotRegex**              | ``findFirstByFirstNameIgnAndLastNameNotRegex(String firstName, String lastName)`` | ``Filters.regex`` (``(?i)^[value]$``) && ``Filters.not`` + ``Filters.regex`` |
+| ...                             | _This works with every keyword from above_                                        | ...                                                                          |
 
 _Note: If a method is declared incorrectly, an exception is usually thrown describing the error.
 Due to wrong validation checks, this could also occur unintentionally or not at all if the declaration is incorrect._
@@ -347,7 +353,9 @@ performed on other fields/queries than the unique identifier.
 This should also be done if the ``@Id`` field isn't unique!
 
 **_Code-Example:_**
+
 ````java
+
 @Getter // lombok
 @Setter // lombok
 @NoArgsConstructor // lombok
@@ -376,14 +384,17 @@ up the method ``findFirstByFirstNameAndLastName(String first, String last);``.
 
 It's possible to add multiple ``@CompoundIndex`` annotations in one entity.
 
+**_Code-Example:_**
+
 ````java
+
 @Getter // lombok
 @Setter // lombok
 @NoArgsConstructor // lombok
 @FieldDefaults(level = AccessLevel.PRIVATE) // lombok
 @ToString // lombok
-@CompoundIndex({ @Index("firstName"), @Index(value = "lastName", ascending = false) }) // en2do
-@CompoundIndex(value = { @Index("uniqueId"), @Index("firstName") }, uniqueIndex = true) // en2do
+@CompoundIndex({@Index("firstName"), @Index(value = "lastName", ascending = false)}) // en2do
+@CompoundIndex(value = {@Index("uniqueId"), @Index("firstName")}, uniqueIndex = true) // en2do
 public class Customer {
 
     @Id // en2do
@@ -398,7 +409,68 @@ public class Customer {
 
 ## TTL Index
 
-``// TBD``
+Imagine you have an entity, which should be deleted after a specific time. Instead of creating a repeated task in java
+through a ``Timer`` or an ``ScheduledExecutorService`` and using the resources of the application, en2do offers to use
+MongoDBs time-to-live indexes.
+
+First of all you need to create at least one field of the type ``java.util.Date`` in your entity.
+
+After that you can decide between two ``TTLIndex`` options:
+
+1. Delete at timeStamp = ``{ttl} {unit} + {timeStamp of field}``
+2. Delete at timeStamp = ``{timeStamp of field}``
+
+**_Code-Example:_**
+
+````java
+// Other imports go here...
+
+import java.util.Date;
+
+// Lombok's annotations go here..
+@TTLIndex(value = "createTime", ttl = 10, unit = TimeUnit.SECONDS)
+// en2do - Expires 10 seconds after timeStamp of "createDate"
+@TTLIndex(value = "expireTime") //  en2do - Expires on timeStamp of "expireDate"
+public class Customer {
+
+    @Id // en2do
+    UUID uniqueId;
+
+    // Other fields go here...
+
+    Date createTime; // Important for 1. TTLIndex annotation
+    Date expireTime; // Important for 2. TTLIndex annotation
+}
+````
+
+[Read more about TTL indexes - MongoDB documentation](https://www.mongodb.com/docs/manual/core/index-ttl/)
+
+## Transform
+
+Sometimes it happens that a method name gets way too long and the code, which uses the method, looks very..
+interesting.. (**spaghetti-code**)
+
+To reduce the length of names and make en2do more customizable, I created the ``@Transform`` annotation. Now you can
+rename any method to what it really does and just annotate it with ``@Transform("{realMethodNameDeclaration}")`` and
+just write the method declaration into the annotation itself.
+
+No worries, en2do still validates all parts of the method name and treats it like a normal delcared method.
+
+**_Code-Example:_**
+````java
+
+@Collection("customer_repository")
+public interface CustomerRepository extends Repository<Customer, UUID> {
+
+    // Other methods go here...
+
+    @Transform("existsByStreet")
+    boolean myTransformedMethod(String street);
+
+    @Transform("findManyByStreet")
+    List<Customer> myTransformedMethod2(String street);
+}
+````
 
 ## References
 
