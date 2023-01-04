@@ -27,6 +27,7 @@ import eu.koboo.en2do.meta.registry.FilterType;
 import eu.koboo.en2do.meta.registry.MethodFilterPart;
 import eu.koboo.en2do.meta.startup.DropEntitiesOnStart;
 import eu.koboo.en2do.meta.startup.DropIndexesOnStart;
+import eu.koboo.en2do.repository.methods.*;
 import eu.koboo.en2do.sort.annotation.Limit;
 import eu.koboo.en2do.sort.annotation.Skip;
 import eu.koboo.en2do.sort.annotation.SortBy;
@@ -50,6 +51,10 @@ import java.util.regex.Pattern;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MongoManager {
+
+    //TODO: CountAll base method
+    //TODO: Method Declaration By Annotation
+    //TODO: Static Methods as classes
 
     // These methods are ignored by our methods processing.
     private static final List<String> IGNORED_REPOSITORY_METHODS = Arrays.asList(
@@ -136,6 +141,13 @@ public class MongoManager {
                 return (R) repoRegistry.get(repositoryClass);
             }
 
+            // Parse annotated collection name and create pojo-related mongo collection
+            Collection collectionAnnotation = repositoryClass.getAnnotation(Collection.class);
+            if (collectionAnnotation == null) {
+                throw new RepositoryNameNotFoundException(repositoryClass);
+            }
+            String entityCollectionName = collectionAnnotation.value();
+
             // Parse Entity and UniqueId type classes by generic repository arguments
             // (Yea, it's very hacky, but works)
             Type[] repoGenericTypeArray = repositoryClass.getGenericInterfaces();
@@ -203,18 +215,19 @@ public class MongoManager {
             RepositoryMeta<E, ID, R> repositoryMeta = new RepositoryMeta<>(
                     repositoryClass, entityClass,
                     entityFieldSet,
-                    entityUniqueIdClass, entityUniqueIdField
+                    entityUniqueIdClass, entityUniqueIdField,
+                    entityCollectionName
             );
 
             // Iterate through the repository methods
             for (Method method : repositoryClass.getMethods()) {
+                String methodName = method.getName();
                 // Skip if the method should be ignored
-                if (IGNORED_REPOSITORY_METHODS.contains(method.getName())) {
+                if (IGNORED_REPOSITORY_METHODS.contains(methodName)) {
                     continue;
                 }
                 // Check for the return-types of the methods, and their defined names to match our pattern.
                 Class<?> returnType = method.getReturnType();
-                String methodName = method.getName();
 
                 // Parse the MethodOperator by the methodName
                 MethodOperator methodOperator = MethodOperator.parseMethodStartsWith(methodName);
@@ -332,12 +345,6 @@ public class MongoManager {
                 repositoryMeta.registerDynamicMethod(methodName, dynamicMethod);
             }
 
-            // Parse annotated collection name and create pojo-related mongo collection
-            Collection collectionAnnotation = repositoryClass.getAnnotation(Collection.class);
-            if (collectionAnnotation == null) {
-                throw new RepositoryNameNotFoundException(repositoryClass);
-            }
-            String entityCollectionName = collectionAnnotation.value();
             MongoCollection<E> entityCollection = database.getCollection(entityCollectionName, entityClass);
 
             // Drop all entities on start if annotation is present.
@@ -411,95 +418,21 @@ public class MongoManager {
             ///////////////////////////
 
             // Define default methods with handler into the meta registry
-            repositoryMeta.registerHandler("getCollectionName", (method, arguments) -> entityCollectionName);
-            repositoryMeta.registerHandler("getClass", (method, arguments) -> repositoryClass);
-            repositoryMeta.registerHandler("getEntityClass", (method, arguments) -> entityClass);
-            repositoryMeta.registerHandler("getEntityUniqueIdClass", (method, arguments) -> entityUniqueIdClass);
-            repositoryMeta.registerHandler("getUniqueId", (method, arguments) -> {
-                E entity = repositoryMeta.checkEntity(method, arguments[0]);
-                Object identifier = entityUniqueIdField.get(entity);
-                return repositoryMeta.checkUniqueId(method, identifier);
-            });
-            repositoryMeta.registerHandler("findFirstById", (method, arguments) -> {
-                ID uniqueId = repositoryMeta.checkUniqueId(method, arguments[0]);
-                Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
-                return entityCollection.find(idFilter).limit(1).first();
-            });
-            repositoryMeta.registerHandler("findAll", (method, arguments) -> entityCollection.find().into(new ArrayList<>()));
-            repositoryMeta.registerHandler("delete", (method, arguments) -> {
-                E entity = repositoryMeta.checkEntity(method, arguments[0]);
-                ID uniqueId = repositoryMeta.checkUniqueId(method, repositoryMeta.getUniqueId(entity));
-                Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
-                DeleteResult result = entityCollection.deleteOne(idFilter);
-                return result.wasAcknowledged();
-            });
-            repositoryMeta.registerHandler("deleteById", (method, arguments) -> {
-                ID uniqueId = repositoryMeta.checkUniqueId(method, arguments[0]);
-                Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
-                DeleteResult result = entityCollection.deleteOne(idFilter);
-                return result.wasAcknowledged();
-            });
-            repositoryMeta.registerHandler("deleteAll", ((method, arguments) -> {
-                List<E> entityList = repositoryMeta.checkEntityList(method, arguments[0]);
-                for (E entity : entityList) {
-                    ID uniqueId = repositoryMeta.checkUniqueId(method, repositoryMeta.getUniqueId(entity));
-                    Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
-                    entityCollection.deleteOne(idFilter);
-                }
-                return true;
-            }));
-            repositoryMeta.registerHandler("drop", (method, arguments) -> {
-                entityCollection.drop();
-                return true;
-            });
-            repositoryMeta.registerHandler("save", (method, arguments) -> {
-                E entity = repositoryMeta.checkEntity(method, arguments[0]);
-                ID uniqueId = repositoryMeta.checkUniqueId(method, repositoryMeta.getUniqueId(entity));
-                Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
-                if (entityCollection.countDocuments(idFilter) > 0) {
-                    ReplaceOptions replaceOptions = new ReplaceOptions().upsert(true);
-                    UpdateResult result = entityCollection.replaceOne(idFilter, entity, replaceOptions);
-                    return result.wasAcknowledged();
-                }
-                entityCollection.insertOne(entity);
-                return true;
-            });
-            repositoryMeta.registerHandler("saveAll", (method, arguments) -> {
-                List<E> entityList = repositoryMeta.checkEntityList(method, arguments[0]);
-                if(entityList.isEmpty()) {
-                    return true;
-                }
-                List<E> insertList = new ArrayList<>();
-                // Iterate through entities and check if it already exists by uniqueidentifier.
-                ReplaceOptions replaceOptions = new ReplaceOptions().upsert(true);
-                for (E entity : entityList) {
-                    ID uniqueId = repositoryMeta.checkUniqueId(method, repositoryMeta.getUniqueId(entity));
-                    Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
-                    if (entityCollection.countDocuments(idFilter) > 0) {
-                        // Entity exists, so we want to update the existing document.
-                        entityCollection.replaceOne(idFilter, entity, replaceOptions);
-                        continue;
-                    }
-                    // Entity doesn't exist, so we want to insert a new document.
-                    insertList.add(entity);
-                }
-                // Using "insertMany" should speed up inserting performance drastically
-                if(!insertList.isEmpty()) {
-                    entityCollection.insertMany(insertList);
-                }
-                return true;
-            });
-            repositoryMeta.registerHandler("exists", (method, arguments) -> {
-                E entity = repositoryMeta.checkEntity(method, arguments[0]);
-                ID uniqueId = repositoryMeta.checkUniqueId(method, repositoryMeta.getUniqueId(entity));
-                Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
-                return entityCollection.countDocuments(idFilter) > 0;
-            });
-            repositoryMeta.registerHandler("existsById", (method, arguments) -> {
-                ID uniqueId = repositoryMeta.checkUniqueId(method, arguments[0]);
-                Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
-                return entityCollection.countDocuments(idFilter) > 0;
-            });
+            repositoryMeta.registerHandler("getCollectionName", new MethodGetCollectionName<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler("getClass", new MethodGetClass<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler("getEntityClass", new MethodGetEntityClass<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler("getEntityUniqueIdClass", new MethodGetEntityUniqueIdClass<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler("getUniqueId", new MethodGetUniqueIdClass<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler("findFirstById", new MethodFindFirstById<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler("findAll", new MethodFindAll<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler("delete", new MethodDelete<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler("deleteById", new MethodDeleteById<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler("deleteAll", new MethodDeleteAll<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler("drop", new MethodDrop<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler("save", new MethodSave<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler("saveAll", new MethodSaveAll<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler("exists", new MethodExists<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerHandler("existsById", new MethodExistsById<>(repositoryMeta, entityCollection));
 
             // Create dynamic repository proxy object
             ClassLoader repoClassLoader = repositoryClass.getClassLoader();
