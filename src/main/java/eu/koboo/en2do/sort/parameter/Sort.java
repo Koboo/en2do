@@ -27,6 +27,14 @@ public class Sort {
         return this;
     }
 
+    public Sort order(String fieldName, boolean ascending) {
+        return order(ByField.of(fieldName, ascending));
+    }
+
+    public Sort order(String fieldName) {
+        return order(ByField.of(fieldName));
+    }
+
     public Sort limit(int limit) {
         this.limit = limit;
         return this;
