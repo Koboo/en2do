@@ -4,6 +4,7 @@ import eu.koboo.en2do.Collection;
 import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.meta.startup.DropEntitiesOnStart;
 import eu.koboo.en2do.meta.startup.DropIndexesOnStart;
+import eu.koboo.en2do.repository.Transform;
 import eu.koboo.en2do.sort.annotation.Limit;
 import eu.koboo.en2do.sort.annotation.Skip;
 import eu.koboo.en2do.sort.annotation.SortBy;
@@ -65,4 +66,10 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
     List<Customer> findManyByCustomerIdExists();
 
     List<Customer> findManyByCustomerIdNot(int customerId, Sort sort);
+
+    @Transform("existsByStreet")
+    boolean myTransformedMethod(String street);
+
+    @Transform("findManyByStreet")
+    List<Customer> myTransformedMethod2(String street);
 }
