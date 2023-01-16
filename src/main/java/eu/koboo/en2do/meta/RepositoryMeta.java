@@ -2,6 +2,7 @@ package eu.koboo.en2do.meta;
 
 import com.mongodb.client.model.Filters;
 import eu.koboo.en2do.Repository;
+import eu.koboo.en2do.meta.options.AppendMethodAsComment;
 import eu.koboo.en2do.meta.registry.DynamicMethod;
 import eu.koboo.en2do.repository.RepositoryMethod;
 import lombok.AccessLevel;
@@ -35,11 +36,16 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     @Getter
     Field entityUniqueIdField;
 
+    @Getter
+    boolean appendMethodAsComment;
+
     Map<String, RepositoryMethod<E, ID, R>> methodRegistry;
     Map<String, DynamicMethod<E, ID, R>> dynamicMethodRegistry;
 
     public RepositoryMeta(Class<R> repositoryClass, Class<E> entityClass, Set<Field> entityFieldSet,
                           Class<ID> entityUniqueIdClass, Field entityUniqueIdField, String collectionName) {
+        this.collectionName = collectionName;
+
         this.repositoryClass = repositoryClass;
         this.entityClass = entityClass;
 
@@ -48,7 +54,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         this.entityUniqueIdClass = entityUniqueIdClass;
         this.entityUniqueIdField = entityUniqueIdField;
 
-        this.collectionName = collectionName;
+        this.appendMethodAsComment = repositoryClass.isAnnotationPresent(AppendMethodAsComment.class);
 
         this.methodRegistry = new HashMap<>();
         this.dynamicMethodRegistry = new HashMap<>();

@@ -1,5 +1,6 @@
 package eu.koboo.en2do.repository.methods;
 
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.meta.RepositoryMeta;
@@ -18,6 +19,10 @@ public class MethodFindFirstById<E, ID, R extends Repository<E, ID>> extends Rep
     public Object handle(Method method, Object[] arguments) throws Exception {
         ID uniqueId = repositoryMeta.checkUniqueId(method, arguments[0]);
         Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
-        return entityCollection.find(idFilter).limit(1).first();
+        FindIterable<E> findIterable = entityCollection.find(idFilter);
+        if(repositoryMeta.isAppendMethodAsComment()) {
+            findIterable.comment("en2do \"" + getMethodName() + "\"");
+        }
+        return findIterable.limit(1).first();
     }
 }
