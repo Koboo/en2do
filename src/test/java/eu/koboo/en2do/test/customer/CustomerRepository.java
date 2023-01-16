@@ -2,8 +2,8 @@ package eu.koboo.en2do.test.customer;
 
 import eu.koboo.en2do.Collection;
 import eu.koboo.en2do.Repository;
-import eu.koboo.en2do.meta.startup.DropEntitiesOnStart;
-import eu.koboo.en2do.meta.startup.DropIndexesOnStart;
+import eu.koboo.en2do.meta.options.DropEntitiesOnStart;
+import eu.koboo.en2do.meta.options.DropIndexesOnStart;
 import eu.koboo.en2do.repository.Transform;
 import eu.koboo.en2do.sort.annotation.Limit;
 import eu.koboo.en2do.sort.annotation.Skip;
