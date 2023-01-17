@@ -41,6 +41,8 @@ You need help or want to share a project, which uses en2do?
 - Load credentials from files, resources or hardcoded Strings
 - Multiple ways to sort static or dynamic without implementing filters ([Learn more](#sorting))
 - Compound Indexes of entity fields ([Learn more](#indexing))
+- Server-side TTL-Indexes ([Learn more](#ttl-index))
+- Transforming method-names to enable customization ([Learn more](#transform))
 
 ## Add as dependency
 
