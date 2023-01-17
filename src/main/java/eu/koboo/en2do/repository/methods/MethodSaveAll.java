@@ -5,16 +5,22 @@ import com.mongodb.client.model.ReplaceOptions;
 import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.meta.RepositoryMeta;
 import eu.koboo.en2do.repository.RepositoryMethod;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.bson.conversions.Bson;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MethodSaveAll<E, ID, R extends Repository<E, ID>> extends RepositoryMethod<E, ID, R> {
+
+    ReplaceOptions replaceOptions;
 
     public MethodSaveAll(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
         super("saveAll", meta, entityCollection);
+        this.replaceOptions = new ReplaceOptions().upsert(true);
     }
 
     @Override
@@ -25,7 +31,6 @@ public class MethodSaveAll<E, ID, R extends Repository<E, ID>> extends Repositor
         }
         List<E> insertList = new ArrayList<>();
         // Iterate through entities and check if it already exists by uniqueidentifier.
-        ReplaceOptions replaceOptions = new ReplaceOptions().upsert(true);
         for (E entity : entityList) {
             ID uniqueId = repositoryMeta.checkUniqueId(method, repositoryMeta.getUniqueId(entity));
             Bson idFilter = repositoryMeta.createIdFilter(uniqueId);

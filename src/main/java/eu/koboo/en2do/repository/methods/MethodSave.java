@@ -6,14 +6,20 @@ import com.mongodb.client.result.UpdateResult;
 import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.meta.RepositoryMeta;
 import eu.koboo.en2do.repository.RepositoryMethod;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.bson.conversions.Bson;
 
 import java.lang.reflect.Method;
 
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MethodSave<E, ID, R extends Repository<E, ID>> extends RepositoryMethod<E, ID, R> {
+
+    ReplaceOptions replaceOptions;
 
     public MethodSave(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
         super("save", meta, entityCollection);
+        this.replaceOptions = new ReplaceOptions().upsert(true);
     }
 
     @Override
@@ -22,7 +28,6 @@ public class MethodSave<E, ID, R extends Repository<E, ID>> extends RepositoryMe
         ID uniqueId = repositoryMeta.checkUniqueId(method, repositoryMeta.getUniqueId(entity));
         Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
         if (entityCollection.countDocuments(idFilter) > 0) {
-            ReplaceOptions replaceOptions = new ReplaceOptions().upsert(true);
             UpdateResult result = entityCollection.replaceOne(idFilter, entity, replaceOptions);
             return result.wasAcknowledged();
         }
