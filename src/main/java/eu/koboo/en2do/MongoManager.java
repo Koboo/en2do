@@ -40,6 +40,7 @@ import org.bson.UuidRepresentation;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
+import org.bson.codecs.pojo.PropertyCodecProvider;
 import org.bson.conversions.Bson;
 
 import java.lang.reflect.*;
@@ -61,7 +62,7 @@ public class MongoManager {
     Map<Class<?>, Repository<?, ?>> repoRegistry;
     Map<Class<?>, RepositoryMeta<?, ?, ?>> repoMetaRegistry;
 
-    public MongoManager(Credentials credentials) {
+    public MongoManager(Credentials credentials, PropertyCodecProvider... customCodecs) {
 
         // If no credentials given, try loading them from default file.
         if (credentials == null) {
@@ -92,10 +93,18 @@ public class MongoManager {
 
         ConnectionString connection = new ConnectionString(connectString);
 
-        CodecRegistry pojoCodec = CodecRegistries.fromProviders(PojoCodecProvider.builder()
+        PojoCodecProvider.Builder pojoCodecProvider = PojoCodecProvider.builder()
                 .register(new MapCodecProvider())
-                .automatic(true)
-                .build());
+                .automatic(true);
+
+        // Register custom codecs from users
+        if(customCodecs != null) {
+            for (PropertyCodecProvider customCodec : customCodecs) {
+                pojoCodecProvider.register(customCodec);
+            }
+        }
+
+        CodecRegistry pojoCodec = CodecRegistries.fromProviders(pojoCodecProvider.build());
         CodecRegistry registry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), pojoCodec);
 
         MongoClientSettings clientSettings = MongoClientSettings.builder()
