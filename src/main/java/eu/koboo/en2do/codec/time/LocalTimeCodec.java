@@ -6,7 +6,7 @@ import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 
-import java.time.*;
+import java.time.LocalTime;
 
 public class LocalTimeCodec implements Codec<LocalTime> {
 

@@ -20,7 +20,7 @@ public class MethodFindFirstById<E, ID, R extends Repository<E, ID>> extends Rep
         ID uniqueId = repositoryMeta.checkUniqueId(method, arguments[0]);
         Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
         FindIterable<E> findIterable = entityCollection.find(idFilter);
-        if(repositoryMeta.isAppendMethodAsComment()) {
+        if (repositoryMeta.isAppendMethodAsComment()) {
             findIterable.comment("en2do \"" + getMethodName() + "\"");
         }
         return findIterable.limit(1).first();

@@ -61,7 +61,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         switch (dynamicMethod.getMethodOperator()) {
             case FIND_FIRST -> {
                 FindIterable<E> findIterable = collection.find(filter);
-                if(repositoryMeta.isAppendMethodAsComment()) {
+                if (repositoryMeta.isAppendMethodAsComment()) {
                     findIterable.comment("en2do \"" + methodName + "\"");
                 }
                 findIterable = applySortObject(method, findIterable, arguments);
@@ -70,7 +70,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             }
             case FIND_MANY -> {
                 FindIterable<E> findIterable = collection.find(filter);
-                if(repositoryMeta.isAppendMethodAsComment()) {
+                if (repositoryMeta.isAppendMethodAsComment()) {
                     findIterable.comment("en2do \"" + methodName + "\"");
                 }
                 findIterable = applySortObject(method, findIterable, arguments);

@@ -18,7 +18,7 @@ public class MethodFindAll<E, ID, R extends Repository<E, ID>> extends Repositor
     @Override
     public Object handle(Method method, Object[] arguments) throws Exception {
         FindIterable<E> findIterable = entityCollection.find();
-        if(repositoryMeta.isAppendMethodAsComment()) {
+        if (repositoryMeta.isAppendMethodAsComment()) {
             findIterable.comment("en2do \"" + getMethodName() + "\"");
         }
         return findIterable.into(new ArrayList<>());

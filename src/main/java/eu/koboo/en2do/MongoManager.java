@@ -20,11 +20,11 @@ import eu.koboo.en2do.meta.RepositoryInvocationHandler;
 import eu.koboo.en2do.meta.RepositoryMeta;
 import eu.koboo.en2do.meta.operators.FilterOperator;
 import eu.koboo.en2do.meta.operators.MethodOperator;
+import eu.koboo.en2do.meta.options.DropEntitiesOnStart;
+import eu.koboo.en2do.meta.options.DropIndexesOnStart;
 import eu.koboo.en2do.meta.registry.DynamicMethod;
 import eu.koboo.en2do.meta.registry.FilterType;
 import eu.koboo.en2do.meta.registry.MethodFilterPart;
-import eu.koboo.en2do.meta.options.DropEntitiesOnStart;
-import eu.koboo.en2do.meta.options.DropIndexesOnStart;
 import eu.koboo.en2do.repository.Transform;
 import eu.koboo.en2do.repository.methods.*;
 import eu.koboo.en2do.sort.annotation.Limit;
@@ -38,10 +38,8 @@ import eu.koboo.en2do.utility.GenericUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.bson.UuidRepresentation;
-import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
-import org.bson.codecs.pojo.PropertyCodecProvider;
 import org.bson.conversions.Bson;
 
 import java.lang.reflect.*;
@@ -181,15 +179,15 @@ public class MongoManager {
                 boolean hasValidConstructor = false;
                 Constructor<?>[] entityConstructors = entityClass.getConstructors();
                 for (Constructor<?> constructor : entityConstructors) {
-                    if(!Modifier.isPublic(constructor.getModifiers())) {
+                    if (!Modifier.isPublic(constructor.getModifiers())) {
                         continue;
                     }
-                    if(constructor.getParameterCount() > 0) {
+                    if (constructor.getParameterCount() > 0) {
                         continue;
                     }
                     hasValidConstructor = true;
                 }
-                if(!hasValidConstructor) {
+                if (!hasValidConstructor) {
                     throw new RepositoryEntityConstructorException(entityClass, repositoryClass);
                 }
             } catch (ClassNotFoundException e) {
