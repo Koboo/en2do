@@ -9,6 +9,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import eu.koboo.en2do.codec.MapCodecProvider;
+import eu.koboo.en2do.codec.SimpleCodecProvider;
 import eu.koboo.en2do.exception.*;
 import eu.koboo.en2do.index.CompoundIndex;
 import eu.koboo.en2do.index.Id;
@@ -48,6 +49,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
+import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
+import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
+
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MongoManager {
 
@@ -62,7 +66,7 @@ public class MongoManager {
     Map<Class<?>, Repository<?, ?>> repoRegistry;
     Map<Class<?>, RepositoryMeta<?, ?, ?>> repoMetaRegistry;
 
-    public MongoManager(Credentials credentials, PropertyCodecProvider... customCodecs) {
+    public MongoManager(Credentials credentials) {
 
         // If no credentials given, try loading them from default file.
         if (credentials == null) {
@@ -93,24 +97,16 @@ public class MongoManager {
 
         ConnectionString connection = new ConnectionString(connectString);
 
-        PojoCodecProvider.Builder pojoCodecProvider = PojoCodecProvider.builder()
-                .register(new MapCodecProvider())
-                .automatic(true);
-
-        // Register custom codecs from users
-        if(customCodecs != null) {
-            for (PropertyCodecProvider customCodec : customCodecs) {
-                pojoCodecProvider.register(customCodec);
-            }
-        }
-
-        CodecRegistry pojoCodec = CodecRegistries.fromProviders(pojoCodecProvider.build());
-        CodecRegistry registry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), pojoCodec);
+        CodecRegistry codecRegistry = fromRegistries(
+                MongoClientSettings.getDefaultCodecRegistry(),
+                fromProviders(PojoCodecProvider.builder().register(new MapCodecProvider()).automatic(true).build()),
+                fromProviders(new SimpleCodecProvider())
+        );
 
         MongoClientSettings clientSettings = MongoClientSettings.builder()
                 .applyConnectionString(connection)
                 .uuidRepresentation(UuidRepresentation.STANDARD)
-                .codecRegistry(registry)
+                .codecRegistry(codecRegistry)
                 .build();
 
         client = MongoClients.create(clientSettings);
