@@ -6,6 +6,10 @@ Entity framework for MongoDB in Java 17.
 
 This framework is heavily inspired by [Spring Data](https://spring.io/projects/spring-data).
 
+You need help or want to share a project, which uses en2do?
+
+[Feel free to join our Discord](https://discord.gg/VGrxZDQu2n)!
+
 ## Overview
 
 - [Current Features](#current-features)
@@ -482,6 +486,7 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
 - [MongoDB Documentation](https://www.mongodb.com/docs/manual/introduction/)
 - [MongoDB POJO Example](https://www.mongodb.com/developer/languages/java/java-mapping-pojos/)
 - [MongoDB POJO Documentation](https://mongodb.github.io/mongo-java-driver/3.5/bson/pojos/)
+- [MongoDB Default POJO Codec](https://github.com/mongodb/mongo-java-driver/tree/master/bson/src/main/org/bson/codecs)
 - [MongoDB MapCodec GitHub](https://github.com/benjamonnguyen/mongodb-bson-codec)
 - [MongoDB MapCodec StackOverflow](https://stackoverflow.com/questions/67849754/mongodb-mapk-v-codec-maps-must-have-string-keys-fix)
 - [Spring MongoDB Repositories](https://docs.spring.io/spring-data/mongodb/docs/1.2.0.RELEASE/reference/html/mongo.repositories.html)
