@@ -2,11 +2,34 @@ package eu.koboo.en2do.utility;
 
 import lombok.experimental.UtilityClass;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 @UtilityClass
 public class DateUtils {
+
+
+    public LocalDateTime toLocalDateTime(Date date) {
+        return toLocalDateTime(date, TimeZone.getDefault());
+    }
+
+    public LocalDateTime toLocalDateTime(Date date, TimeZone timeZone) {
+        return date.toInstant()
+                .atZone(timeZone.toZoneId())
+                .toLocalDateTime();
+    }
+
+    public Date toDate(LocalDateTime localDateTime) {
+        return toDate(localDateTime, TimeZone.getDefault());
+    }
+
+    public Date toDate(LocalDateTime localDateTime, TimeZone timeZone) {
+        return Date.from(localDateTime.atZone(timeZone.toZoneId())
+                .toInstant());
+    }
 
     public Date plus(Date date, long time, TimeUnit unit) {
         long millis = date.getTime();
