@@ -4,6 +4,7 @@ import lombok.experimental.UtilityClass;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
@@ -13,21 +14,29 @@ public class DateUtils {
 
 
     public LocalDateTime toLocalDateTime(Date date) {
-        return toLocalDateTime(date, TimeZone.getDefault());
+        return toLocalDateTime(date, ZoneId.systemDefault());
     }
 
     public LocalDateTime toLocalDateTime(Date date, TimeZone timeZone) {
+        return toLocalDateTime(date, timeZone.toZoneId());
+    }
+
+    public LocalDateTime toLocalDateTime(Date date, ZoneId zoneId) {
         return date.toInstant()
-                .atZone(timeZone.toZoneId())
+                .atZone(zoneId)
                 .toLocalDateTime();
     }
 
     public Date toDate(LocalDateTime localDateTime) {
-        return toDate(localDateTime, TimeZone.getDefault());
+        return toDate(localDateTime, ZoneId.systemDefault());
     }
 
     public Date toDate(LocalDateTime localDateTime, TimeZone timeZone) {
-        return Date.from(localDateTime.atZone(timeZone.toZoneId())
+        return toDate(localDateTime, timeZone.toZoneId());
+    }
+
+    public Date toDate(LocalDateTime localDateTime, ZoneId zoneId) {
+        return Date.from(localDateTime.atZone(zoneId)
                 .toInstant());
     }
 
