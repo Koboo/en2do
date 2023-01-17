@@ -181,6 +181,21 @@ public class MongoManager {
                 // get class name of generic type arguments
                 String entityClassName = repoGenericTypeParams.getTypeName().split("<")[1].split(",")[0];
                 entityClass = (Class<E>) Class.forName(entityClassName);
+
+                boolean hasValidConstructor = false;
+                Constructor<?>[] entityConstructors = entityClass.getConstructors();
+                for (Constructor<?> constructor : entityConstructors) {
+                    if(!Modifier.isPublic(constructor.getModifiers())) {
+                        continue;
+                    }
+                    if(constructor.getParameterCount() > 0) {
+                        continue;
+                    }
+                    hasValidConstructor = true;
+                }
+                if(!hasValidConstructor) {
+                    throw new RepositoryEntityConstructorException(entityClass, repositoryClass);
+                }
             } catch (ClassNotFoundException e) {
                 throw new RepositoryEntityNotFoundException(repositoryClass, e);
             }
