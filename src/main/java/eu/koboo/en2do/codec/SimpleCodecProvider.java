@@ -1,9 +1,6 @@
 package eu.koboo.en2do.codec;
 
 import eu.koboo.en2do.codec.lang.ClassCodec;
-import eu.koboo.en2do.codec.time.LocalDateCodec;
-import eu.koboo.en2do.codec.time.LocalDateTimeCodec;
-import eu.koboo.en2do.codec.time.LocalTimeCodec;
 import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -19,9 +16,6 @@ public class SimpleCodecProvider implements CodecProvider {
         codecMap = new HashMap<>();
 
         addCodec(new ClassCodec());
-        addCodec(new LocalDateCodec());
-        addCodec(new LocalDateTimeCodec());
-        addCodec(new LocalTimeCodec());
     }
 
     @Override
