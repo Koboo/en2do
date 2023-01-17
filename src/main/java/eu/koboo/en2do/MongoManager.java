@@ -59,6 +59,7 @@ public class MongoManager {
             "toString", "hashCode", "equals", "notify", "notifyAll", "wait", "finalize", "clone"
     );
 
+    CodecRegistry codecRegistry;
     MongoClient client;
     MongoDatabase database;
     Map<Class<?>, Repository<?, ?>> repoRegistry;
@@ -95,7 +96,7 @@ public class MongoManager {
 
         ConnectionString connection = new ConnectionString(connectString);
 
-        CodecRegistry codecRegistry = fromRegistries(
+        codecRegistry = fromRegistries(
                 MongoClientSettings.getDefaultCodecRegistry(),
                 fromProviders(PojoCodecProvider.builder().register(new MapCodecProvider()).automatic(true).build()),
                 fromProviders(new SimpleCodecProvider())
