@@ -11,7 +11,6 @@ import eu.koboo.en2do.repository.methods.predefined.PredefinedRepositoryMethod;
 import eu.koboo.en2do.repository.sort.annotation.Limit;
 import eu.koboo.en2do.repository.sort.annotation.Skip;
 import eu.koboo.en2do.repository.sort.annotation.SortBy;
-import eu.koboo.en2do.repository.sort.parameter.ByField;
 import eu.koboo.en2do.repository.sort.parameter.Sort;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,6 +20,7 @@ import org.bson.conversions.Bson;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Map;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @AllArgsConstructor
@@ -103,10 +103,9 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         if (!(lastParamObject instanceof Sort sortOptions)) {
             return findIterable;
         }
-        if (!sortOptions.getByFieldList().isEmpty()) {
-            for (ByField byField : sortOptions.getByFieldList()) {
-                int orderType = byField.ascending() ? 1 : -1;
-                findIterable = findIterable.sort(new BasicDBObject(byField.fieldName(), orderType));
+        if (!sortOptions.getFieldDirectionMap().isEmpty()) {
+            for (Map.Entry<String, Integer> byField : sortOptions.getFieldDirectionMap().entrySet()) {
+                findIterable = findIterable.sort(new BasicDBObject(byField.getKey(), byField.getValue()));
             }
         }
         if (sortOptions.getLimit() != -1) {

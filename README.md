@@ -333,8 +333,8 @@ public class Application {
 
         List<Customer> customerList = repository.findManyByCustomerIdNot(17,
                 Sort.create()
-                        .order(ByField.of("customerId", true))
-                        .order(ByField.of("balance"))
+                        .order("customerId", false) // by default ascending = true
+                        .order("balance")
                         .limit(20)
                         .skip(10)
         );

@@ -3,7 +3,9 @@ package eu.koboo.en2do.repository.sort.parameter;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 public class Sort {
@@ -12,27 +14,23 @@ public class Sort {
         return new Sort();
     }
 
-    List<ByField> byFieldList;
+    Map<String, Integer> fieldDirectionMap;
     int limit;
     int skip;
 
     private Sort() {
-        this.byFieldList = new ArrayList<>();
+        this.fieldDirectionMap = new HashMap<>();
         this.limit = -1;
         this.skip = -1;
     }
 
-    public Sort order(ByField byField) {
-        byFieldList.add(byField);
+    public Sort order(String fieldName, boolean ascending) {
+        fieldDirectionMap.put(fieldName, ascending ? 1 : -1);
         return this;
     }
 
-    public Sort order(String fieldName, boolean ascending) {
-        return order(ByField.of(fieldName, ascending));
-    }
-
     public Sort order(String fieldName) {
-        return order(ByField.of(fieldName));
+        return order(fieldName, true);
     }
 
     public Sort limit(int limit) {
