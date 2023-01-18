@@ -19,10 +19,7 @@ public class MethodFindFirstById<E, ID, R extends Repository<E, ID>> extends Pre
     public Object handle(Method method, Object[] arguments) throws Exception {
         ID uniqueId = repositoryMeta.checkUniqueId(method, arguments[0]);
         Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
-        FindIterable<E> findIterable = entityCollection.find(idFilter);
-        if (repositoryMeta.isAppendMethodAsComment()) {
-            findIterable.comment("en2do \"" + getMethodName() + "\"");
-        }
+        FindIterable<E> findIterable = repositoryMeta.createIterable(idFilter, methodName);
         return findIterable.limit(1).first();
     }
 }

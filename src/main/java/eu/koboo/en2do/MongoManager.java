@@ -239,14 +239,15 @@ public class MongoManager {
             Field entityUniqueIdField = tempEntityUniqueIdField;
             entityFieldNameSet.clear();
 
+            MongoCollection<E> entityCollection = database.getCollection(entityCollectionName, entityClass);
+
             RepositoryMeta<E, ID, R> repositoryMeta = new RepositoryMeta<>(
                     repositoryClass, entityClass,
                     entityFieldSet,
                     entityUniqueIdClass, entityUniqueIdField,
-                    entityCollectionName
+                    entityCollection, entityCollectionName
             );
 
-            MongoCollection<E> entityCollection = database.getCollection(entityCollectionName, entityClass);
 
             // Define default methods with handler into the meta registry
             repositoryMeta.registerPredefinedMethod(new MethodCountAll<>(repositoryMeta, entityCollection));

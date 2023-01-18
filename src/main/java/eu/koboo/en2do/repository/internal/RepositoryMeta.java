@@ -2,6 +2,7 @@ package eu.koboo.en2do.repository.internal;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import eu.koboo.en2do.exception.MethodInvalidPageException;
 import eu.koboo.en2do.exception.MethodInvalidSortLimitException;
@@ -28,33 +29,35 @@ import java.util.Map;
 import java.util.Set;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Getter
 public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
-    @Getter
     String collectionName;
+    MongoCollection<E> collection;
 
-    @Getter
     Class<R> repositoryClass;
-    @Getter
     Class<E> entityClass;
 
-    @Getter
     Set<Field> entityFieldSet;
 
-    @Getter
     Class<ID> entityUniqueIdClass;
-    @Getter
     Field entityUniqueIdField;
 
-    @Getter
+    @Getter(AccessLevel.NONE)
     boolean appendMethodAsComment;
 
+    @Getter(AccessLevel.NONE)
     Map<String, PredefinedMethod<E, ID, R>> methodRegistry;
+
+    @Getter(AccessLevel.NONE)
     Map<String, DynamicMethod<E, ID, R>> dynamicMethodRegistry;
 
-    public RepositoryMeta(Class<R> repositoryClass, Class<E> entityClass, Set<Field> entityFieldSet,
-                          Class<ID> entityUniqueIdClass, Field entityUniqueIdField, String collectionName) {
+    public RepositoryMeta(Class<R> repositoryClass, Class<E> entityClass,
+                          Set<Field> entityFieldSet,
+                          Class<ID> entityUniqueIdClass, Field entityUniqueIdField,
+                          MongoCollection<E> collection, String collectionName) {
         this.collectionName = collectionName;
+        this.collection = collection;
 
         this.repositoryClass = repositoryClass;
         this.entityClass = entityClass;
@@ -139,6 +142,19 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
     public Bson createIdFilter(ID uniqueId) {
         return Filters.eq(entityUniqueIdField.getName(), uniqueId);
+    }
+
+    public FindIterable<E> createIterable(Bson filter, String methodName) {
+        FindIterable<E> findIterable;
+        if(filter != null) {
+            findIterable = collection.find(filter);
+        } else {
+            findIterable = collection.find();
+        }
+        if (appendMethodAsComment) {
+            findIterable.comment("en2do \"" + methodName + "\"");
+        }
+        return findIterable;
     }
 
     public FindIterable<E> applySortObject(Method method, FindIterable<E> findIterable, Object[] args) throws Exception {

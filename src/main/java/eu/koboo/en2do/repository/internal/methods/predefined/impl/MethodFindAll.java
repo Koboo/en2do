@@ -17,10 +17,7 @@ public class MethodFindAll<E, ID, R extends Repository<E, ID>> extends Predefine
 
     @Override
     public Object handle(Method method, Object[] arguments) throws Exception {
-        FindIterable<E> findIterable = entityCollection.find();
-        if (repositoryMeta.isAppendMethodAsComment()) {
-            findIterable.comment("en2do \"" + getMethodName() + "\"");
-        }
+        FindIterable<E> findIterable = repositoryMeta.createIterable(null, methodName);
         return findIterable.into(new ArrayList<>());
     }
 }

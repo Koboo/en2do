@@ -17,11 +17,8 @@ public class MethodPageAll<E, ID, R extends Repository<E, ID>> extends Predefine
 
     @Override
     public Object handle(Method method, Object[] arguments) throws Exception {
-        FindIterable<E> findIterable = entityCollection.find();
+        FindIterable<E> findIterable = repositoryMeta.createIterable(null, methodName);
         findIterable = repositoryMeta.applyPageObject(method, findIterable, arguments);
-        if (repositoryMeta.isAppendMethodAsComment()) {
-            findIterable.comment("en2do \"" + getMethodName() + "\"");
-        }
         return findIterable.into(new ArrayList<>());
     }
 }
