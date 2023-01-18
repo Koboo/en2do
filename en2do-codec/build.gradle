@@ -1,4 +1,0 @@
-dependencies {
-    compileOnly(project(':en2do-exception'))
-    compileOnly(project(':en2do-utility'))
-}

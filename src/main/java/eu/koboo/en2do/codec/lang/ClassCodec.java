@@ -1,4 +1,4 @@
-package eu.koboo.en2do.codec;
+package eu.koboo.en2do.codec.lang;
 
 import org.bson.BsonInvalidOperationException;
 import org.bson.BsonReader;

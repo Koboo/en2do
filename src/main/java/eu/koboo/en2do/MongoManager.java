@@ -8,8 +8,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import eu.koboo.en2do.codec.MapCodecProvider;
-import eu.koboo.en2do.codec.SimpleCodecProvider;
+import eu.koboo.en2do.codec.En2doPropertyCodecProvider;
 import eu.koboo.en2do.exception.*;
 import eu.koboo.en2do.index.Id;
 import eu.koboo.en2do.index.NonIndex;
@@ -97,13 +96,19 @@ public class MongoManager {
 
         ConnectionString connection = new ConnectionString(connectString);
 
+        CodecRegistry defaultRegistry = MongoClientSettings.getDefaultCodecRegistry();
         codecRegistry = fromRegistries(
                 MongoClientSettings.getDefaultCodecRegistry(),
-                fromProviders(PojoCodecProvider.builder().register(new MapCodecProvider()).automatic(true).build()),
-                fromProviders(new SimpleCodecProvider())
+                fromProviders(
+                        PojoCodecProvider.builder()
+                                .register(new En2doPropertyCodecProvider())
+                                .automatic(true)
+                                .build()
+                )
         );
 
         MongoClientSettings clientSettings = MongoClientSettings.builder()
+                .applicationName("en2do-client")
                 .applyConnectionString(connection)
                 .uuidRepresentation(UuidRepresentation.STANDARD)
                 .codecRegistry(codecRegistry)
@@ -360,7 +365,7 @@ public class MongoManager {
 
                 int methodParameterCount = method.getParameterCount();
                 // If the method is a pageBy, it needs at least one parameter of type Pager
-                if(methodOperator == MethodOperator.PAGE && methodParameterCount == 0) {
+                if (methodOperator == MethodOperator.PAGE && methodParameterCount == 0) {
                     throw new MethodPageRequiredException(method, repositoryClass, Pager.class);
                 }
                 // Validate the parameterCount of the filters and the method parameters itself.
@@ -369,19 +374,19 @@ public class MongoManager {
                         // Subtract 1 from parameterCount. This object could be a Sort or Pager object.
                         // That means, the expectedParameterCount is less than the actualParameterCount.
                         Class<?> lastMethodParameter = method.getParameterTypes()[methodParameterCount - 1];
-                        if(lastMethodParameter.isAssignableFrom(Sort.class)) {
-                            if(methodOperator == MethodOperator.PAGE) {
+                        if (lastMethodParameter.isAssignableFrom(Sort.class)) {
+                            if (methodOperator == MethodOperator.PAGE) {
                                 throw new MethodSortNotAllowedException(method, repositoryClass);
                             }
-                            if((expectedParameterCount + 1) != methodParameterCount) {
+                            if ((expectedParameterCount + 1) != methodParameterCount) {
                                 throw new MethodParameterCountException(method, repositoryClass, (expectedParameterCount + 1), methodParameterCount);
                             }
                         }
-                        if(lastMethodParameter.isAssignableFrom(Pager.class)) {
-                            if(methodOperator != MethodOperator.PAGE) {
+                        if (lastMethodParameter.isAssignableFrom(Pager.class)) {
+                            if (methodOperator != MethodOperator.PAGE) {
                                 throw new MethodPageNotAllowedException(method, repositoryClass);
                             }
-                            if((expectedParameterCount + 1) != methodParameterCount) {
+                            if ((expectedParameterCount + 1) != methodParameterCount) {
                                 throw new MethodParameterCountException(method, repositoryClass, (expectedParameterCount + 1), methodParameterCount);
                             }
                         }
@@ -393,7 +398,7 @@ public class MongoManager {
                 // Check if the field from sort annotation exists.
                 SortBy sortAnnotation = method.getAnnotation(SortBy.class);
                 if (sortAnnotation != null) {
-                    if(methodOperator == MethodOperator.PAGE) {
+                    if (methodOperator == MethodOperator.PAGE) {
                         throw new MethodSortNotAllowedException(method, repositoryClass);
                     }
                     String sortFieldName = sortAnnotation.field();
