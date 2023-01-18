@@ -1,6 +1,6 @@
-package eu.koboo.en2do.test.customer.tests;
+package eu.koboo.en2do.test.customer.predefined;
 
-import eu.koboo.en2do.repository.options.methods.sort.Sort;
+import eu.koboo.en2do.repository.options.methods.paging.Pager;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
@@ -12,7 +12,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CustomerSortAllTest extends CustomerRepositoryTest {
+public class CustomerPageAllTest extends CustomerRepositoryTest {
 
     @Test
     @Order(1)
@@ -37,16 +37,16 @@ public class CustomerSortAllTest extends CustomerRepositoryTest {
     @Test
     @Order(3)
     public void findCustomer() {
-        List<Customer> customerList = repository.sortAll(Sort.of()
-                .order("customerId", true)
-                .limit(10)
-                .skip(5)
+        List<Customer> customerList = repository.pageAll(
+                Pager.of(5)
+                        .page(2)
         );
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());
-        assertEquals(10, customerList.size());
+        assertEquals(5, customerList.size());
         for (Customer customer : customerList) {
             assertNotNull(customer);
+            System.out.println(customer.getCustomerId());
             assertEquals(Const.FIRST_NAME, customer.getFirstName());
             assertEquals(Const.LAST_NAME, customer.getLastName());
             assertEquals(Const.BIRTHDAY, customer.getBirthday());

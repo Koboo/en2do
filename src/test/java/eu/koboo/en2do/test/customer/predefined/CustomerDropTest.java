@@ -1,4 +1,4 @@
-package eu.koboo.en2do.test.customer.tests;
+package eu.koboo.en2do.test.customer.predefined;
 
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
@@ -11,7 +11,9 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CustomerCountAllTest extends CustomerRepositoryTest {
+public class CustomerDropTest extends CustomerRepositoryTest {
+
+    static List<Customer> customerList;
 
     @Test
     @Order(1)
@@ -30,12 +32,15 @@ public class CustomerCountAllTest extends CustomerRepositoryTest {
             customer.setCustomerId(i);
             assertTrue(repository.save(customer));
             assertTrue(repository.exists(customer));
+            customerList.add(customer);
         }
     }
 
     @Test
     @Order(3)
-    public void countCustomer() {
+    public void deleteAndCountCustomer() {
         assertEquals(15, repository.countAll());
+        assertTrue(repository.drop());
+        assertEquals(0, repository.countAll());
     }
 }
