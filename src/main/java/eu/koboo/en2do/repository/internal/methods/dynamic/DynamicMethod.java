@@ -56,22 +56,22 @@ public class DynamicMethod<E, ID, R extends Repository<E, ID>> {
         String fieldName = filterType.field().getName();
         Bson retFilter = null;
         switch (filterType.operator()) {
-            case FilterOperator.EQUALS -> retFilter = Filters.eq(fieldName, getFilterableValue(args[paramsIndexAt]));
-            case FilterOperator.EQUALS_IGNORE_CASE -> {
+            case EQUALS -> retFilter = Filters.eq(fieldName, getFilterableValue(args[paramsIndexAt]));
+            case EQUALS_IGNORE_CASE -> {
                 String patternString = "(?i)^" + getFilterableValue(args[paramsIndexAt]) + "$";
                 Pattern pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
                 retFilter = Filters.regex(fieldName, pattern);
             }
-            case FilterOperator.CONTAINS -> {
+            case CONTAINS -> {
                 String patternString = ".*" + getFilterableValue(args[paramsIndexAt]) + ".*";
                 Pattern pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
                 retFilter = Filters.regex(fieldName, pattern);
             }
-            case FilterOperator.GREATER_THAN -> retFilter = Filters.gt(fieldName, getFilterableValue(args[paramsIndexAt]));
-            case FilterOperator.LESS_THAN -> retFilter = Filters.lt(fieldName, getFilterableValue(args[paramsIndexAt]));
-            case FilterOperator.GREATER_EQUALS -> retFilter = Filters.gte(fieldName, getFilterableValue(args[paramsIndexAt]));
-            case FilterOperator.LESS_EQUALS -> retFilter = Filters.lte(fieldName, getFilterableValue(args[paramsIndexAt]));
-            case FilterOperator.REGEX -> {
+            case GREATER_THAN -> retFilter = Filters.gt(fieldName, getFilterableValue(args[paramsIndexAt]));
+            case LESS_THAN -> retFilter = Filters.lt(fieldName, getFilterableValue(args[paramsIndexAt]));
+            case GREATER_EQUALS -> retFilter = Filters.gte(fieldName, getFilterableValue(args[paramsIndexAt]));
+            case LESS_EQUALS -> retFilter = Filters.lte(fieldName, getFilterableValue(args[paramsIndexAt]));
+            case REGEX -> {
                 // MongoDB supports multiple types of regex filtering, so check which type is provided.
                 Object value = getFilterableValue(args[paramsIndexAt]);
                 if (value instanceof String patternString) {
@@ -84,18 +84,18 @@ public class DynamicMethod<E, ID, R extends Repository<E, ID>> {
                     throw new MethodInvalidRegexParameterException(method, repositoryMeta.getRepositoryClass(), value.getClass());
                 }
             }
-            case FilterOperator.EXISTS -> retFilter = Filters.exists(fieldName);
-            case FilterOperator.BETWEEN -> {
+            case EXISTS -> retFilter = Filters.exists(fieldName);
+            case BETWEEN -> {
                 Object from = getFilterableValue(args[paramsIndexAt]);
                 Object to = args[paramsIndexAt + 1];
                 retFilter = Filters.and(Filters.gt(fieldName, from), Filters.lt(fieldName, to));
             }
-            case FilterOperator.BETWEEN_EQUALS -> {
+            case BETWEEN_EQUALS -> {
                 Object from = getFilterableValue(args[paramsIndexAt]);
                 Object to = args[paramsIndexAt + 1];
                 retFilter = Filters.and(Filters.gte(fieldName, from), Filters.lte(fieldName, to));
             }
-            case FilterOperator.IN -> {
+            case IN -> {
                 // MongoDB expects an Array and not a List, but for easier usage
                 // the framework wants a list. So just convert the list to an array and pass it to the filter
                 List<Object> objectList = (List<Object>) getFilterableValue(args[paramsIndexAt]);
