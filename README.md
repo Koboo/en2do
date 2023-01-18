@@ -140,7 +140,7 @@ public class Application {
 ### Define an Entity class
 
 An ``Entity`` can use almost any Java data type. However, there are can be some special cases which are
-not possible. If you found one, let me know and I'll try to implement it.
+not possible. If you found one, let me know , and I'll try to implement it.
 
 **The standard PojoCodec of mongodb only allows Strings as keys in maps.**
 
@@ -230,7 +230,7 @@ If a developer should make a mistake, the biggest issues are caught via exceptio
 and an error is thrown.
 
 To explain the implemented methods, the [Customer Entity](src/test/java/eu/koboo/en2do/test/customer/Customer.java)
-from the [test units](src/test/java/eu/koboo/en2do/test/cases) is used as an example.
+from the [test units](src/test/java/eu/koboo/en2do/test) is used as an example.
 
 Find more examples of method declarations
 in [CustomerRepository](src/test/java/eu/koboo/en2do/test/customer/CustomerRepository.java).
