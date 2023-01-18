@@ -1,4 +1,4 @@
-package eu.koboo.en2do.index;
+package eu.koboo.en2do.index.compound;
 
 import java.lang.annotation.*;
 
