@@ -256,6 +256,7 @@ public class MongoManager {
             repositoryMeta.registerPredefinedMethod(new MethodDeleteAll<>(repositoryMeta, entityCollection));
             repositoryMeta.registerPredefinedMethod(new MethodDeleteById<>(repositoryMeta, entityCollection));
             repositoryMeta.registerPredefinedMethod(new MethodDrop<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodEquals<>(repositoryMeta, entityCollection));
             repositoryMeta.registerPredefinedMethod(new MethodExists<>(repositoryMeta, entityCollection));
             repositoryMeta.registerPredefinedMethod(new MethodExistsById<>(repositoryMeta, entityCollection));
             repositoryMeta.registerPredefinedMethod(new MethodFindAll<>(repositoryMeta, entityCollection));
