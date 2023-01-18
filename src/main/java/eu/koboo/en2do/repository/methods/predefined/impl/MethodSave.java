@@ -5,7 +5,7 @@ import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.result.UpdateResult;
 import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.repository.RepositoryMeta;
-import eu.koboo.en2do.repository.methods.predefined.PredefinedRepositoryMethod;
+import eu.koboo.en2do.repository.methods.predefined.PredefinedMethod;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.bson.conversions.Bson;
@@ -13,7 +13,7 @@ import org.bson.conversions.Bson;
 import java.lang.reflect.Method;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class MethodSave<E, ID, R extends Repository<E, ID>> extends PredefinedRepositoryMethod<E, ID, R> {
+public class MethodSave<E, ID, R extends Repository<E, ID>> extends PredefinedMethod<E, ID, R> {
 
     ReplaceOptions replaceOptions;
 

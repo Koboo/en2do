@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
 
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 @RequiredArgsConstructor
-public abstract class PredefinedRepositoryMethod<E, ID, R extends Repository<E, ID>> {
+public abstract class PredefinedMethod<E, ID, R extends Repository<E, ID>> {
 
     @Getter
     String methodName;
