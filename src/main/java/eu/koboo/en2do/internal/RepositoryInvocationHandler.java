@@ -2,6 +2,7 @@ package eu.koboo.en2do.internal;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import eu.koboo.en2do.internal.exception.MethodUnsupportedException;
 import eu.koboo.en2do.internal.exception.RepositoryInvalidCallException;
 import eu.koboo.en2do.internal.methods.dynamic.DynamicMethod;
 import eu.koboo.en2do.repository.Repository;
@@ -44,7 +45,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         DynamicMethod<E, ID, R> dynamicMethod = repositoryMeta.lookupDynamicMethod(methodName);
         if (dynamicMethod == null) {
             // No handling found for method with this name.
-            throw new RepositoryInvalidCallException(method, repositoryMeta.getRepositoryClass());
+            throw new MethodUnsupportedException(method, repositoryMeta.getRepositoryClass());
         }
 
         // Generate bson filter by dynamic Method object.
