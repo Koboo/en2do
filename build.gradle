@@ -4,58 +4,40 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
-allprojects {
-    apply plugin: 'java'
-    apply plugin: 'maven-publish'
-    apply plugin: 'com.github.johnrengelman.shadow'
-
-    group "$projectGroup"
-    version "$projectVersion"
+group "$projectGroup"
+version "$projectVersion"
 
 
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        // Every module needs mongodb as dependency
-        compileOnly("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
-        testCompileOnly("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
-
-        // Lombok
-        compileOnly("org.projectlombok:lombok:$lombokVersion")
-        annotationProcessor("org.projectlombok:lombok:$lombokVersion")
-
-        testCompileOnly("org.projectlombok:lombok:$lombokVersion")
-        testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
-
-        // Jupiter test dependencies
-        testImplementation("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
-        testImplementation("org.slf4j:slf4j-simple:$slf4jVersion")
-    }
-
-    test {
-        useJUnitPlatform()
-    }
-
-    java {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    tasks.withType(JavaCompile).configureEach {
-        options.fork = true
-        options.encoding = 'UTF-8'
-    }
+repositories {
+    mavenCentral()
 }
 
 dependencies {
-    // Root project dependencies
     implementation("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
     testImplementation("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
 
-    implementation(project('en2do-codec'))
-    implementation(project('en2do-exception'))
-    implementation(project(':en2do-utility'))
+    // Lombok
+    compileOnly("org.projectlombok:lombok:$lombokVersion")
+    annotationProcessor("org.projectlombok:lombok:$lombokVersion")
+
+    testCompileOnly("org.projectlombok:lombok:$lombokVersion")
+    testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
+
+    // Jupiter test dependencies
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
+    testImplementation("org.slf4j:slf4j-simple:$slf4jVersion")
 }
 
+test {
+    useJUnitPlatform()
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.fork = true
+    options.encoding = 'UTF-8'
+}

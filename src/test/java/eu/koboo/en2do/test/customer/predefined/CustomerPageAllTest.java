@@ -1,6 +1,6 @@
 package eu.koboo.en2do.test.customer.predefined;
 
-import eu.koboo.en2do.repository.options.methods.paging.Pager;
+import eu.koboo.en2do.repository.methods.paging.Pager;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepositoryTest;

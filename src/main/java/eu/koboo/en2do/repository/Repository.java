@@ -1,7 +1,7 @@
 package eu.koboo.en2do.repository;
 
-import eu.koboo.en2do.repository.options.methods.paging.Pager;
-import eu.koboo.en2do.repository.options.methods.sort.Sort;
+import eu.koboo.en2do.repository.methods.paging.Pager;
+import eu.koboo.en2do.repository.methods.sort.Sort;
 
 import java.util.List;
 

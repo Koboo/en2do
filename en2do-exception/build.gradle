@@ -1,3 +1,0 @@
-dependencies {
-    compileOnly(project(':en2do-utility'))
-}

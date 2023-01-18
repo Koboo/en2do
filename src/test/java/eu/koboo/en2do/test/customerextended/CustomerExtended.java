@@ -1,7 +1,7 @@
 package eu.koboo.en2do.test.customerextended;
 
-import eu.koboo.en2do.index.compound.CompoundIndex;
-import eu.koboo.en2do.index.compound.Index;
+import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
+import eu.koboo.en2do.repository.entity.compound.Index;
 import eu.koboo.en2do.test.customer.Customer;
 import lombok.*;
 import lombok.experimental.FieldDefaults;

@@ -1,19 +1,20 @@
 package eu.koboo.en2do.test.customer;
 
 import eu.koboo.en2do.repository.Repository;
-import eu.koboo.en2do.repository.options.Collection;
-import eu.koboo.en2do.repository.options.DropEntitiesOnStart;
-import eu.koboo.en2do.repository.options.DropIndexesOnStart;
-import eu.koboo.en2do.repository.options.methods.paging.Pager;
-import eu.koboo.en2do.repository.options.methods.sort.Limit;
-import eu.koboo.en2do.repository.options.methods.sort.Skip;
-import eu.koboo.en2do.repository.options.methods.sort.Sort;
-import eu.koboo.en2do.repository.options.methods.sort.SortBy;
-import eu.koboo.en2do.repository.options.methods.transform.Transform;
+import eu.koboo.en2do.repository.Collection;
+import eu.koboo.en2do.repository.DropEntitiesOnStart;
+import eu.koboo.en2do.repository.DropIndexesOnStart;
+import eu.koboo.en2do.repository.methods.paging.Pager;
+import eu.koboo.en2do.repository.methods.sort.Limit;
+import eu.koboo.en2do.repository.methods.sort.Skip;
+import eu.koboo.en2do.repository.methods.sort.Sort;
+import eu.koboo.en2do.repository.methods.sort.SortBy;
+import eu.koboo.en2do.repository.methods.transform.Transform;
 
 import java.util.List;
 import java.util.UUID;
 
+@SuppressWarnings("unused")
 @Collection("customer_repository")
 @DropIndexesOnStart
 @DropEntitiesOnStart

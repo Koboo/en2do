@@ -1,7 +1,7 @@
 package eu.koboo.en2do.test.customer;
 
-import eu.koboo.en2do.index.Id;
-import eu.koboo.en2do.index.ttl.TTLIndex;
+import eu.koboo.en2do.repository.entity.Id;
+import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

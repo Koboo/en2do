@@ -8,28 +8,28 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import eu.koboo.en2do.codec.En2doPropertyCodecProvider;
-import eu.koboo.en2do.exception.*;
-import eu.koboo.en2do.index.Id;
-import eu.koboo.en2do.index.NonIndex;
-import eu.koboo.en2do.index.compound.CompoundIndex;
-import eu.koboo.en2do.index.compound.Index;
-import eu.koboo.en2do.index.ttl.TTLIndex;
+import eu.koboo.en2do.internal.codec.En2doPropertyCodecProvider;
+import eu.koboo.en2do.repository.entity.Id;
+import eu.koboo.en2do.repository.entity.NonIndex;
+import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
+import eu.koboo.en2do.repository.entity.compound.Index;
+import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
+import eu.koboo.en2do.internal.exception.*;
+import eu.koboo.en2do.internal.methods.predefined.impl.*;
 import eu.koboo.en2do.repository.Repository;
-import eu.koboo.en2do.repository.internal.RepositoryInvocationHandler;
-import eu.koboo.en2do.repository.internal.RepositoryMeta;
-import eu.koboo.en2do.repository.internal.methods.dynamic.DynamicMethod;
-import eu.koboo.en2do.repository.internal.methods.dynamic.FilterType;
-import eu.koboo.en2do.repository.internal.methods.dynamic.MethodFilterPart;
-import eu.koboo.en2do.repository.internal.methods.operators.FilterOperator;
-import eu.koboo.en2do.repository.internal.methods.operators.MethodOperator;
-import eu.koboo.en2do.repository.internal.methods.predefined.impl.*;
-import eu.koboo.en2do.repository.options.Collection;
-import eu.koboo.en2do.repository.options.DropEntitiesOnStart;
-import eu.koboo.en2do.repository.options.DropIndexesOnStart;
-import eu.koboo.en2do.repository.options.methods.paging.Pager;
-import eu.koboo.en2do.repository.options.methods.sort.*;
-import eu.koboo.en2do.repository.options.methods.transform.Transform;
+import eu.koboo.en2do.internal.RepositoryInvocationHandler;
+import eu.koboo.en2do.internal.RepositoryMeta;
+import eu.koboo.en2do.internal.methods.dynamic.DynamicMethod;
+import eu.koboo.en2do.internal.methods.dynamic.FilterType;
+import eu.koboo.en2do.internal.methods.dynamic.MethodFilterPart;
+import eu.koboo.en2do.internal.methods.operators.FilterOperator;
+import eu.koboo.en2do.internal.methods.operators.MethodOperator;
+import eu.koboo.en2do.repository.methods.sort.*;
+import eu.koboo.en2do.repository.Collection;
+import eu.koboo.en2do.repository.DropEntitiesOnStart;
+import eu.koboo.en2do.repository.DropIndexesOnStart;
+import eu.koboo.en2do.repository.methods.paging.Pager;
+import eu.koboo.en2do.repository.methods.transform.Transform;
 import eu.koboo.en2do.utility.AnnotationUtils;
 import eu.koboo.en2do.utility.FieldUtils;
 import eu.koboo.en2do.utility.GenericUtils;
@@ -96,7 +96,6 @@ public class MongoManager {
 
         ConnectionString connection = new ConnectionString(connectString);
 
-        CodecRegistry defaultRegistry = MongoClientSettings.getDefaultCodecRegistry();
         codecRegistry = fromRegistries(
                 MongoClientSettings.getDefaultCodecRegistry(),
                 fromProviders(
@@ -501,7 +500,7 @@ public class MongoManager {
             ClassLoader repoClassLoader = repositoryClass.getClassLoader();
             Class<?>[] interfaces = new Class[]{repositoryClass};
             Repository<E, ID> repository = (Repository<E, ID>) Proxy.newProxyInstance(repoClassLoader, interfaces,
-                    new RepositoryInvocationHandler<>(repositoryMeta, entityCollection));
+                    new RepositoryInvocationHandler<>(repositoryMeta));
             repoRegistry.put(repositoryClass, repository);
             repoMetaRegistry.put(repositoryClass, repositoryMeta);
             return (R) repository;
