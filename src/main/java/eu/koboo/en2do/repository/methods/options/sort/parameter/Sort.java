@@ -1,10 +1,8 @@
-package eu.koboo.en2do.repository.sort.parameter;
+package eu.koboo.en2do.repository.methods.options.sort.parameter;
 
 import lombok.Getter;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Getter
