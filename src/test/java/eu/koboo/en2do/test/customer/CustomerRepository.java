@@ -43,8 +43,6 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
 
     Customer findFirstByFirstNameRegex(String namePart);
 
-    Customer findFirstByFirstNameRegex(Pattern pattern);
-
     Customer findFirstByFirstNameExists();
 
     Customer findFirstByFirstNameContains(String partOfFirstName);

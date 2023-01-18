@@ -38,7 +38,7 @@ public class CustomerFindManySortParameterTest extends CustomerRepositoryTest {
     @Order(3)
     public void findCustomer() {
         List<Customer> customerList = repository.findManyByCustomerIdNot(17,
-                Sort.create()
+                Sort.of()
                         .order("customerId", true)
                         .limit(10)
                         .skip(5)
