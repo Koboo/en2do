@@ -1,18 +1,12 @@
 package eu.koboo.en2do.repository.internal;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.result.DeleteResult;
 import eu.koboo.en2do.exception.RepositoryInvalidCallException;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.internal.methods.dynamic.DynamicMethod;
 import eu.koboo.en2do.repository.internal.methods.predefined.PredefinedMethod;
 import eu.koboo.en2do.repository.options.methods.transform.Transform;
-import eu.koboo.en2do.repository.options.methods.sort.Limit;
-import eu.koboo.en2do.repository.options.methods.sort.Skip;
-import eu.koboo.en2do.repository.options.methods.sort.SortBy;
-import eu.koboo.en2do.repository.options.methods.sort.Sort;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -21,7 +15,6 @@ import org.bson.conversions.Bson;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Map;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @AllArgsConstructor

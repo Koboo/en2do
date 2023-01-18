@@ -1,7 +1,7 @@
 package eu.koboo.en2do.exception;
 
-import eu.koboo.en2do.repository.options.methods.sort.SortBy;
 import eu.koboo.en2do.repository.options.methods.sort.Sort;
+import eu.koboo.en2do.repository.options.methods.sort.SortBy;
 
 import java.lang.reflect.Method;
 

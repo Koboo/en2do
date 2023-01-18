@@ -1,7 +1,6 @@
 package eu.koboo.en2do.test.customer.predefined;
 
 import eu.koboo.en2do.test.customer.Customer;
-import eu.koboo.en2do.test.customer.CustomerRepository;
 import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;

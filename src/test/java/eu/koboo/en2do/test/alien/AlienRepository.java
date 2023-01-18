@@ -1,7 +1,7 @@
 package eu.koboo.en2do.test.alien;
 
-import eu.koboo.en2do.repository.options.Collection;
 import eu.koboo.en2do.repository.Repository;
+import eu.koboo.en2do.repository.options.Collection;
 import eu.koboo.en2do.repository.options.DropEntitiesOnStart;
 import eu.koboo.en2do.repository.options.DropIndexesOnStart;
 

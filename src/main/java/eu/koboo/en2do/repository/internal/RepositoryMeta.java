@@ -146,7 +146,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
     public FindIterable<E> createIterable(Bson filter, String methodName) {
         FindIterable<E> findIterable;
-        if(filter != null) {
+        if (filter != null) {
             findIterable = collection.find(filter);
         } else {
             findIterable = collection.find();
@@ -177,14 +177,14 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         }
         int limit = sortOptions.getLimit();
         if (limit != -1) {
-            if(limit < -1 || limit == 0) {
+            if (limit < -1 || limit == 0) {
                 throw new MethodInvalidSortLimitException(method, repositoryClass);
             }
             findIterable = findIterable.limit(limit);
         }
         int skip = sortOptions.getSkip();
         if (skip != -1) {
-            if(skip < -1 || skip == 0) {
+            if (skip < -1 || skip == 0) {
                 throw new MethodInvalidSortSkipException(method, repositoryClass);
             }
             findIterable = findIterable.skip(skip);
@@ -204,7 +204,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         if (method.isAnnotationPresent(Limit.class)) {
             Limit limit = method.getAnnotation(Limit.class);
             int value = limit.value();
-            if(value <= 0) {
+            if (value <= 0) {
                 throw new MethodInvalidSortLimitException(method, repositoryClass);
             }
             findIterable = findIterable.limit(value);
@@ -212,7 +212,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         if (method.isAnnotationPresent(Skip.class)) {
             Skip skip = method.getAnnotation(Skip.class);
             int value = skip.value();
-            if(value <= 0) {
+            if (value <= 0) {
                 throw new MethodInvalidSortSkipException(method, repositoryClass);
             }
             findIterable = findIterable.skip(value);
