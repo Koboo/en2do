@@ -3,10 +3,14 @@ package eu.koboo.en2do.repository.internal;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
+import eu.koboo.en2do.exception.MethodInvalidPageException;
+import eu.koboo.en2do.exception.MethodInvalidSortLimitException;
+import eu.koboo.en2do.exception.MethodInvalidSortSkipException;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.internal.methods.dynamic.DynamicMethod;
 import eu.koboo.en2do.repository.internal.methods.predefined.PredefinedMethod;
 import eu.koboo.en2do.repository.options.AppendMethodAsComment;
+import eu.koboo.en2do.repository.options.methods.paging.Pager;
 import eu.koboo.en2do.repository.options.methods.sort.Limit;
 import eu.koboo.en2do.repository.options.methods.sort.Skip;
 import eu.koboo.en2do.repository.options.methods.sort.Sort;
@@ -137,7 +141,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         return Filters.eq(entityUniqueIdField.getName(), uniqueId);
     }
 
-    public FindIterable<E> applySortObject(Method method, FindIterable<E> findIterable, Object[] args) {
+    public FindIterable<E> applySortObject(Method method, FindIterable<E> findIterable, Object[] args) throws Exception {
         int parameterCount = method.getParameterCount();
         if (parameterCount <= 0) {
             return findIterable;
@@ -155,17 +159,25 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
                 findIterable = findIterable.sort(new BasicDBObject(byField.getKey(), byField.getValue()));
             }
         }
-        if (sortOptions.getLimit() != -1) {
-            findIterable = findIterable.limit(sortOptions.getLimit());
+        int limit = sortOptions.getLimit();
+        if (limit != -1) {
+            if(limit < -1 || limit == 0) {
+                throw new MethodInvalidSortLimitException(method, repositoryClass);
+            }
+            findIterable = findIterable.limit(limit);
         }
-        if (sortOptions.getSkip() != -1) {
-            findIterable = findIterable.skip(sortOptions.getSkip());
+        int skip = sortOptions.getSkip();
+        if (skip != -1) {
+            if(skip < -1 || skip == 0) {
+                throw new MethodInvalidSortSkipException(method, repositoryClass);
+            }
+            findIterable = findIterable.skip(skip);
         }
         findIterable.allowDiskUse(true);
         return findIterable;
     }
 
-    public FindIterable<E> applySortAnnotations(Method method, FindIterable<E> findIterable) {
+    public FindIterable<E> applySortAnnotations(Method method, FindIterable<E> findIterable) throws Exception {
         SortBy[] sortAnnotations = method.getAnnotationsByType(SortBy.class);
         if (sortAnnotations != null) {
             for (SortBy sortBy : sortAnnotations) {
@@ -175,12 +187,47 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         }
         if (method.isAnnotationPresent(Limit.class)) {
             Limit limit = method.getAnnotation(Limit.class);
-            findIterable = findIterable.limit(limit.value());
+            int value = limit.value();
+            if(value <= 0) {
+                throw new MethodInvalidSortLimitException(method, repositoryClass);
+            }
+            findIterable = findIterable.limit(value);
         }
         if (method.isAnnotationPresent(Skip.class)) {
             Skip skip = method.getAnnotation(Skip.class);
-            findIterable = findIterable.skip(skip.value());
+            int value = skip.value();
+            if(value <= 0) {
+                throw new MethodInvalidSortSkipException(method, repositoryClass);
+            }
+            findIterable = findIterable.skip(value);
         }
+        findIterable.allowDiskUse(true);
+        return findIterable;
+    }
+
+    public FindIterable<E> applyPageObject(Method method, FindIterable<E> findIterable, Object[] args) throws Exception {
+        int parameterCount = method.getParameterCount();
+        if (parameterCount <= 0) {
+            return findIterable;
+        }
+        Class<?> lastParamType = method.getParameterTypes()[method.getParameterCount() - 1];
+        if (!lastParamType.isAssignableFrom(Pager.class)) {
+            return findIterable;
+        }
+        Object lastParamObject = args == null ? null : args[args.length - 1];
+        if (!(lastParamObject instanceof Pager pageObject)) {
+            return findIterable;
+        }
+        if (pageObject.getPage() <= 0) {
+            throw new MethodInvalidPageException(method, repositoryClass);
+        }
+        if (!pageObject.getPageDirectionMap().isEmpty()) {
+            for (Map.Entry<String, Integer> byField : pageObject.getPageDirectionMap().entrySet()) {
+                findIterable = findIterable.sort(new BasicDBObject(byField.getKey(), byField.getValue()));
+            }
+        }
+        int skip = (int) ((pageObject.getPage() - 1) * pageObject.getEntitiesPerPage());
+        findIterable = findIterable.limit(pageObject.getEntitiesPerPage()).skip(skip);
         findIterable.allowDiskUse(true);
         return findIterable;
     }
