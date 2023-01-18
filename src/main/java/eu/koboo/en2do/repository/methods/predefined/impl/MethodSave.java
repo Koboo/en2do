@@ -3,7 +3,7 @@ package eu.koboo.en2do.repository.methods.predefined.impl;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.result.UpdateResult;
-import eu.koboo.en2do.Repository;
+import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.RepositoryMeta;
 import eu.koboo.en2do.repository.methods.predefined.PredefinedMethod;
 import lombok.AccessLevel;

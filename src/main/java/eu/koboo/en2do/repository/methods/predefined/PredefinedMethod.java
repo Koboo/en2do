@@ -1,7 +1,7 @@
 package eu.koboo.en2do.repository.methods.predefined;
 
 import com.mongodb.client.MongoCollection;
-import eu.koboo.en2do.Repository;
+import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.RepositoryMeta;
 import lombok.AccessLevel;
 import lombok.Getter;

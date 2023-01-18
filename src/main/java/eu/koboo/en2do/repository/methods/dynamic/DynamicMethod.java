@@ -1,7 +1,7 @@
 package eu.koboo.en2do.repository.methods.dynamic;
 
 import com.mongodb.client.model.Filters;
-import eu.koboo.en2do.Repository;
+import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.exception.MethodInvalidRegexParameterException;
 import eu.koboo.en2do.exception.MethodUnsupportedFilterException;
 import eu.koboo.en2do.repository.RepositoryMeta;

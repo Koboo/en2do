@@ -1,4 +1,4 @@
-package eu.koboo.en2do;
+package eu.koboo.en2do.repository;
 
 import java.util.List;
 

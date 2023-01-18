@@ -1,7 +1,6 @@
 package eu.koboo.en2do.repository;
 
 import com.mongodb.client.model.Filters;
-import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.repository.methods.dynamic.DynamicMethod;
 import eu.koboo.en2do.repository.methods.predefined.PredefinedMethod;
 import eu.koboo.en2do.repository.options.AppendMethodAsComment;

@@ -4,7 +4,6 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
-import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.exception.RepositoryInvalidCallException;
 import eu.koboo.en2do.repository.methods.dynamic.DynamicMethod;
 import eu.koboo.en2do.repository.methods.predefined.PredefinedMethod;
