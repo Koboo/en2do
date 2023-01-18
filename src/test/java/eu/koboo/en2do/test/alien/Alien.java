@@ -20,5 +20,4 @@ public class Alien {
     Map<Long, String> ufoIdList;
     Map<Planet, Long> planetTimeMap;
     Map<String, Planet> translationPlanetMap;
-
 }

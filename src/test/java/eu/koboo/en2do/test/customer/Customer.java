@@ -31,8 +31,8 @@ public class Customer {
     String city;
     Long phoneNumber;
     double balance;
-    List<Order> orders;
-    CustomerType customerType;
-    Date createTime;
-    Date expireTime;
+    List<Order> orders; // Embedded object list
+    CustomerType customerType; // enum type
+    Date createTime; // 1. ttl object
+    Date expireTime; // 2. ttl object
 }

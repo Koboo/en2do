@@ -14,7 +14,7 @@ import lombok.experimental.FieldDefaults;
 @CompoundIndex({@Index("orderStatus"), @Index(value = "lockStatus", ascending = false)}) // en2do
 @CompoundIndex({@Index("customerId")}) // en2do
 @CompoundIndex(value = {@Index("firstName"), @Index("lastName")}, uniqueIndex = true)  // en2do
-public class CustomerExtended extends Customer {
+public class CustomerExtended extends Customer { // entity extended by another class
 
     String orderStatus;
     String lockStatus;
