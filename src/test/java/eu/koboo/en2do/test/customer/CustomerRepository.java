@@ -4,11 +4,11 @@ import eu.koboo.en2do.repository.options.Collection;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.options.DropEntitiesOnStart;
 import eu.koboo.en2do.repository.options.DropIndexesOnStart;
-import eu.koboo.en2do.repository.methods.options.transform.Transform;
-import eu.koboo.en2do.repository.methods.options.sort.annotation.Limit;
-import eu.koboo.en2do.repository.methods.options.sort.annotation.Skip;
-import eu.koboo.en2do.repository.methods.options.sort.annotation.SortBy;
-import eu.koboo.en2do.repository.methods.options.sort.parameter.Sort;
+import eu.koboo.en2do.repository.options.methods.transform.Transform;
+import eu.koboo.en2do.repository.options.methods.sort.Limit;
+import eu.koboo.en2do.repository.options.methods.sort.Skip;
+import eu.koboo.en2do.repository.options.methods.sort.SortBy;
+import eu.koboo.en2do.repository.options.methods.sort.Sort;
 
 import java.util.List;
 import java.util.UUID;
