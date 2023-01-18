@@ -58,36 +58,29 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         // Generate bson filter by dynamic Method object.
         Bson filter = dynamicMethod.createBsonFilter(arguments);
         // Switch-case the method operator to use the correct mongo query.
-        switch (dynamicMethod.getMethodOperator()) {
-            case FIND_FIRST -> {
-                FindIterable<E> findIterable = collection.find(filter);
-                if (repositoryMeta.isAppendMethodAsComment()) {
-                    findIterable.comment("en2do \"" + methodName + "\"");
-                }
-                findIterable = repositoryMeta.applySortObject(method, findIterable, arguments);
-                findIterable = repositoryMeta.applySortAnnotations(method, findIterable);
-                return findIterable.limit(1).first();
-            }
+        return switch (dynamicMethod.getMethodOperator()) {
+            case COUNT -> repositoryMeta.getCollection().countDocuments(filter);
+            case DELETE -> repositoryMeta.getCollection().deleteMany(filter).wasAcknowledged();
+            case EXISTS -> repositoryMeta.getCollection().countDocuments(filter) > 0;
             case FIND_MANY -> {
-                FindIterable<E> findIterable = collection.find(filter);
-                if (repositoryMeta.isAppendMethodAsComment()) {
-                    findIterable.comment("en2do \"" + methodName + "\"");
-                }
+                FindIterable<E> findIterable = repositoryMeta.createIterable(filter, methodName);
                 findIterable = repositoryMeta.applySortObject(method, findIterable, arguments);
                 findIterable = repositoryMeta.applySortAnnotations(method, findIterable);
-                return findIterable.into(new ArrayList<>());
+                yield findIterable.into(new ArrayList<>());
             }
-            case DELETE -> {
-                DeleteResult deleteResult = collection.deleteMany(filter);
-                return deleteResult.wasAcknowledged();
+            case FIND_FIRST -> {
+                FindIterable<E> findIterable = repositoryMeta.createIterable(filter, methodName);
+                findIterable = repositoryMeta.applySortObject(method, findIterable, arguments);
+                findIterable = repositoryMeta.applySortAnnotations(method, findIterable);
+                yield findIterable.limit(1).first();
             }
-            case EXISTS -> {
-                return collection.countDocuments(filter) > 0;
+            case PAGE -> {
+                FindIterable<E> findIterable = repositoryMeta.createIterable(filter, methodName);
+                findIterable = repositoryMeta.applyPageObject(method, findIterable, arguments);
+                yield findIterable.into(new ArrayList<>());
             }
-            case COUNT -> {
-                return collection.countDocuments(filter);
-            }
-        }
-        throw new RepositoryInvalidCallException(method, repositoryMeta.getRepositoryClass());
+            default -> // Couldn't find any match method operator
+                    throw new RepositoryInvalidCallException(method, repositoryMeta.getRepositoryClass());
+        };
     }
 }
