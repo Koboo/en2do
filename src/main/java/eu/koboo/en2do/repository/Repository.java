@@ -34,6 +34,8 @@ public interface Repository<E, ID> {
 
     ID getUniqueId(E entity);
 
+    List<E> pageAll(Pager pager);
+
     boolean save(E entity);
 
     boolean saveAll(List<E> entityList);

@@ -263,6 +263,7 @@ public class MongoManager {
             repositoryMeta.registerPredefinedMethod(new MethodGetEntityClass<>(repositoryMeta, entityCollection));
             repositoryMeta.registerPredefinedMethod(new MethodGetEntityUniqueIdClass<>(repositoryMeta, entityCollection));
             repositoryMeta.registerPredefinedMethod(new MethodGetUniqueId<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodPageAll<>(repositoryMeta, entityCollection));
             repositoryMeta.registerPredefinedMethod(new MethodSave<>(repositoryMeta, entityCollection));
             repositoryMeta.registerPredefinedMethod(new MethodSaveAll<>(repositoryMeta, entityCollection));
             repositoryMeta.registerPredefinedMethod(new MethodSortAll<>(repositoryMeta, entityCollection));
