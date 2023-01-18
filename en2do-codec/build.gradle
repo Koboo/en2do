@@ -1,6 +1,4 @@
 dependencies {
-    compileOnly("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
-    testCompileOnly("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
-
     compileOnly(project(':en2do-exception'))
+    compileOnly(project(':en2do-utility'))
 }

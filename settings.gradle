@@ -1,4 +1,5 @@
 rootProject.name = 'en2do'
 include 'en2do-codec'
 include 'en2do-exception'
+include 'en2do-utility'
 

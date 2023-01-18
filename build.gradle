@@ -18,6 +18,10 @@ allprojects {
     }
 
     dependencies {
+        // Every module needs mongodb as dependency
+        compileOnly("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
+        testCompileOnly("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
+
         // Lombok
         compileOnly("org.projectlombok:lombok:$lombokVersion")
         annotationProcessor("org.projectlombok:lombok:$lombokVersion")
@@ -52,5 +56,6 @@ dependencies {
 
     implementation(project('en2do-codec'))
     implementation(project('en2do-exception'))
+    implementation(project(':en2do-utility'))
 }
 
