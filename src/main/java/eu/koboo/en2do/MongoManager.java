@@ -159,10 +159,20 @@ public class MongoManager {
             if (collectionAnnotation == null) {
                 throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
             }
+
             String entityCollectionName = collectionAnnotation.value();
+            if(entityCollectionName.equalsIgnoreCase("")) {
+                throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
+            }
+            for (RepositoryMeta<?, ?, ?> meta : repoMetaRegistry.values()) {
+                if(meta.getCollectionName().equalsIgnoreCase(entityCollectionName)) {
+                    throw new RepositoryNameDuplicateException(repositoryClass, Collection.class);
+                }
+            }
+
 
             // Parse Entity and UniqueId type classes by generic repository arguments
-            // (Yea, it's very hacky, but works)
+            // (Yea, it's very hacky, but it works)
             Type[] repoGenericTypeArray = repositoryClass.getGenericInterfaces();
             Type repoGenericTypeParams = null;
             for (Type type : repoGenericTypeArray) {
