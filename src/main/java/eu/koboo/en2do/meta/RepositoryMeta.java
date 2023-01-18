@@ -102,8 +102,8 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     public E checkEntity(Method method, Object argument) {
         E entity = (E) argument;
         if (entity == null) {
-            throw new NullPointerException("entity argument of method " + method.getName() + " from " +
-                    entityClass.getName() + " is null.");
+            throw new NullPointerException("Entity of type " + entityClass.getName() + " as parameter of method " +
+                    method.getName() + " is null.");
         }
         return entity;
     }
@@ -112,8 +112,8 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     public ID checkUniqueId(Method method, Object argument) {
         ID uniqueId = (ID) argument;
         if (uniqueId == null) {
-            throw new NullPointerException("uniqueId argument of method " + method.getName() + " from " +
-                    entityClass.getName() + " is null.");
+            throw new NullPointerException("UniqueId of Entity of type " + entityClass.getName() + " as parameter of method " +
+                    method.getName() + " is null.");
         }
         return uniqueId;
     }
@@ -122,8 +122,8 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     public List<E> checkEntityList(Method method, Object argument) {
         List<E> entity = (List<E>) argument;
         if (entity == null) {
-            throw new NullPointerException("entityList argument of method " + method.getName() + " from " +
-                    entityClass.getName() + " is null.");
+            throw new NullPointerException("List of Entities of type " + entityClass.getName() + " as parameter of method " +
+                    method.getName() + " is null.");
         }
         return entity;
     }
