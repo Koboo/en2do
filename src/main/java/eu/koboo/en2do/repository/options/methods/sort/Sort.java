@@ -11,7 +11,12 @@ import java.util.Map;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Sort {
 
+    @Deprecated
     public static Sort create() {
+        return of();
+    }
+
+    public static Sort of() {
         return new Sort();
     }
 
