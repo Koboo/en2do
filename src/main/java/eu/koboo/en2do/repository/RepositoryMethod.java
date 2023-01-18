@@ -2,7 +2,6 @@ package eu.koboo.en2do.repository;
 
 import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.Repository;
-import eu.koboo.en2do.meta.RepositoryMeta;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

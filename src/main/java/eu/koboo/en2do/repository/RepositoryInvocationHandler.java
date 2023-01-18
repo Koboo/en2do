@@ -1,4 +1,4 @@
-package eu.koboo.en2do.meta;
+package eu.koboo.en2do.repository;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
@@ -7,8 +7,6 @@ import com.mongodb.client.result.DeleteResult;
 import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.exception.RepositoryInvalidCallException;
 import eu.koboo.en2do.meta.registry.DynamicMethod;
-import eu.koboo.en2do.repository.RepositoryMethod;
-import eu.koboo.en2do.repository.Transform;
 import eu.koboo.en2do.repository.sort.annotation.Limit;
 import eu.koboo.en2do.repository.sort.annotation.Skip;
 import eu.koboo.en2do.repository.sort.annotation.SortBy;

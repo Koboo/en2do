@@ -4,7 +4,7 @@ import com.mongodb.client.model.Filters;
 import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.exception.MethodInvalidRegexParameterException;
 import eu.koboo.en2do.exception.MethodUnsupportedFilterException;
-import eu.koboo.en2do.meta.RepositoryMeta;
+import eu.koboo.en2do.repository.RepositoryMeta;
 import eu.koboo.en2do.meta.operators.MethodOperator;
 import lombok.AccessLevel;
 import lombok.Getter;

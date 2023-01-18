@@ -1,4 +1,4 @@
-package eu.koboo.en2do.meta;
+package eu.koboo.en2do.repository;
 
 import com.mongodb.client.model.Filters;
 import eu.koboo.en2do.Repository;
