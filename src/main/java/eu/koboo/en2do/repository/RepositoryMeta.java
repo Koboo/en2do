@@ -2,9 +2,9 @@ package eu.koboo.en2do.repository;
 
 import com.mongodb.client.model.Filters;
 import eu.koboo.en2do.Repository;
-import eu.koboo.en2do.repository.options.AppendMethodAsComment;
 import eu.koboo.en2do.repository.methods.dynamic.DynamicMethod;
 import eu.koboo.en2do.repository.methods.predefined.PredefinedMethod;
+import eu.koboo.en2do.repository.options.AppendMethodAsComment;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
@@ -83,13 +83,8 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
     public void registerDynamicMethod(String methodName, DynamicMethod<E, ID, R> dynamicMethod) {
         if (dynamicMethodRegistry.containsKey(methodName)) {
-            // Regex methods can exist in two ways:
-            // 1. param type "String"
-            // 2. param type "Pattern"
-            // So there can be two methods with same name but different usages.
-            if (!methodName.contains("Regex")) {
-                throw new RuntimeException("Already registered dynamicMethod with name \"" + methodName + "\".");
-            }
+            // Removed regex condition, because the hashmap couldn't handle methods with the same name.
+            throw new RuntimeException("Already registered dynamicMethod with name \"" + methodName + "\".");
         }
         dynamicMethodRegistry.put(methodName, dynamicMethod);
     }
