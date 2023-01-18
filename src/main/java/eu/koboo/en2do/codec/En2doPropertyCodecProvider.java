@@ -16,7 +16,7 @@ public class En2doPropertyCodecProvider implements PropertyCodecProvider {
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
     public <T> Codec<T> get(TypeWithTypeParameters<T> type, PropertyCodecRegistry registry) {
-        if(Class.class.isAssignableFrom(type.getType())) {
+        if (Class.class.isAssignableFrom(type.getType())) {
             return (Codec<T>) new ClassCodec();
         }
         if (Map.class.isAssignableFrom(type.getType()) && type.getTypeParameters().size() == 2) {
