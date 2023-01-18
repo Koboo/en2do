@@ -38,11 +38,20 @@ public enum MethodOperator {
             throw new MethodBooleanReturnTypeException(method, repoClass);
         }
     }),
-    COUNT("countBy", ((method, returnType, entityClass, repoClass) -> {
+    COUNT("countBy", (method, returnType, entityClass, repoClass) -> {
         if (GenericUtils.isNotTypeOf(Long.class, returnType)) {
             throw new MethodLongReturnTypeException(method, repoClass);
         }
-    }));
+    }),
+    PAGE("pageBy", (method, returnType, entityClass, repoClass) -> {
+        if (GenericUtils.isNotTypeOf(List.class, returnType)) {
+            throw new MethodFindListReturnTypeException(method, entityClass, repoClass);
+        }
+        Class<?> listType = GenericUtils.getGenericTypeOfReturnList(method);
+        if (!listType.isAssignableFrom(entityClass)) {
+            throw new MethodFindListTypeException(method, repoClass, listType);
+        }
+    });
 
     public static final MethodOperator[] VALUES = MethodOperator.values();
 
@@ -66,11 +75,5 @@ public enum MethodOperator {
             return operator;
         }
         return null;
-    }
-
-    @FunctionalInterface
-    public interface ReturnTypeValidator {
-
-        void check(Method method, Class<?> returnType, Class<?> entityClass, Class<?> repoClass) throws Exception;
     }
 }
