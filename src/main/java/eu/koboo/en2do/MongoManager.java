@@ -55,7 +55,7 @@ public class MongoManager {
     // Predefined methods by Java objects
     // These methods are ignored by our method processing proxy / invocation handler.
     private static final List<String> IGNORED_DEFAULT_METHODS = Arrays.asList(
-            "toString", "hashCode", "equals", "notify", "notifyAll", "wait", "finalize", "clone"
+            "notify", "notifyAll", "wait", "finalize", "clone"
     );
 
     @Getter
