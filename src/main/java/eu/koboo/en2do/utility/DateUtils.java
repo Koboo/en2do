@@ -11,6 +11,7 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 @UtilityClass
+@SuppressWarnings("unused")
 public class DateUtils {
 
     /* LocalDateTime */
