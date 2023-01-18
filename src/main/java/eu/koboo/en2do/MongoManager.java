@@ -8,27 +8,28 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import eu.koboo.en2do.internal.codec.InternalPropertyCodecProvider;
-import eu.koboo.en2do.repository.entity.Id;
-import eu.koboo.en2do.repository.entity.NonIndex;
-import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
-import eu.koboo.en2do.repository.entity.compound.Index;
-import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
-import eu.koboo.en2do.internal.exception.*;
-import eu.koboo.en2do.internal.methods.predefined.impl.*;
-import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.internal.RepositoryInvocationHandler;
 import eu.koboo.en2do.internal.RepositoryMeta;
+import eu.koboo.en2do.internal.codec.InternalPropertyCodecProvider;
+import eu.koboo.en2do.internal.convention.TransientConvention;
+import eu.koboo.en2do.internal.exception.*;
 import eu.koboo.en2do.internal.methods.dynamic.DynamicMethod;
 import eu.koboo.en2do.internal.methods.dynamic.FilterType;
 import eu.koboo.en2do.internal.methods.dynamic.MethodFilterPart;
 import eu.koboo.en2do.internal.methods.operators.FilterOperator;
 import eu.koboo.en2do.internal.methods.operators.MethodOperator;
-import eu.koboo.en2do.repository.methods.sort.*;
+import eu.koboo.en2do.internal.methods.predefined.impl.*;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.DropEntitiesOnStart;
 import eu.koboo.en2do.repository.DropIndexesOnStart;
+import eu.koboo.en2do.repository.Repository;
+import eu.koboo.en2do.repository.entity.Id;
+import eu.koboo.en2do.repository.entity.NonIndex;
+import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
+import eu.koboo.en2do.repository.entity.compound.Index;
+import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
 import eu.koboo.en2do.repository.methods.paging.Pager;
+import eu.koboo.en2do.repository.methods.sort.*;
 import eu.koboo.en2do.repository.methods.transform.Transform;
 import eu.koboo.en2do.utility.AnnotationUtils;
 import eu.koboo.en2do.utility.FieldUtils;
@@ -98,12 +99,11 @@ public class MongoManager {
 
         codecRegistry = fromRegistries(
                 MongoClientSettings.getDefaultCodecRegistry(),
-                fromProviders(
-                        PojoCodecProvider.builder()
-                                .register(new InternalPropertyCodecProvider())
-                                .automatic(true)
-                                .build()
-                )
+                fromProviders(PojoCodecProvider.builder()
+                        .register(new InternalPropertyCodecProvider())
+                        .automatic(true)
+                        .conventions(List.of(new TransientConvention()))
+                        .build())
         );
 
         MongoClientSettings clientSettings = MongoClientSettings.builder()
@@ -161,11 +161,11 @@ public class MongoManager {
             }
 
             String entityCollectionName = collectionAnnotation.value();
-            if(entityCollectionName.equalsIgnoreCase("")) {
+            if (entityCollectionName.equalsIgnoreCase("")) {
                 throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
             }
             for (RepositoryMeta<?, ?, ?> meta : repoMetaRegistry.values()) {
-                if(meta.getCollectionName().equalsIgnoreCase(entityCollectionName)) {
+                if (meta.getCollectionName().equalsIgnoreCase(entityCollectionName)) {
                     throw new RepositoryNameDuplicateException(repositoryClass, Collection.class);
                 }
             }
