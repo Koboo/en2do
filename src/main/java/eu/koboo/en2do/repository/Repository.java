@@ -1,37 +1,42 @@
 package eu.koboo.en2do.repository;
 
+import eu.koboo.en2do.repository.options.methods.paging.Pager;
+import eu.koboo.en2do.repository.options.methods.sort.Sort;
+
 import java.util.List;
 
 @SuppressWarnings("unused")
 public interface Repository<E, ID> {
 
-    String getCollectionName();
-
-    ID getUniqueId(E entity);
-
-    Class<E> getEntityClass();
-
-    Class<ID> getEntityUniqueIdClass();
-
-    E findFirstById(ID identifier);
-
-    List<E> findAll();
+    long countAll();
 
     boolean delete(E entity);
 
-    boolean deleteById(ID identifier);
-
     boolean deleteAll(List<E> entityList);
 
+    boolean deleteById(ID identifier);
+
     boolean drop();
-
-    boolean save(E entity);
-
-    boolean saveAll(List<E> entityList);
 
     boolean exists(E entity);
 
     boolean existsById(ID identifier);
 
-    long countAll();
+    List<E> findAll();
+
+    E findFirstById(ID identifier);
+
+    String getCollectionName();
+
+    Class<E> getEntityClass();
+
+    Class<ID> getEntityUniqueIdClass();
+
+    ID getUniqueId(E entity);
+
+    boolean save(E entity);
+
+    boolean saveAll(List<E> entityList);
+
+    List<E> sortAll(Sort sort);
 }

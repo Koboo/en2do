@@ -1,18 +1,21 @@
 package eu.koboo.en2do.repository.options.methods.sort;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.experimental.FieldDefaults;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Getter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Sort {
 
     public static Sort create() {
         return new Sort();
     }
 
-    Map<String, Integer> fieldDirectionMap;
+    final Map<String, Integer> fieldDirectionMap;
     int limit;
     int skip;
 

@@ -1,10 +1,16 @@
 package eu.koboo.en2do.repository.internal;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.internal.methods.dynamic.DynamicMethod;
 import eu.koboo.en2do.repository.internal.methods.predefined.PredefinedMethod;
 import eu.koboo.en2do.repository.options.AppendMethodAsComment;
+import eu.koboo.en2do.repository.options.methods.sort.Limit;
+import eu.koboo.en2do.repository.options.methods.sort.Skip;
+import eu.koboo.en2do.repository.options.methods.sort.Sort;
+import eu.koboo.en2do.repository.options.methods.sort.SortBy;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
@@ -129,5 +135,53 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
     public Bson createIdFilter(ID uniqueId) {
         return Filters.eq(entityUniqueIdField.getName(), uniqueId);
+    }
+
+    public FindIterable<E> applySortObject(Method method, FindIterable<E> findIterable, Object[] args) {
+        int parameterCount = method.getParameterCount();
+        if (parameterCount <= 0) {
+            return findIterable;
+        }
+        Class<?> lastParamType = method.getParameterTypes()[method.getParameterCount() - 1];
+        if (!lastParamType.isAssignableFrom(Sort.class)) {
+            return findIterable;
+        }
+        Object lastParamObject = args == null ? null : args[args.length - 1];
+        if (!(lastParamObject instanceof Sort sortOptions)) {
+            return findIterable;
+        }
+        if (!sortOptions.getFieldDirectionMap().isEmpty()) {
+            for (Map.Entry<String, Integer> byField : sortOptions.getFieldDirectionMap().entrySet()) {
+                findIterable = findIterable.sort(new BasicDBObject(byField.getKey(), byField.getValue()));
+            }
+        }
+        if (sortOptions.getLimit() != -1) {
+            findIterable = findIterable.limit(sortOptions.getLimit());
+        }
+        if (sortOptions.getSkip() != -1) {
+            findIterable = findIterable.skip(sortOptions.getSkip());
+        }
+        findIterable.allowDiskUse(true);
+        return findIterable;
+    }
+
+    public FindIterable<E> applySortAnnotations(Method method, FindIterable<E> findIterable) {
+        SortBy[] sortAnnotations = method.getAnnotationsByType(SortBy.class);
+        if (sortAnnotations != null) {
+            for (SortBy sortBy : sortAnnotations) {
+                int orderType = sortBy.ascending() ? 1 : -1;
+                findIterable = findIterable.sort(new BasicDBObject(sortBy.field(), orderType));
+            }
+        }
+        if (method.isAnnotationPresent(Limit.class)) {
+            Limit limit = method.getAnnotation(Limit.class);
+            findIterable = findIterable.limit(limit.value());
+        }
+        if (method.isAnnotationPresent(Skip.class)) {
+            Skip skip = method.getAnnotation(Skip.class);
+            findIterable = findIterable.skip(skip.value());
+        }
+        findIterable.allowDiskUse(true);
+        return findIterable;
     }
 }

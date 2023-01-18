@@ -64,8 +64,8 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 if (repositoryMeta.isAppendMethodAsComment()) {
                     findIterable.comment("en2do \"" + methodName + "\"");
                 }
-                findIterable = applySortObject(method, findIterable, arguments);
-                findIterable = applySortAnnotations(method, findIterable);
+                findIterable = repositoryMeta.applySortObject(method, findIterable, arguments);
+                findIterable = repositoryMeta.applySortAnnotations(method, findIterable);
                 return findIterable.limit(1).first();
             }
             case FIND_MANY -> {
@@ -73,8 +73,8 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 if (repositoryMeta.isAppendMethodAsComment()) {
                     findIterable.comment("en2do \"" + methodName + "\"");
                 }
-                findIterable = applySortObject(method, findIterable, arguments);
-                findIterable = applySortAnnotations(method, findIterable);
+                findIterable = repositoryMeta.applySortObject(method, findIterable, arguments);
+                findIterable = repositoryMeta.applySortAnnotations(method, findIterable);
                 return findIterable.into(new ArrayList<>());
             }
             case DELETE -> {
@@ -89,53 +89,5 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             }
         }
         throw new RepositoryInvalidCallException(method, repositoryMeta.getRepositoryClass());
-    }
-
-    private FindIterable<E> applySortObject(Method method, FindIterable<E> findIterable, Object[] args) {
-        int parameterCount = method.getParameterCount();
-        if (parameterCount <= 0) {
-            return findIterable;
-        }
-        Class<?> lastParamType = method.getParameterTypes()[method.getParameterCount() - 1];
-        if (!lastParamType.isAssignableFrom(Sort.class)) {
-            return findIterable;
-        }
-        Object lastParamObject = args == null ? null : args[args.length - 1];
-        if (!(lastParamObject instanceof Sort sortOptions)) {
-            return findIterable;
-        }
-        if (!sortOptions.getFieldDirectionMap().isEmpty()) {
-            for (Map.Entry<String, Integer> byField : sortOptions.getFieldDirectionMap().entrySet()) {
-                findIterable = findIterable.sort(new BasicDBObject(byField.getKey(), byField.getValue()));
-            }
-        }
-        if (sortOptions.getLimit() != -1) {
-            findIterable = findIterable.limit(sortOptions.getLimit());
-        }
-        if (sortOptions.getSkip() != -1) {
-            findIterable = findIterable.skip(sortOptions.getSkip());
-        }
-        findIterable.allowDiskUse(true);
-        return findIterable;
-    }
-
-    private FindIterable<E> applySortAnnotations(Method method, FindIterable<E> findIterable) {
-        SortBy[] sortAnnotations = method.getAnnotationsByType(SortBy.class);
-        if (sortAnnotations != null) {
-            for (SortBy sortBy : sortAnnotations) {
-                int orderType = sortBy.ascending() ? 1 : -1;
-                findIterable = findIterable.sort(new BasicDBObject(sortBy.field(), orderType));
-            }
-        }
-        if (method.isAnnotationPresent(Limit.class)) {
-            Limit limit = method.getAnnotation(Limit.class);
-            findIterable = findIterable.limit(limit.value());
-        }
-        if (method.isAnnotationPresent(Skip.class)) {
-            Skip skip = method.getAnnotation(Skip.class);
-            findIterable = findIterable.skip(skip.value());
-        }
-        findIterable.allowDiskUse(true);
-        return findIterable;
     }
 }
