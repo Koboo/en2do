@@ -1,4 +1,4 @@
-package eu.koboo.en2do.meta.options;
+package eu.koboo.en2do.repository.options;
 
 import java.lang.annotation.*;
 

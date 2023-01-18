@@ -2,7 +2,7 @@ package eu.koboo.en2do.meta;
 
 import com.mongodb.client.model.Filters;
 import eu.koboo.en2do.Repository;
-import eu.koboo.en2do.meta.options.AppendMethodAsComment;
+import eu.koboo.en2do.repository.options.AppendMethodAsComment;
 import eu.koboo.en2do.meta.registry.DynamicMethod;
 import eu.koboo.en2do.repository.RepositoryMethod;
 import lombok.AccessLevel;

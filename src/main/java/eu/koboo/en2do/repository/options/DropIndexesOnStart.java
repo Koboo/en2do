@@ -1,9 +1,9 @@
-package eu.koboo.en2do.meta.options;
+package eu.koboo.en2do.repository.options;
 
 import java.lang.annotation.*;
 
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface DropEntitiesOnStart {
+public @interface DropIndexesOnStart {
 }
