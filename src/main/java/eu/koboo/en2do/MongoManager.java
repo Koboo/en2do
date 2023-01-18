@@ -8,7 +8,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import eu.koboo.en2do.internal.codec.En2doPropertyCodecProvider;
+import eu.koboo.en2do.internal.codec.InternalPropertyCodecProvider;
 import eu.koboo.en2do.repository.entity.Id;
 import eu.koboo.en2do.repository.entity.NonIndex;
 import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
@@ -100,7 +100,7 @@ public class MongoManager {
                 MongoClientSettings.getDefaultCodecRegistry(),
                 fromProviders(
                         PojoCodecProvider.builder()
-                                .register(new En2doPropertyCodecProvider())
+                                .register(new InternalPropertyCodecProvider())
                                 .automatic(true)
                                 .build()
                 )

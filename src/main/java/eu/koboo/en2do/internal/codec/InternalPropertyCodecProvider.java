@@ -11,7 +11,7 @@ import org.bson.codecs.pojo.TypeWithTypeParameters;
 import java.util.Map;
 
 @Log
-public class En2doPropertyCodecProvider implements PropertyCodecProvider {
+public class InternalPropertyCodecProvider implements PropertyCodecProvider {
 
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
