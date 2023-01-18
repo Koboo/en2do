@@ -271,6 +271,7 @@ public class MongoManager {
             repositoryMeta.registerPredefinedMethod(new MethodSave<>(repositoryMeta, entityCollection));
             repositoryMeta.registerPredefinedMethod(new MethodSaveAll<>(repositoryMeta, entityCollection));
             repositoryMeta.registerPredefinedMethod(new MethodSortAll<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodToString<>(repositoryMeta, entityCollection));
 
             // Iterate through the repository methods
             for (Method method : repositoryClass.getMethods()) {
