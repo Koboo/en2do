@@ -1,7 +1,7 @@
 package eu.koboo.en2do.test.customer.tests;
 
-import eu.koboo.en2do.sort.parameter.ByField;
-import eu.koboo.en2do.sort.parameter.Sort;
+import eu.koboo.en2do.repository.sort.parameter.ByField;
+import eu.koboo.en2do.repository.sort.parameter.Sort;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepositoryTest;

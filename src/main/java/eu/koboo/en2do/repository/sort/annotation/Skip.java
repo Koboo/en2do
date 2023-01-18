@@ -1,4 +1,4 @@
-package eu.koboo.en2do.sort.annotation;
+package eu.koboo.en2do.repository.sort.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface SortByArray {
+public @interface Skip {
 
-    SortBy[] value();
+    int value();
 }

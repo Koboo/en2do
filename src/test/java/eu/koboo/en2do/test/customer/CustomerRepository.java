@@ -5,10 +5,10 @@ import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.meta.options.DropEntitiesOnStart;
 import eu.koboo.en2do.meta.options.DropIndexesOnStart;
 import eu.koboo.en2do.repository.Transform;
-import eu.koboo.en2do.sort.annotation.Limit;
-import eu.koboo.en2do.sort.annotation.Skip;
-import eu.koboo.en2do.sort.annotation.SortBy;
-import eu.koboo.en2do.sort.parameter.Sort;
+import eu.koboo.en2do.repository.sort.annotation.Limit;
+import eu.koboo.en2do.repository.sort.annotation.Skip;
+import eu.koboo.en2do.repository.sort.annotation.SortBy;
+import eu.koboo.en2do.repository.sort.parameter.Sort;
 
 import java.util.List;
 import java.util.UUID;
