@@ -30,7 +30,7 @@ You need help or want to share a project, which uses en2do?
     - [TTLIndex](#ttl-index)
 - [Transform](#transform)
 - [References](#references)
-- [WTFPL License](LICENSE)
+- [License](LICENSE)
 
 ## Current Features
 
@@ -493,4 +493,4 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
 - [MongoDB MapCodec StackOverflow](https://stackoverflow.com/questions/67849754/mongodb-mapk-v-codec-maps-must-have-string-keys-fix)
 - [Spring MongoDB Repositories](https://docs.spring.io/spring-data/mongodb/docs/1.2.0.RELEASE/reference/html/mongo.repositories.html)
 - [Advanced MongoDB Performance Tuning](https://medium.com/idealo-tech-blog/advanced-mongodb-performance-tuning-2ddcd01a27d2)
-- [WTFPL License About](http://www.wtfpl.net/)
+- [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
