@@ -153,7 +153,7 @@ public class MongoManager {
             // Parse annotated collection name and create pojo-related mongo collection
             Collection collectionAnnotation = repositoryClass.getAnnotation(Collection.class);
             if (collectionAnnotation == null) {
-                throw new RepositoryNameNotFoundException(repositoryClass);
+                throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
             }
             String entityCollectionName = collectionAnnotation.value();
 
@@ -230,7 +230,7 @@ public class MongoManager {
             }
             // Check if we found any unique identifier.
             if (tempEntityUniqueIdClass == null) {
-                throw new RepositoryIdNotFoundException(entityClass);
+                throw new RepositoryIdNotFoundException(entityClass, Id.class);
             }
             Class<ID> entityUniqueIdClass = tempEntityUniqueIdClass;
             Field entityUniqueIdField = tempEntityUniqueIdField;
@@ -361,7 +361,7 @@ public class MongoManager {
                 int methodParameterCount = method.getParameterCount();
                 // If the method is a pageBy, it needs at least one parameter of type Pager
                 if(methodOperator == MethodOperator.PAGE && methodParameterCount == 0) {
-                    throw new MethodPageRequiredException(method, repositoryClass);
+                    throw new MethodPageRequiredException(method, repositoryClass, Pager.class);
                 }
                 // Validate the parameterCount of the filters and the method parameters itself.
                 if (expectedParameterCount != methodParameterCount) {
@@ -411,7 +411,7 @@ public class MongoManager {
                             || method.isAnnotationPresent(SortBy.class)
                             || method.isAnnotationPresent(SortByArray.class);
                     if (hasAnySortAnnotation && lastMethodParameter.isAssignableFrom(Sort.class)) {
-                        throw new MethodMixedSortException(method, repositoryClass);
+                        throw new MethodMixedSortException(method, repositoryClass, Sort.class, SortBy.class);
                     }
                     // We can't check the field, because it's a parameter, we can only check it, on executing
                     // while runtime
