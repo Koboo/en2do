@@ -1,24 +1,23 @@
-package eu.koboo.en2do.repository.methods;
+package eu.koboo.en2do.repository.methods.predefined.impl;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
 import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.repository.RepositoryMeta;
-import eu.koboo.en2do.repository.RepositoryMethod;
+import eu.koboo.en2do.repository.methods.predefined.PredefinedRepositoryMethod;
 import org.bson.conversions.Bson;
 
 import java.lang.reflect.Method;
 
-public class MethodDelete<E, ID, R extends Repository<E, ID>> extends RepositoryMethod<E, ID, R> {
+public class MethodDeleteById<E, ID, R extends Repository<E, ID>> extends PredefinedRepositoryMethod<E, ID, R> {
 
-    public MethodDelete(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
-        super("delete", meta, entityCollection);
+    public MethodDeleteById(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
+        super("deleteById", meta, entityCollection);
     }
 
     @Override
     public Object handle(Method method, Object[] arguments) throws Exception {
-        E entity = repositoryMeta.checkEntity(method, arguments[0]);
-        ID uniqueId = repositoryMeta.checkUniqueId(method, repositoryMeta.getUniqueId(entity));
+        ID uniqueId = repositoryMeta.checkUniqueId(method, arguments[0]);
         Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
         DeleteResult result = entityCollection.deleteOne(idFilter);
         return result.wasAcknowledged();

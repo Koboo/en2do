@@ -1,10 +1,10 @@
-package eu.koboo.en2do.repository.methods;
+package eu.koboo.en2do.repository.methods.predefined.impl;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.ReplaceOptions;
 import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.repository.RepositoryMeta;
-import eu.koboo.en2do.repository.RepositoryMethod;
+import eu.koboo.en2do.repository.methods.predefined.PredefinedRepositoryMethod;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.bson.conversions.Bson;
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class MethodSaveAll<E, ID, R extends Repository<E, ID>> extends RepositoryMethod<E, ID, R> {
+public class MethodSaveAll<E, ID, R extends Repository<E, ID>> extends PredefinedRepositoryMethod<E, ID, R> {
 
     ReplaceOptions replaceOptions;
 

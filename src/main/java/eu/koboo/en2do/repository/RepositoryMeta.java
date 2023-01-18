@@ -3,8 +3,8 @@ package eu.koboo.en2do.repository;
 import com.mongodb.client.model.Filters;
 import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.repository.options.AppendMethodAsComment;
-import eu.koboo.en2do.meta.registry.DynamicMethod;
-import eu.koboo.en2do.repository.RepositoryMethod;
+import eu.koboo.en2do.repository.methods.dynamic.DynamicMethod;
+import eu.koboo.en2do.repository.methods.predefined.PredefinedRepositoryMethod;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
@@ -39,7 +39,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     @Getter
     boolean appendMethodAsComment;
 
-    Map<String, RepositoryMethod<E, ID, R>> methodRegistry;
+    Map<String, PredefinedRepositoryMethod<E, ID, R>> methodRegistry;
     Map<String, DynamicMethod<E, ID, R>> dynamicMethodRegistry;
 
     public RepositoryMeta(Class<R> repositoryClass, Class<E> entityClass, Set<Field> entityFieldSet,
@@ -69,7 +69,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         return methodRegistry.containsKey(methodName);
     }
 
-    public void registerHandler(RepositoryMethod<E, ID, R> methodHandler) {
+    public void registerHandler(PredefinedRepositoryMethod<E, ID, R> methodHandler) {
         String methodName = methodHandler.getMethodName();
         if (methodRegistry.containsKey(methodName)) {
             throw new RuntimeException("Already registered method with name \"" + methodName + "\".");
@@ -77,7 +77,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         methodRegistry.put(methodName, methodHandler);
     }
 
-    public RepositoryMethod<E, ID, R> lookupHandler(String methodName) {
+    public PredefinedRepositoryMethod<E, ID, R> lookupHandler(String methodName) {
         return methodRegistry.get(methodName);
     }
 

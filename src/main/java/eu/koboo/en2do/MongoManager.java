@@ -18,15 +18,15 @@ import eu.koboo.en2do.index.NonIndex;
 import eu.koboo.en2do.index.ttl.TTLIndex;
 import eu.koboo.en2do.repository.RepositoryInvocationHandler;
 import eu.koboo.en2do.repository.RepositoryMeta;
-import eu.koboo.en2do.meta.operators.FilterOperator;
-import eu.koboo.en2do.meta.operators.MethodOperator;
+import eu.koboo.en2do.repository.methods.operators.FilterOperator;
+import eu.koboo.en2do.repository.methods.operators.MethodOperator;
+import eu.koboo.en2do.repository.methods.predefined.impl.*;
 import eu.koboo.en2do.repository.options.DropEntitiesOnStart;
 import eu.koboo.en2do.repository.options.DropIndexesOnStart;
-import eu.koboo.en2do.meta.registry.DynamicMethod;
-import eu.koboo.en2do.meta.registry.FilterType;
-import eu.koboo.en2do.meta.registry.MethodFilterPart;
+import eu.koboo.en2do.repository.methods.dynamic.DynamicMethod;
+import eu.koboo.en2do.repository.methods.dynamic.FilterType;
+import eu.koboo.en2do.repository.methods.dynamic.MethodFilterPart;
 import eu.koboo.en2do.repository.Transform;
-import eu.koboo.en2do.repository.methods.*;
 import eu.koboo.en2do.repository.sort.annotation.Limit;
 import eu.koboo.en2do.repository.sort.annotation.Skip;
 import eu.koboo.en2do.repository.sort.annotation.SortBy;
@@ -36,6 +36,7 @@ import eu.koboo.en2do.utility.AnnotationUtils;
 import eu.koboo.en2do.utility.FieldUtils;
 import eu.koboo.en2do.utility.GenericUtils;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import org.bson.UuidRepresentation;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -59,6 +60,7 @@ public class MongoManager {
             "toString", "hashCode", "equals", "notify", "notifyAll", "wait", "finalize", "clone"
     );
 
+    @Getter
     CodecRegistry codecRegistry;
     MongoClient client;
     MongoDatabase database;

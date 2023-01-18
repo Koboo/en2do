@@ -1,6 +1,6 @@
-package eu.koboo.en2do.meta.registry;
+package eu.koboo.en2do.repository.methods.dynamic;
 
-import eu.koboo.en2do.meta.operators.FilterOperator;
+import eu.koboo.en2do.repository.methods.operators.FilterOperator;
 
 import java.lang.reflect.Field;
 

@@ -1,4 +1,4 @@
-package eu.koboo.en2do.meta.operators;
+package eu.koboo.en2do.repository.methods.operators;
 
 import java.lang.reflect.Method;
 

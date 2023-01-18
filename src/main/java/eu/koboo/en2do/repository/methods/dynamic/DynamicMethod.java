@@ -1,11 +1,11 @@
-package eu.koboo.en2do.meta.registry;
+package eu.koboo.en2do.repository.methods.dynamic;
 
 import com.mongodb.client.model.Filters;
 import eu.koboo.en2do.Repository;
 import eu.koboo.en2do.exception.MethodInvalidRegexParameterException;
 import eu.koboo.en2do.exception.MethodUnsupportedFilterException;
 import eu.koboo.en2do.repository.RepositoryMeta;
-import eu.koboo.en2do.meta.operators.MethodOperator;
+import eu.koboo.en2do.repository.methods.operators.MethodOperator;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
