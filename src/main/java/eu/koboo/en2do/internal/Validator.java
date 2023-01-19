@@ -68,11 +68,13 @@ public class Validator {
         }
 
         try {
-            //TODO: Recursively getting propertyDescriptors.
+            // Getting beanInfo of type class
             BeanInfo beanInfo = Introspector.getBeanInfo(typeClass);
             Set<String> fieldNameSet = new HashSet<>();
             Set<String> bsonNameSet = new HashSet<>();
+            // PropertyDescriptors represent all fields of the entity, even the extended fields.
             for (PropertyDescriptor descriptor : beanInfo.getPropertyDescriptors()) {
+
                 // Ignore "class" descriptor.
                 if(descriptor.getName().equalsIgnoreCase("class")) {
                     continue;
@@ -91,7 +93,8 @@ public class Validator {
                 if(field.isAnnotationPresent(Transient.class)) {
                     continue;
                 }
-                // Final fields are strictly not allowed.
+
+                // Final fields are strictly prohibited.
                 if (Modifier.isFinal(field.getModifiers())) {
                     throw new RepositoryFinalFieldException(field, repositoryClass);
                 }
@@ -119,6 +122,8 @@ public class Validator {
                 if(!Modifier.isPublic(readMethod.getModifiers())) {
                     throw new RepositoryInvalidGetterException(typeClass, repositoryClass, field.getName());
                 }
+
+                //TODO: Check for any generic-type
 
                 // Validate the typeClass recursively.
                 validateCompatibility(repositoryClass, field.getType());
