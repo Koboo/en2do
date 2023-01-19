@@ -2,8 +2,8 @@ package eu.koboo.en2do.internal;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import eu.koboo.en2do.internal.exception.MethodUnsupportedException;
-import eu.koboo.en2do.internal.exception.RepositoryInvalidCallException;
+import eu.koboo.en2do.internal.exception.methods.MethodUnsupportedException;
+import eu.koboo.en2do.internal.exception.repository.RepositoryInvalidCallException;
 import eu.koboo.en2do.internal.methods.dynamic.DynamicMethod;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.internal.methods.predefined.PredefinedMethod;

@@ -1,6 +1,6 @@
 package eu.koboo.en2do.internal.methods.operators;
 
-import eu.koboo.en2do.internal.exception.*;
+import eu.koboo.en2do.internal.exception.methods.*;
 import eu.koboo.en2do.utility.GenericUtils;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
