@@ -3,6 +3,7 @@ package eu.koboo.en2do.internal;
 import com.mongodb.MongoClientSettings;
 import eu.koboo.en2do.internal.exception.repository.*;
 import eu.koboo.en2do.repository.Repository;
+import eu.koboo.en2do.repository.entity.TransformField;
 import eu.koboo.en2do.repository.entity.Transient;
 import eu.koboo.en2do.utility.FieldUtils;
 import org.bson.codecs.Codec;
@@ -70,6 +71,7 @@ public class Validator {
             //TODO: Recursively getting propertyDescriptors.
             BeanInfo beanInfo = Introspector.getBeanInfo(typeClass);
             Set<String> fieldNameSet = new HashSet<>();
+            Set<String> bsonNameSet = new HashSet<>();
             for (PropertyDescriptor descriptor : beanInfo.getPropertyDescriptors()) {
                 // Ignore "class" descriptor.
                 if(descriptor.getName().equalsIgnoreCase("class")) {
@@ -128,10 +130,24 @@ public class Validator {
                 }
                 fieldNameSet.add(lowerCaseName);
 
-                //TODO: Validate annotations
+                TransformField transformField = field.getAnnotation(TransformField.class);
+                if(transformField != null && transformField.value().trim().equalsIgnoreCase("")) {
+                    throw new RepositoryInvalidFieldNameException(typeClass, repositoryClass, field.getName());
+                }
+                String bsonName;
+                if(transformField != null) {
+                    bsonName = transformField.value();
+                } else {
+                    bsonName = field.getName();
+                }
+                if(bsonNameSet.contains(bsonName.toLowerCase(Locale.ROOT))) {
+                    throw new RepositoryDuplicatedFieldException(field, repositoryClass);
+                }
+                bsonNameSet.add(bsonName.toLowerCase(Locale.ROOT));
             }
             fieldNameSet.clear();
             fieldSet.clear();
+            bsonNameSet.clear();
         } catch (IntrospectionException e) {
             throw new RepositoryBeanInfoNotFoundException(typeClass, repositoryClass, e);
         }
