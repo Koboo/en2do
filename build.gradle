@@ -1,3 +1,5 @@
+import java.util.stream.Collectors
+
 plugins {
     id('java')
     id('maven-publish')
@@ -42,6 +44,15 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    classifier = 'sources'
+}
+task javadocJar(type: Jar) {
+    from javadoc
+    classifier = 'javadoc'
+}
+
 publishing {
     repositories {
         maven {
@@ -55,6 +66,8 @@ publishing {
     publications {
         maven(MavenPublication) {
             from components.java
+            artifact sourcesJar
+            artifact javadocJar
         }
     }
 }
@@ -65,26 +78,29 @@ githubRelease {
     draft = true
 
     releaseAssets jar.destinationDir.listFiles()
+
+    body { """\
+## Links to $version
+
+* [Documentation](https://koboo.gitbook.com/en2do)
+* [Maven](https://reposilite.koboo.eu/#/releases/eu/koboo/en2do/$version/)
+* [JavaDocs](https://reposilite.koboo.eu/javadoc/releases/eu/koboo/en2do/$version/)
+* [Jenkins](https://jenkins.koboo.eu/job/en2do/job/Build%20and%20Publish%20(main)/)
+
+${
+        changelog().call()
+            .readLines()
+            .stream()
+            .limit(10)
+            .map { "- $it" }
+            .collect(Collectors.joining('\n', '## Changelog\n', ''))
+    }
+- And more..
+""" }
 }
 
-task alljavadoc(type: Javadoc) {
-    source subprojects.collect { it.sourceSets.main.allJava }
-    classpath = files(subprojects.collect { it.sourceSets.main.compileClasspath })
-    destinationDir = file("${buildDir}/docs/javadoc")
-}
-
-task javadocJar(type: Jar, dependsOn: alljavadoc) {
-    classifier = 'javadoc'
-    from alljavadoc.destinationDir
-}
-
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from subprojects.collect { it.sourceSets.main.allSource }
-}
-
-project.tasks.shadowJar.finalizedBy project.tasks.javadocJar
-project.tasks.shadowJar.finalizedBy project.tasks.sourcesJar
-
-project.tasks.build.dependsOn(project.tasks.clean)
+project.tasks.shadowJar.dependsOn(project.tasks.build)
+project.tasks.shadowJar.finalizedBy(project.tasks.javadocJar)
+project.tasks.shadowJar.finalizedBy(project.tasks.sourcesJar)
+project.tasks.publish.dependsOn(project.tasks.shadowJar)
 project.tasks.githubRelease.dependsOn(project.tasks.shadowJar)
