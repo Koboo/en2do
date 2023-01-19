@@ -15,6 +15,7 @@ You need help or want to share a project, which uses en2do?
 - [License](LICENSE)
 - [Discord Support](https://discord.gg/VGrxZDQu2n)
 - [Documentation](https://koboo.gitbook.io/en2do/)
+- [JavaDocs](https://reposilite.koboo.eu/javadoc/releases/eu/koboo/en2do)
 - [Repository](https://reposilite.koboo.eu/#/releases/eu/koboo/en2do)
 - [References](#references)
 
