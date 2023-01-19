@@ -4,7 +4,7 @@ import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.DropEntitiesOnStart;
 import eu.koboo.en2do.repository.DropIndexesOnStart;
-import eu.koboo.en2do.repository.methods.paging.Pager;
+import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Limit;
 import eu.koboo.en2do.repository.methods.sort.Skip;
 import eu.koboo.en2do.repository.methods.sort.Sort;
@@ -72,5 +72,5 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
     @Transform("findManyByStreet")
     List<Customer> myTransformedMethod2(String street);
 
-    List<Customer> pageByCustomerIdNot(int customerId, Pager sorter);
+    List<Customer> pageByCustomerIdNot(int customerId, Pagination sorter);
 }

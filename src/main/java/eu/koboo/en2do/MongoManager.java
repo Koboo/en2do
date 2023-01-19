@@ -28,7 +28,7 @@ import eu.koboo.en2do.repository.entity.NonIndex;
 import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
 import eu.koboo.en2do.repository.entity.compound.Index;
 import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
-import eu.koboo.en2do.repository.methods.paging.Pager;
+import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.*;
 import eu.koboo.en2do.repository.methods.transform.Transform;
 import eu.koboo.en2do.utility.AnnotationUtils;
@@ -378,7 +378,7 @@ public class MongoManager {
                 int methodParameterCount = method.getParameterCount();
                 // If the method is a pageBy, it needs at least one parameter of type Pager
                 if (methodOperator == MethodOperator.PAGE && methodParameterCount == 0) {
-                    throw new MethodPageRequiredException(method, repositoryClass, Pager.class);
+                    throw new MethodPageRequiredException(method, repositoryClass, Pagination.class);
                 }
                 // Validate the parameterCount of the filters and the method parameters itself.
                 if (expectedParameterCount != methodParameterCount) {
@@ -394,7 +394,7 @@ public class MongoManager {
                                 throw new MethodParameterCountException(method, repositoryClass, (expectedParameterCount + 1), methodParameterCount);
                             }
                         }
-                        if (lastMethodParameter.isAssignableFrom(Pager.class)) {
+                        if (lastMethodParameter.isAssignableFrom(Pagination.class)) {
                             if (methodOperator != MethodOperator.PAGE) {
                                 throw new MethodPageNotAllowedException(method, repositoryClass);
                             }

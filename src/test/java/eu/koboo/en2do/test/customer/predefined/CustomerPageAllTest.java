@@ -1,6 +1,6 @@
 package eu.koboo.en2do.test.customer.predefined;
 
-import eu.koboo.en2do.repository.methods.paging.Pager;
+import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
@@ -38,7 +38,7 @@ public class CustomerPageAllTest extends CustomerRepositoryTest {
     @Order(3)
     public void findCustomer() {
         List<Customer> customerList = repository.pageAll(
-                Pager.of(5)
+                Pagination.of(5)
                         .page(2)
         );
         assertNotNull(customerList);

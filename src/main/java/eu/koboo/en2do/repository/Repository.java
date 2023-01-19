@@ -1,6 +1,6 @@
 package eu.koboo.en2do.repository;
 
-import eu.koboo.en2do.repository.methods.paging.Pager;
+import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Sort;
 
 import java.util.List;
@@ -34,7 +34,7 @@ public interface Repository<E, ID> {
 
     ID getUniqueId(E entity);
 
-    List<E> pageAll(Pager pager);
+    List<E> pageAll(Pagination pager);
 
     boolean save(E entity);
 

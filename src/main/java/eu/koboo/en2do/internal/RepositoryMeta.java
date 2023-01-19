@@ -11,7 +11,7 @@ import eu.koboo.en2do.internal.methods.dynamic.DynamicMethod;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.internal.methods.predefined.PredefinedMethod;
 import eu.koboo.en2do.repository.AppendMethodAsComment;
-import eu.koboo.en2do.repository.methods.paging.Pager;
+import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Limit;
 import eu.koboo.en2do.repository.methods.sort.Skip;
 import eu.koboo.en2do.repository.methods.sort.Sort;
@@ -227,11 +227,11 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
             return findIterable;
         }
         Class<?> lastParamType = method.getParameterTypes()[method.getParameterCount() - 1];
-        if (!lastParamType.isAssignableFrom(Pager.class)) {
+        if (!lastParamType.isAssignableFrom(Pagination.class)) {
             return findIterable;
         }
         Object lastParamObject = args == null ? null : args[args.length - 1];
-        if (!(lastParamObject instanceof Pager pageObject)) {
+        if (!(lastParamObject instanceof Pagination pageObject)) {
             return findIterable;
         }
         if (pageObject.getPage() <= 0) {
