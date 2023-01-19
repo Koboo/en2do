@@ -1,20 +1,20 @@
-package eu.koboo.en2do.test.customer.tests;
+package eu.koboo.en2do.test.customer.dynamic;
 
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
+import eu.koboo.en2do.utility.DateUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @Disabled("Disabled, to speed up unit-testing.")
-public class CustomerTTLCreateExpirationTest extends CustomerRepositoryTest {
+public class CustomerTTLTimestampExpirationTest extends CustomerRepositoryTest {
 
     @Test
     @Order(1)
@@ -30,7 +30,7 @@ public class CustomerTTLCreateExpirationTest extends CustomerRepositoryTest {
         Customer customer = Const.createNewCustomer();
         assertNotNull(customer);
         assertFalse(repository.exists(customer));
-        customer.setCreateTime(new Date());
+        customer.setExpireTime(DateUtils.createPlus(10, TimeUnit.SECONDS));
         assertTrue(repository.save(customer));
         assertTrue(repository.exists(customer));
     }

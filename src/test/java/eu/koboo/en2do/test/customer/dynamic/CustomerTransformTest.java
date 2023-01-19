@@ -1,4 +1,4 @@
-package eu.koboo.en2do.test.customer.tests;
+package eu.koboo.en2do.test.customer.dynamic;
 
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
@@ -11,7 +11,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CustomerFindManySortAnnotationTest extends CustomerRepositoryTest {
+public class CustomerTransformTest extends CustomerRepositoryTest {
 
     @Test
     @Order(1)
@@ -36,12 +36,14 @@ public class CustomerFindManySortAnnotationTest extends CustomerRepositoryTest {
     @Test
     @Order(3)
     public void findCustomer() {
-        List<Customer> customerList = repository.findManyByCustomerIdExists();
+        assertTrue(repository.myTransformedMethod(Const.STREET));
+        List<Customer> customerList = repository.myTransformedMethod2(Const.STREET);
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());
-        assertEquals(10, customerList.size());
+        assertEquals(15, customerList.size());
         for (Customer customer : customerList) {
             assertNotNull(customer);
+            assertNotEquals(17, customer.getCustomerId());
             assertEquals(Const.FIRST_NAME, customer.getFirstName());
             assertEquals(Const.LAST_NAME, customer.getLastName());
             assertEquals(Const.BIRTHDAY, customer.getBirthday());

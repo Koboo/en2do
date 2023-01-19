@@ -1,4 +1,4 @@
-package eu.koboo.en2do.test.customer.tests;
+package eu.koboo.en2do.test.customer.dynamic;
 
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
@@ -10,7 +10,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CustomerFindManyBalanceBetweenTest extends CustomerRepositoryTest {
+public class CustomerFindFirstByFirstNameContainsTest extends CustomerRepositoryTest {
 
     @Test
     @Order(1)
@@ -32,11 +32,7 @@ public class CustomerFindManyBalanceBetweenTest extends CustomerRepositoryTest {
     @Test
     @Order(3)
     public void operationTest() {
-        List<Customer> customerList = repository.findManyByBalanceBetweenAndCustomerId(100, 600, 1);
-        assertNotNull(customerList);
-        assertFalse(customerList.isEmpty());
-        assertEquals(1, customerList.size());
-        Customer customer = customerList.get(0);
+        Customer customer = repository.findFirstByFirstNameContains("aine");
         assertNotNull(customer);
         assertEquals(Const.CUSTOMER_ID, customer.getCustomerId());
         assertEquals(Const.FIRST_NAME, customer.getFirstName());

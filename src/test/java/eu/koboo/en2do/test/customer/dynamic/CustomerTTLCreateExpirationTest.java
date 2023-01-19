@@ -1,16 +1,20 @@
-package eu.koboo.en2do.test.customer.tests;
+package eu.koboo.en2do.test.customer.dynamic;
 
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CustomerFindFirstByFirstNameContainsTest extends CustomerRepositoryTest {
+@Disabled("Disabled, to speed up unit-testing.")
+public class CustomerTTLCreateExpirationTest extends CustomerRepositoryTest {
 
     @Test
     @Order(1)
@@ -25,20 +29,17 @@ public class CustomerFindFirstByFirstNameContainsTest extends CustomerRepository
     public void saveCustomer() {
         Customer customer = Const.createNewCustomer();
         assertNotNull(customer);
+        assertFalse(repository.exists(customer));
+        customer.setCreateTime(new Date());
         assertTrue(repository.save(customer));
         assertTrue(repository.exists(customer));
     }
 
     @Test
     @Order(3)
-    public void operationTest() {
-        Customer customer = repository.findFirstByFirstNameContains("aine");
-        assertNotNull(customer);
-        assertEquals(Const.CUSTOMER_ID, customer.getCustomerId());
-        assertEquals(Const.FIRST_NAME, customer.getFirstName());
-        assertEquals(Const.LAST_NAME, customer.getLastName());
-        assertEquals(Const.BIRTHDAY, customer.getBirthday());
-        assertEquals(Const.PHONE_NUMBER, customer.getPhoneNumber());
-        assertEquals(Const.ORDERS.size(), customer.getOrders().size());
+    public void validateExpiration() throws Exception {
+        assertTrue(repository.existsById(Const.UNIQUE_ID));
+        Thread.sleep(TimeUnit.SECONDS.toMillis(120));
+        assertFalse(repository.existsById(Const.UNIQUE_ID));
     }
 }

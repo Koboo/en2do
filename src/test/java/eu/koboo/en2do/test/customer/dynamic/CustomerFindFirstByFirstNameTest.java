@@ -1,4 +1,4 @@
-package eu.koboo.en2do.test.customer.tests;
+package eu.koboo.en2do.test.customer.dynamic;
 
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
@@ -7,11 +7,10 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CustomerCountByCustomerIdTest extends CustomerRepositoryTest {
+public class CustomerFindFirstByFirstNameTest extends CustomerRepositoryTest {
 
     @Test
     @Order(1)
@@ -25,14 +24,21 @@ public class CustomerCountByCustomerIdTest extends CustomerRepositoryTest {
     @Order(2)
     public void saveCustomer() {
         Customer customer = Const.createNewCustomer();
-        customer.setUniqueId(UUID.randomUUID());
+        assertNotNull(customer);
         assertTrue(repository.save(customer));
         assertTrue(repository.exists(customer));
     }
 
     @Test
     @Order(3)
-    public void countCustomer() {
-        assertEquals(1, repository.countByCustomerId(Const.CUSTOMER_ID));
+    public void operationTest() {
+        Customer customer = repository.findFirstByFirstName(Const.FIRST_NAME);
+        assertNotNull(customer);
+        assertEquals(Const.CUSTOMER_ID, customer.getCustomerId());
+        assertEquals(Const.FIRST_NAME, customer.getFirstName());
+        assertEquals(Const.LAST_NAME, customer.getLastName());
+        assertEquals(Const.BIRTHDAY, customer.getBirthday());
+        assertEquals(Const.PHONE_NUMBER, customer.getPhoneNumber());
+        assertEquals(Const.ORDERS.size(), customer.getOrders().size());
     }
 }

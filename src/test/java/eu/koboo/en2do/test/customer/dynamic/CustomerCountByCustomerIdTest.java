@@ -1,4 +1,4 @@
-package eu.koboo.en2do.test.customer.tests;
+package eu.koboo.en2do.test.customer.dynamic;
 
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
@@ -9,10 +9,9 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class CustomerExistsByLastNameTest extends CustomerRepositoryTest {
+public class CustomerCountByCustomerIdTest extends CustomerRepositoryTest {
 
     @Test
     @Order(1)
@@ -33,7 +32,7 @@ public class CustomerExistsByLastNameTest extends CustomerRepositoryTest {
 
     @Test
     @Order(3)
-    public void existsCustomer() {
-        assertTrue(repository.existsByLastName(Const.LAST_NAME));
+    public void countCustomer() {
+        assertEquals(1, repository.countByCustomerId(Const.CUSTOMER_ID));
     }
 }
