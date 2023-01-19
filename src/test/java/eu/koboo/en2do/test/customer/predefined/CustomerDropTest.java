@@ -6,6 +6,7 @@ import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,6 +27,7 @@ public class CustomerDropTest extends CustomerRepositoryTest {
     @Test
     @Order(2)
     public void saveCustomer() {
+        customerList = new ArrayList<>();
         for (int i = 0; i < 15; i++) {
             Customer customer = Const.createNewCustomer();
             customer.setUniqueId(UUID.randomUUID());
