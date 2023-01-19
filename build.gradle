@@ -7,7 +7,6 @@ plugins {
 group "$projectGroup"
 version "$projectVersion"
 
-
 repositories {
     mavenCentral()
 }
@@ -40,4 +39,21 @@ java {
 tasks.withType(JavaCompile).configureEach {
     options.fork = true
     options.encoding = 'UTF-8'
+}
+
+publishing {
+    repositories {
+        maven {
+            url 'https://reposilite.koboo.eu/releases'
+            credentials {
+                username System.getenv('REPO_USER')
+                password System.getenv('REPO_TOKEN')
+            }
+        }
+    }
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
 }
