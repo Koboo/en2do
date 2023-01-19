@@ -1,31 +1,33 @@
+import java.util.stream.Collectors
+
 plugins {
-    id 'java'
-    id 'maven-publish'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id('java')
+    id('maven-publish')
+    id('com.github.johnrengelman.shadow') version('7.1.2')
+    id('com.github.breadmoirai.github-release') version('2.4.1')
 }
 
-group "$projectGroup"
-version "$projectVersion"
+group("$projectGroup")
+version("$projectVersion")
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    // Project dependencies
-    implementation "org.mongodb:mongodb-driver-sync:$mongoDriverVersion"
-    testImplementation "org.mongodb:mongodb-driver-sync:$mongoDriverVersion"
-
-    // Jupiter test dependencies
-    testImplementation "org.junit.jupiter:junit-jupiter-engine:$jupiterVersion"
-    testImplementation "org.slf4j:slf4j-simple:$slf4jVersion"
+    implementation("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
+    testImplementation("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
 
     // Lombok
-    compileOnly "org.projectlombok:lombok:$lombokVersion"
-    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+    compileOnly("org.projectlombok:lombok:$lombokVersion")
+    annotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
-    testCompileOnly "org.projectlombok:lombok:$lombokVersion"
-    testAnnotationProcessor "org.projectlombok:lombok:$lombokVersion"
+    testCompileOnly("org.projectlombok:lombok:$lombokVersion")
+    testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
+
+    // Jupiter test dependencies
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
+    testImplementation("org.slf4j:slf4j-simple:$slf4jVersion")
 }
 
 test {
@@ -42,19 +44,63 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    classifier = 'sources'
+}
+task javadocJar(type: Jar) {
+    from javadoc
+    classifier = 'javadoc'
+}
+
 publishing {
     repositories {
         maven {
-            url 'https://reposilite.koboo.eu/releases'
+            url('https://reposilite.koboo.eu/releases')
             credentials {
-                username System.getenv('REPO_USER')
-                password System.getenv('REPO_TOKEN')
+                username(System.getenv('REPO_USER'))
+                password(System.getenv('REPO_TOKEN'))
             }
         }
     }
     publications {
         maven(MavenPublication) {
             from components.java
+            artifact sourcesJar
+            artifact javadocJar
         }
     }
 }
+
+githubRelease {
+    token System.getenv('GITHUB_TOKEN')
+    generateReleaseNotes = true
+    draft = true
+
+    releaseAssets jar.destinationDir.listFiles()
+
+    body { """\
+## Links to $version
+
+* [Documentation](https://koboo.gitbook.com/en2do)
+* [Maven](https://reposilite.koboo.eu/#/releases/eu/koboo/en2do/$version/)
+* [JavaDocs](https://reposilite.koboo.eu/javadoc/releases/eu/koboo/en2do/$version/)
+* [Jenkins](https://jenkins.koboo.eu/job/en2do/job/Build%20and%20Publish%20(main)/)
+
+${
+        changelog().call()
+            .readLines()
+            .stream()
+            .limit(10)
+            .map { "- $it" }
+            .collect(Collectors.joining('\n', '## Changelog\n', ''))
+    }
+- And more..
+""" }
+}
+
+project.tasks.shadowJar.dependsOn(project.tasks.build)
+project.tasks.shadowJar.finalizedBy(project.tasks.javadocJar)
+project.tasks.shadowJar.finalizedBy(project.tasks.sourcesJar)
+project.tasks.publish.dependsOn(project.tasks.shadowJar)
+project.tasks.githubRelease.dependsOn(project.tasks.shadowJar)

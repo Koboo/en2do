@@ -2,11 +2,99 @@ package eu.koboo.en2do.utility;
 
 import lombok.experimental.UtilityClass;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 @UtilityClass
+@SuppressWarnings("unused")
 public class DateUtils {
+
+    /* LocalDateTime */
+
+    public LocalDateTime dateToLocalDateTime(Date date) {
+        return dateToLocalDateTime(date, ZoneId.systemDefault());
+    }
+
+    public LocalDateTime dateToLocalDateTime(Date date, TimeZone timeZone) {
+        return dateToLocalDateTime(date, timeZone.toZoneId());
+    }
+
+    public LocalDateTime dateToLocalDateTime(Date date, ZoneId zoneId) {
+        return date.toInstant().atZone(zoneId).toLocalDateTime();
+    }
+
+    public Date localDateTimeToDate(LocalDateTime localDateTime) {
+        return localDateTimeToDate(localDateTime, ZoneId.systemDefault());
+    }
+
+    public Date localDateTimeToDate(LocalDateTime localDateTime, TimeZone timeZone) {
+        return localDateTimeToDate(localDateTime, timeZone.toZoneId());
+    }
+
+    public Date localDateTimeToDate(LocalDateTime localDateTime, ZoneId zoneId) {
+        return Date.from(localDateTime.atZone(zoneId)
+                .toInstant());
+    }
+
+    /* LocalTime */
+
+    public LocalTime dateToLocalTime(Date date) {
+        return dateToLocalTime(date, ZoneId.systemDefault());
+    }
+
+    public LocalTime dateToLocalTime(Date date, TimeZone timeZone) {
+        return dateToLocalTime(date, timeZone.toZoneId());
+    }
+
+    public LocalTime dateToLocalTime(Date date, ZoneId zoneId) {
+        return date.toInstant().atZone(zoneId).toLocalTime();
+    }
+
+    public Date localTimeToDate(LocalTime localTime) {
+        return localTimeToDate(localTime, ZoneId.systemDefault());
+    }
+
+    public Date localTimeToDate(LocalTime localTime, TimeZone timeZone) {
+        return localTimeToDate(localTime, timeZone.toZoneId());
+    }
+
+    public Date localTimeToDate(LocalTime localTime, ZoneId zoneId) {
+        return Date.from(localTime.atDate(LocalDate.now()).atZone(zoneId).toInstant());
+    }
+
+    /* LocalDate */
+
+    public LocalDate dateToLocalDate(Date date) {
+        return dateToLocalDate(date, ZoneId.systemDefault());
+    }
+
+    public LocalDate dateToLocalDate(Date date, TimeZone timeZone) {
+        return dateToLocalDate(date, timeZone.toZoneId());
+    }
+
+    public LocalDate dateToLocalDate(Date date, ZoneId zoneId) {
+        return date.toInstant().atZone(zoneId).toLocalDate();
+    }
+
+
+    public Date localDateToDate(LocalDate localDateTime) {
+        return localDateToDate(localDateTime, ZoneId.systemDefault());
+    }
+
+    public Date localDateToDate(LocalDate localDateTime, TimeZone timeZone) {
+        return localDateToDate(localDateTime, timeZone.toZoneId());
+    }
+
+    public Date localDateToDate(LocalDate localDateTime, ZoneId zoneId) {
+        return Date.from(localDateTime.atStartOfDay(zoneId).toInstant());
+    }
+
+    /* java.util.Date */
 
     public Date plus(Date date, long time, TimeUnit unit) {
         long millis = date.getTime();

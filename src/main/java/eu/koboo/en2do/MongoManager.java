@@ -8,36 +8,38 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import eu.koboo.en2do.codec.MapCodecProvider;
-import eu.koboo.en2do.exception.*;
-import eu.koboo.en2do.index.CompoundIndex;
-import eu.koboo.en2do.index.Id;
-import eu.koboo.en2do.index.Index;
-import eu.koboo.en2do.index.NonIndex;
-import eu.koboo.en2do.index.ttl.TTLIndex;
-import eu.koboo.en2do.meta.RepositoryInvocationHandler;
-import eu.koboo.en2do.meta.RepositoryMeta;
-import eu.koboo.en2do.meta.operators.FilterOperator;
-import eu.koboo.en2do.meta.operators.MethodOperator;
-import eu.koboo.en2do.meta.registry.DynamicMethod;
-import eu.koboo.en2do.meta.registry.FilterType;
-import eu.koboo.en2do.meta.registry.MethodFilterPart;
-import eu.koboo.en2do.meta.startup.DropEntitiesOnStart;
-import eu.koboo.en2do.meta.startup.DropIndexesOnStart;
-import eu.koboo.en2do.repository.Transform;
-import eu.koboo.en2do.repository.methods.*;
-import eu.koboo.en2do.sort.annotation.Limit;
-import eu.koboo.en2do.sort.annotation.Skip;
-import eu.koboo.en2do.sort.annotation.SortBy;
-import eu.koboo.en2do.sort.annotation.SortByArray;
-import eu.koboo.en2do.sort.parameter.Sort;
+import eu.koboo.en2do.internal.RepositoryInvocationHandler;
+import eu.koboo.en2do.internal.RepositoryMeta;
+import eu.koboo.en2do.internal.Validator;
+import eu.koboo.en2do.internal.codec.InternalPropertyCodecProvider;
+import eu.koboo.en2do.internal.convention.TransientConvention;
+import eu.koboo.en2do.internal.exception.methods.*;
+import eu.koboo.en2do.internal.exception.repository.*;
+import eu.koboo.en2do.internal.methods.dynamic.DynamicMethod;
+import eu.koboo.en2do.internal.methods.dynamic.FilterType;
+import eu.koboo.en2do.internal.methods.dynamic.MethodFilterPart;
+import eu.koboo.en2do.internal.methods.operators.FilterOperator;
+import eu.koboo.en2do.internal.methods.operators.MethodOperator;
+import eu.koboo.en2do.internal.methods.predefined.impl.*;
+import eu.koboo.en2do.repository.Collection;
+import eu.koboo.en2do.repository.DropEntitiesOnStart;
+import eu.koboo.en2do.repository.DropIndexesOnStart;
+import eu.koboo.en2do.repository.Repository;
+import eu.koboo.en2do.repository.entity.Id;
+import eu.koboo.en2do.repository.entity.NonIndex;
+import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
+import eu.koboo.en2do.repository.entity.compound.Index;
+import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
+import eu.koboo.en2do.repository.methods.pagination.Pagination;
+import eu.koboo.en2do.repository.methods.sort.*;
+import eu.koboo.en2do.repository.methods.transform.Transform;
 import eu.koboo.en2do.utility.AnnotationUtils;
 import eu.koboo.en2do.utility.FieldUtils;
 import eu.koboo.en2do.utility.GenericUtils;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import org.bson.UuidRepresentation;
-import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.conversions.Bson;
@@ -47,15 +49,20 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
+import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
+import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
+
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MongoManager {
 
     // Predefined methods by Java objects
     // These methods are ignored by our method processing proxy / invocation handler.
     private static final List<String> IGNORED_DEFAULT_METHODS = Arrays.asList(
-            "toString", "hashCode", "equals", "notify", "notifyAll", "wait", "finalize", "clone"
+            "notify", "notifyAll", "wait", "finalize", "clone"
     );
 
+    @Getter
+    CodecRegistry codecRegistry;
     MongoClient client;
     MongoDatabase database;
     Map<Class<?>, Repository<?, ?>> repoRegistry;
@@ -92,16 +99,20 @@ public class MongoManager {
 
         ConnectionString connection = new ConnectionString(connectString);
 
-        CodecRegistry pojoCodec = CodecRegistries.fromProviders(PojoCodecProvider.builder()
-                .register(new MapCodecProvider())
-                .automatic(true)
-                .build());
-        CodecRegistry registry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), pojoCodec);
+        codecRegistry = fromRegistries(
+                MongoClientSettings.getDefaultCodecRegistry(),
+                fromProviders(PojoCodecProvider.builder()
+                        .register(new InternalPropertyCodecProvider())
+                        .automatic(true)
+                        .conventions(List.of(new TransientConvention()))
+                        .build())
+        );
 
         MongoClientSettings clientSettings = MongoClientSettings.builder()
+                .applicationName("en2do-client")
                 .applyConnectionString(connection)
                 .uuidRepresentation(UuidRepresentation.STANDARD)
-                .codecRegistry(registry)
+                .codecRegistry(codecRegistry)
                 .build();
 
         client = MongoClients.create(clientSettings);
@@ -148,12 +159,22 @@ public class MongoManager {
             // Parse annotated collection name and create pojo-related mongo collection
             Collection collectionAnnotation = repositoryClass.getAnnotation(Collection.class);
             if (collectionAnnotation == null) {
-                throw new RepositoryNameNotFoundException(repositoryClass);
+                throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
             }
+
+            // Check if the collection name is valid and for duplication issues
             String entityCollectionName = collectionAnnotation.value();
+            if (entityCollectionName.trim().equalsIgnoreCase("")) {
+                throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
+            }
+            for (RepositoryMeta<?, ?, ?> meta : repoMetaRegistry.values()) {
+                if (meta.getCollectionName().equalsIgnoreCase(entityCollectionName)) {
+                    throw new RepositoryNameDuplicateException(repositoryClass, Collection.class);
+                }
+            }
 
             // Parse Entity and UniqueId type classes by generic repository arguments
-            // (Yea, it's very hacky, but works)
+            // (Yea, it's very hacky/unclean, but it works)
             Type[] repoGenericTypeArray = repositoryClass.getGenericInterfaces();
             Type repoGenericTypeParams = null;
             for (Type type : repoGenericTypeArray) {
@@ -166,7 +187,7 @@ public class MongoManager {
                 throw new RepositoryNoTypeException(repositoryClass);
             }
 
-            // Searching for entity class and after that their declared fields
+            // Searching for entity class
             Class<E> entityClass;
             try {
                 // get class name of generic type arguments
@@ -176,30 +197,15 @@ public class MongoManager {
                 throw new RepositoryEntityNotFoundException(repositoryClass, e);
             }
 
-            // Collect all fields recursively
-            Set<Field> entityFieldSet = FieldUtils.collectFields(entityClass);
-            if (entityFieldSet.size() == 0) {
-                throw new RepositoryNoFieldsException(repositoryClass);
-            }
+            Validator.validateCompatibility(repositoryClass, entityClass);
 
-            // Predefine some variables for further validation
-            Set<String> entityFieldNameSet = new HashSet<>();
+            // Collect all fields recursively to ensure, we'll get the inheritance fields
+            Set<Field> entityFieldSet = FieldUtils.collectFields(entityClass);
+
+            // Class type of the uniqueId of the entity.
             Class<ID> tempEntityUniqueIdClass = null;
             Field tempEntityUniqueIdField = null;
             for (Field field : entityFieldSet) {
-
-                // Check for duplicated lower-case field names
-                String lowerFieldName = field.getName().toLowerCase(Locale.ROOT);
-                if (entityFieldNameSet.contains(lowerFieldName)) {
-                    throw new RepositoryDuplicatedFieldException(field, repositoryClass);
-                }
-                entityFieldNameSet.add(lowerFieldName);
-
-                // Check if field has final declaration
-                if (Modifier.isFinal(field.getModifiers())) {
-                    throw new RepositoryFinalFieldException(field, repositoryClass);
-                }
-
                 // Check for @Id annotation to find unique identifier of entity
                 if (!field.isAnnotationPresent(Id.class)) {
                     continue;
@@ -210,38 +216,43 @@ public class MongoManager {
             }
             // Check if we found any unique identifier.
             if (tempEntityUniqueIdClass == null) {
-                throw new RepositoryIdNotFoundException(entityClass);
+                throw new RepositoryIdNotFoundException(entityClass, Id.class);
             }
             Class<ID> entityUniqueIdClass = tempEntityUniqueIdClass;
             Field entityUniqueIdField = tempEntityUniqueIdField;
-            entityFieldNameSet.clear();
+
+            MongoCollection<E> entityCollection = database.getCollection(entityCollectionName, entityClass);
 
             RepositoryMeta<E, ID, R> repositoryMeta = new RepositoryMeta<>(
                     repositoryClass, entityClass,
                     entityFieldSet,
                     entityUniqueIdClass, entityUniqueIdField,
-                    entityCollectionName
+                    entityCollection, entityCollectionName
             );
 
-            MongoCollection<E> entityCollection = database.getCollection(entityCollectionName, entityClass);
 
             // Define default methods with handler into the meta registry
-            repositoryMeta.registerHandler(new MethodCountAll<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler(new MethodGetCollectionName<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler(new MethodGetClass<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler(new MethodGetEntityClass<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler(new MethodGetEntityUniqueIdClass<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler(new MethodGetUniqueId<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler(new MethodFindFirstById<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler(new MethodFindAll<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler(new MethodDelete<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler(new MethodDeleteById<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler(new MethodDeleteAll<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler(new MethodDrop<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler(new MethodSave<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler(new MethodSaveAll<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler(new MethodExists<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerHandler(new MethodExistsById<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodCountAll<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodDelete<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodDeleteAll<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodDeleteById<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodDrop<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodEquals<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodExists<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodExistsById<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodFindAll<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodFindFirstById<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodGetClass<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodGetCollectionName<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodGetEntityClass<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodGetEntityUniqueIdClass<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodGetUniqueId<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodHashCode<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodPageAll<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodSave<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodSaveAll<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodSortAll<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodToString<>(repositoryMeta, entityCollection));
 
             // Iterate through the repository methods
             for (Method method : repositoryClass.getMethods()) {
@@ -336,14 +347,31 @@ public class MongoManager {
                 }
 
                 int methodParameterCount = method.getParameterCount();
+                // If the method is a pageBy, it needs at least one parameter of type Pager
+                if (methodOperator == MethodOperator.PAGE && methodParameterCount == 0) {
+                    throw new MethodPageRequiredException(method, repositoryClass, Pagination.class);
+                }
                 // Validate the parameterCount of the filters and the method parameters itself.
                 if (expectedParameterCount != methodParameterCount) {
                     if (methodParameterCount > 0) {
-                        // Subtract 1 from parameterCount. This object could be the Sort object.
-                        // That means, the expectedParameterCount is less than the acutalParameterCount.
+                        // Subtract 1 from parameterCount. This object could be a Sort or Pager object.
+                        // That means, the expectedParameterCount is less than the actualParameterCount.
                         Class<?> lastMethodParameter = method.getParameterTypes()[methodParameterCount - 1];
-                        if (lastMethodParameter.isAssignableFrom(Sort.class) && (expectedParameterCount + 1) != methodParameterCount) {
-                            throw new MethodParameterCountException(method, repositoryClass, (expectedParameterCount + 1), methodParameterCount);
+                        if (lastMethodParameter.isAssignableFrom(Sort.class)) {
+                            if (methodOperator == MethodOperator.PAGE) {
+                                throw new MethodSortNotAllowedException(method, repositoryClass);
+                            }
+                            if ((expectedParameterCount + 1) != methodParameterCount) {
+                                throw new MethodParameterCountException(method, repositoryClass, (expectedParameterCount + 1), methodParameterCount);
+                            }
+                        }
+                        if (lastMethodParameter.isAssignableFrom(Pagination.class)) {
+                            if (methodOperator != MethodOperator.PAGE) {
+                                throw new MethodPageNotAllowedException(method, repositoryClass);
+                            }
+                            if ((expectedParameterCount + 1) != methodParameterCount) {
+                                throw new MethodParameterCountException(method, repositoryClass, (expectedParameterCount + 1), methodParameterCount);
+                            }
                         }
                     } else {
                         throw new MethodParameterCountException(method, repositoryClass, expectedParameterCount, methodParameterCount);
@@ -353,6 +381,9 @@ public class MongoManager {
                 // Check if the field from sort annotation exists.
                 SortBy sortAnnotation = method.getAnnotation(SortBy.class);
                 if (sortAnnotation != null) {
+                    if (methodOperator == MethodOperator.PAGE) {
+                        throw new MethodSortNotAllowedException(method, repositoryClass);
+                    }
                     String sortFieldName = sortAnnotation.field();
                     Field field = FieldUtils.findFieldByName(sortFieldName, entityFieldSet);
                     if (field == null) {
@@ -368,7 +399,7 @@ public class MongoManager {
                             || method.isAnnotationPresent(SortBy.class)
                             || method.isAnnotationPresent(SortByArray.class);
                     if (hasAnySortAnnotation && lastMethodParameter.isAssignableFrom(Sort.class)) {
-                        throw new MethodMixedSortException(method, repositoryClass);
+                        throw new MethodMixedSortException(method, repositoryClass, Sort.class, SortBy.class);
                     }
                     // We can't check the field, because it's a parameter, we can only check it, on executing
                     // while runtime
@@ -453,7 +484,7 @@ public class MongoManager {
             ClassLoader repoClassLoader = repositoryClass.getClassLoader();
             Class<?>[] interfaces = new Class[]{repositoryClass};
             Repository<E, ID> repository = (Repository<E, ID>) Proxy.newProxyInstance(repoClassLoader, interfaces,
-                    new RepositoryInvocationHandler<>(repositoryMeta, entityCollection));
+                    new RepositoryInvocationHandler<>(repositoryMeta));
             repoRegistry.put(repositoryClass, repository);
             repoMetaRegistry.put(repositoryClass, repositoryMeta);
             return (R) repository;

@@ -1,7 +1,7 @@
 package eu.koboo.en2do.test.customer;
 
-import eu.koboo.en2do.index.Id;
-import eu.koboo.en2do.index.ttl.TTLIndex;
+import eu.koboo.en2do.repository.entity.Id;
+import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -31,8 +31,8 @@ public class Customer {
     String city;
     Long phoneNumber;
     double balance;
-    List<Order> orders;
-    CustomerType customerType;
-    Date createTime;
-    Date expireTime;
+    List<Order> orders; // Embedded object list
+    CustomerType customerType; // enum type
+    Date createTime; // 1. ttl object
+    Date expireTime; // 2. ttl object
 }

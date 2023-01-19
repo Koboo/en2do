@@ -1,7 +1,7 @@
 package eu.koboo.en2do.test;
 
 import eu.koboo.en2do.MongoManager;
-import eu.koboo.en2do.Repository;
+import eu.koboo.en2do.repository.Repository;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;

@@ -1,19 +1,20 @@
 package eu.koboo.en2do.test.customer;
 
-import eu.koboo.en2do.Collection;
-import eu.koboo.en2do.Repository;
-import eu.koboo.en2do.meta.startup.DropEntitiesOnStart;
-import eu.koboo.en2do.meta.startup.DropIndexesOnStart;
-import eu.koboo.en2do.repository.Transform;
-import eu.koboo.en2do.sort.annotation.Limit;
-import eu.koboo.en2do.sort.annotation.Skip;
-import eu.koboo.en2do.sort.annotation.SortBy;
-import eu.koboo.en2do.sort.parameter.Sort;
+import eu.koboo.en2do.repository.Repository;
+import eu.koboo.en2do.repository.Collection;
+import eu.koboo.en2do.repository.DropEntitiesOnStart;
+import eu.koboo.en2do.repository.DropIndexesOnStart;
+import eu.koboo.en2do.repository.methods.pagination.Pagination;
+import eu.koboo.en2do.repository.methods.sort.Limit;
+import eu.koboo.en2do.repository.methods.sort.Skip;
+import eu.koboo.en2do.repository.methods.sort.Sort;
+import eu.koboo.en2do.repository.methods.sort.SortBy;
+import eu.koboo.en2do.repository.methods.transform.Transform;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
+@SuppressWarnings("unused")
 @Collection("customer_repository")
 @DropIndexesOnStart
 @DropEntitiesOnStart
@@ -43,8 +44,6 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
 
     Customer findFirstByFirstNameRegex(String namePart);
 
-    Customer findFirstByFirstNameRegex(Pattern pattern);
-
     Customer findFirstByFirstNameExists();
 
     Customer findFirstByFirstNameContains(String partOfFirstName);
@@ -72,4 +71,6 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
 
     @Transform("findManyByStreet")
     List<Customer> myTransformedMethod2(String street);
+
+    List<Customer> pageByCustomerIdNot(int customerId, Pagination sorter);
 }

@@ -1,7 +1,7 @@
 package eu.koboo.en2do.test.customerextended;
 
-import eu.koboo.en2do.index.CompoundIndex;
-import eu.koboo.en2do.index.Index;
+import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
+import eu.koboo.en2do.repository.entity.compound.Index;
 import eu.koboo.en2do.test.customer.Customer;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -14,7 +14,7 @@ import lombok.experimental.FieldDefaults;
 @CompoundIndex({@Index("orderStatus"), @Index(value = "lockStatus", ascending = false)}) // en2do
 @CompoundIndex({@Index("customerId")}) // en2do
 @CompoundIndex(value = {@Index("firstName"), @Index("lastName")}, uniqueIndex = true)  // en2do
-public class CustomerExtended extends Customer {
+public class CustomerExtended extends Customer { // entity extended by another class
 
     String orderStatus;
     String lockStatus;

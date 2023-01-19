@@ -1,6 +1,6 @@
 package eu.koboo.en2do.test.alien;
 
-import eu.koboo.en2do.index.Id;
+import eu.koboo.en2do.repository.entity.Id;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -20,5 +20,4 @@ public class Alien {
     Map<Long, String> ufoIdList;
     Map<Planet, Long> planetTimeMap;
     Map<String, Planet> translationPlanetMap;
-
 }
