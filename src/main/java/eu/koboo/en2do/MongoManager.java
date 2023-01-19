@@ -10,9 +10,11 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import eu.koboo.en2do.internal.RepositoryInvocationHandler;
 import eu.koboo.en2do.internal.RepositoryMeta;
+import eu.koboo.en2do.internal.Validator;
 import eu.koboo.en2do.internal.codec.InternalPropertyCodecProvider;
 import eu.koboo.en2do.internal.convention.TransientConvention;
-import eu.koboo.en2do.internal.exception.*;
+import eu.koboo.en2do.internal.exception.methods.*;
+import eu.koboo.en2do.internal.exception.repository.*;
 import eu.koboo.en2do.internal.methods.dynamic.DynamicMethod;
 import eu.koboo.en2do.internal.methods.dynamic.FilterType;
 import eu.koboo.en2do.internal.methods.dynamic.MethodFilterPart;
@@ -160,8 +162,9 @@ public class MongoManager {
                 throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
             }
 
+            // Check if the collection name is valid and for duplication issues
             String entityCollectionName = collectionAnnotation.value();
-            if (entityCollectionName.equalsIgnoreCase("")) {
+            if (entityCollectionName.trim().equalsIgnoreCase("")) {
                 throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
             }
             for (RepositoryMeta<?, ?, ?> meta : repoMetaRegistry.values()) {
@@ -170,9 +173,8 @@ public class MongoManager {
                 }
             }
 
-
             // Parse Entity and UniqueId type classes by generic repository arguments
-            // (Yea, it's very hacky, but it works)
+            // (Yea, it's very hacky/unclean, but it works)
             Type[] repoGenericTypeArray = repositoryClass.getGenericInterfaces();
             Type repoGenericTypeParams = null;
             for (Type type : repoGenericTypeArray) {
@@ -185,55 +187,25 @@ public class MongoManager {
                 throw new RepositoryNoTypeException(repositoryClass);
             }
 
-            // Searching for entity class and after that their declared fields
+            // Searching for entity class
             Class<E> entityClass;
             try {
                 // get class name of generic type arguments
                 String entityClassName = repoGenericTypeParams.getTypeName().split("<")[1].split(",")[0];
                 entityClass = (Class<E>) Class.forName(entityClassName);
-
-                boolean hasValidConstructor = false;
-                Constructor<?>[] entityConstructors = entityClass.getConstructors();
-                for (Constructor<?> constructor : entityConstructors) {
-                    if (!Modifier.isPublic(constructor.getModifiers())) {
-                        continue;
-                    }
-                    if (constructor.getParameterCount() > 0) {
-                        continue;
-                    }
-                    hasValidConstructor = true;
-                }
-                if (!hasValidConstructor) {
-                    throw new RepositoryEntityConstructorException(entityClass, repositoryClass);
-                }
             } catch (ClassNotFoundException e) {
                 throw new RepositoryEntityNotFoundException(repositoryClass, e);
             }
 
-            // Collect all fields recursively
-            Set<Field> entityFieldSet = FieldUtils.collectFields(entityClass);
-            if (entityFieldSet.size() == 0) {
-                throw new RepositoryNoFieldsException(repositoryClass);
-            }
+            Validator.validateCompatibility(repositoryClass, entityClass);
 
-            // Predefine some variables for further validation
-            Set<String> entityFieldNameSet = new HashSet<>();
+            // Collect all fields recursively to ensure, we'll get the inheritance fields
+            Set<Field> entityFieldSet = FieldUtils.collectFields(entityClass);
+
+            // Class type of the uniqueId of the entity.
             Class<ID> tempEntityUniqueIdClass = null;
             Field tempEntityUniqueIdField = null;
             for (Field field : entityFieldSet) {
-
-                // Check for duplicated lower-case field names
-                String lowerFieldName = field.getName().toLowerCase(Locale.ROOT);
-                if (entityFieldNameSet.contains(lowerFieldName)) {
-                    throw new RepositoryDuplicatedFieldException(field, repositoryClass);
-                }
-                entityFieldNameSet.add(lowerFieldName);
-
-                // Check if field has final declaration
-                if (Modifier.isFinal(field.getModifiers())) {
-                    throw new RepositoryFinalFieldException(field, repositoryClass);
-                }
-
                 // Check for @Id annotation to find unique identifier of entity
                 if (!field.isAnnotationPresent(Id.class)) {
                     continue;
@@ -248,7 +220,6 @@ public class MongoManager {
             }
             Class<ID> entityUniqueIdClass = tempEntityUniqueIdClass;
             Field entityUniqueIdField = tempEntityUniqueIdField;
-            entityFieldNameSet.clear();
 
             MongoCollection<E> entityCollection = database.getCollection(entityCollectionName, entityClass);
 
