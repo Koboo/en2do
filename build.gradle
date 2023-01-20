@@ -46,11 +46,11 @@ tasks.withType(JavaCompile).configureEach {
 
 task sourcesJar(type: Jar) {
     from sourceSets.main.allJava
-    classifier = 'sources'
+    archiveClassifier.set('sources')
 }
 task javadocJar(type: Jar) {
     from javadoc
-    classifier = 'javadoc'
+    archiveClassifier.set('javadocs')
 }
 
 publishing {
