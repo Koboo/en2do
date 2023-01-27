@@ -12,7 +12,7 @@ import eu.koboo.en2do.internal.RepositoryInvocationHandler;
 import eu.koboo.en2do.internal.RepositoryMeta;
 import eu.koboo.en2do.internal.Validator;
 import eu.koboo.en2do.internal.codec.InternalPropertyCodecProvider;
-import eu.koboo.en2do.internal.convention.TransientConvention;
+import eu.koboo.en2do.internal.convention.AnnotationConvention;
 import eu.koboo.en2do.internal.exception.methods.*;
 import eu.koboo.en2do.internal.exception.repository.*;
 import eu.koboo.en2do.internal.methods.dynamic.DynamicMethod;
@@ -41,6 +41,7 @@ import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import org.bson.UuidRepresentation;
 import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.Conventions;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.conversions.Bson;
 
@@ -104,7 +105,12 @@ public class MongoManager {
                 fromProviders(PojoCodecProvider.builder()
                         .register(new InternalPropertyCodecProvider())
                         .automatic(true)
-                        .conventions(List.of(new TransientConvention()))
+                        .conventions(List.of(
+                                new AnnotationConvention(),
+                                Conventions.ANNOTATION_CONVENTION,
+                                Conventions.SET_PRIVATE_FIELDS_CONVENTION,
+                                Conventions.USE_GETTERS_FOR_SETTERS
+                        ))
                         .build())
         );
 
