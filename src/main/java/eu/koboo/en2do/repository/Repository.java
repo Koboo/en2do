@@ -7,6 +7,8 @@ import java.util.List;
 
 /**
  * The default Repository interface, which predefines several useful methods.
+ * See documentation: <a href="https://koboo.gitbook.io/en2do/methods/predefined-methods">...</a>
+ * See documentation: <a href="https://koboo.gitbook.io/en2do/get-started/create-the-repository">...</a>
  * @param <E> The generic type of the Entity
  * @param <ID> The generic type of the field annotated with "@Id" in the Entity
  */

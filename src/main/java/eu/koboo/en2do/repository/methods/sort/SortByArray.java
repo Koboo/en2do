@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * This annotation is used to create an array of the @SortBy annotation.
+ * See documentation: <a href="https://koboo.gitbook.io/en2do/usage/sorting/sorting-by-annotation">...</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

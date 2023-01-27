@@ -56,6 +56,12 @@ import java.util.regex.Pattern;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
+/**
+ * This object is the main entry point of en2do.
+ * The connection will be opened on construction.
+ * Keep in mind, that you should call "#MongoManger#close()" on application shutdown/termination.
+ * See documentation: <a href="https://koboo.gitbook.io/en2do/get-started/create-the-mongomanager">...</a>
+ */
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MongoManager {
 

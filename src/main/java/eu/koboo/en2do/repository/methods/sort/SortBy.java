@@ -4,6 +4,7 @@ import java.lang.annotation.*;
 
 /**
  * This annotation is used to define the sorting of the given fields.
+ * See documentation: <a href="https://koboo.gitbook.io/en2do/usage/sorting/sorting-by-annotation">...</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

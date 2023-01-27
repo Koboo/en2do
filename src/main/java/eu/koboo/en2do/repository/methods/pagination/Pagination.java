@@ -10,6 +10,7 @@ import java.util.Map;
 
 /**
  * This object is used to provide simplified pagination in several repositories.
+ * See documentation: <a href="https://koboo.gitbook.io/en2do/usage/pagination">...</a>
  */
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)

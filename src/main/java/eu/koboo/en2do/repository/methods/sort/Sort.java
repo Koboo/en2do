@@ -9,6 +9,7 @@ import java.util.Map;
 
 /**
  * This object is used to enable dynamic sorting, without defining the sorting options statically through annotations.
+ * See documentation: <a href="https://koboo.gitbook.io/en2do/usage/sorting/sorting-by-parameter">...</a>
  */
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
