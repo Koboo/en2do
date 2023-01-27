@@ -5,9 +5,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * This annotation is used to limit the amount of the returned entities in the List.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Limit {
 
+    /**
+     * @return The amount of the entities in the returned List.
+     */
     int value();
 }
