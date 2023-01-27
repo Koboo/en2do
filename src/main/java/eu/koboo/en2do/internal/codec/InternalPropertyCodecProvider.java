@@ -10,6 +10,9 @@ import org.bson.codecs.pojo.TypeWithTypeParameters;
 
 import java.util.Map;
 
+/**
+ * This codec provider enables the usage of the en2do custom codecs and adds them to the CodecRegistry
+ */
 @Log
 public class InternalPropertyCodecProvider implements PropertyCodecProvider {
 
