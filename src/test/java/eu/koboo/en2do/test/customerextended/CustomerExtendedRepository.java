@@ -1,9 +1,9 @@
 package eu.koboo.en2do.test.customerextended;
 
-import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.DropEntitiesOnStart;
 import eu.koboo.en2do.repository.DropIndexesOnStart;
+import eu.koboo.en2do.repository.Repository;
 
 import java.util.UUID;
 

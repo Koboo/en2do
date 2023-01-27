@@ -12,7 +12,7 @@ import eu.koboo.en2do.internal.RepositoryInvocationHandler;
 import eu.koboo.en2do.internal.RepositoryMeta;
 import eu.koboo.en2do.internal.Validator;
 import eu.koboo.en2do.internal.codec.InternalPropertyCodecProvider;
-import eu.koboo.en2do.internal.convention.TransientConvention;
+import eu.koboo.en2do.internal.convention.AnnotationConvention;
 import eu.koboo.en2do.internal.exception.methods.*;
 import eu.koboo.en2do.internal.exception.repository.*;
 import eu.koboo.en2do.internal.methods.dynamic.DynamicMethod;
@@ -41,10 +41,14 @@ import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import org.bson.UuidRepresentation;
 import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.Conventions;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.conversions.Bson;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -61,14 +65,17 @@ public class MongoManager {
             "notify", "notifyAll", "wait", "finalize", "clone"
     );
 
+    Map<Class<?>, Repository<?, ?>> repositoryRegistry;
+    Map<Class<?>, RepositoryMeta<?, ?, ?>> repositoryMetaRegistry;
+
     @Getter
     CodecRegistry codecRegistry;
     MongoClient client;
     MongoDatabase database;
-    Map<Class<?>, Repository<?, ?>> repoRegistry;
-    Map<Class<?>, RepositoryMeta<?, ?, ?>> repoMetaRegistry;
 
     public MongoManager(Credentials credentials) {
+        repositoryRegistry = new ConcurrentHashMap<>();
+        repositoryMetaRegistry = new ConcurrentHashMap<>();
 
         // If no credentials given, try loading them from default file.
         if (credentials == null) {
@@ -104,7 +111,12 @@ public class MongoManager {
                 fromProviders(PojoCodecProvider.builder()
                         .register(new InternalPropertyCodecProvider())
                         .automatic(true)
-                        .conventions(List.of(new TransientConvention()))
+                        .conventions(List.of(
+                                new AnnotationConvention(repositoryMetaRegistry),
+                                Conventions.ANNOTATION_CONVENTION,
+                                Conventions.SET_PRIVATE_FIELDS_CONVENTION,
+                                Conventions.USE_GETTERS_FOR_SETTERS
+                        ))
                         .build())
         );
 
@@ -117,9 +129,6 @@ public class MongoManager {
 
         client = MongoClients.create(clientSettings);
         database = client.getDatabase(databaseString);
-
-        repoRegistry = new ConcurrentHashMap<>();
-        repoMetaRegistry = new ConcurrentHashMap<>();
     }
 
     public MongoManager() {
@@ -128,14 +137,14 @@ public class MongoManager {
 
     public boolean close() {
         try {
-            if (repoRegistry != null) {
-                repoRegistry.clear();
+            if (repositoryRegistry != null) {
+                repositoryRegistry.clear();
             }
-            if (repoMetaRegistry != null) {
-                for (RepositoryMeta<?, ?, ?> meta : repoMetaRegistry.values()) {
+            if (repositoryMetaRegistry != null) {
+                for (RepositoryMeta<?, ?, ?> meta : repositoryMetaRegistry.values()) {
                     meta.destroy();
                 }
-                repoMetaRegistry.clear();
+                repositoryMetaRegistry.clear();
             }
             if (client != null) {
                 client.close();
@@ -152,8 +161,8 @@ public class MongoManager {
         try {
 
             // Check for already created repository to avoid multiply instances of the same repository
-            if (repoRegistry.containsKey(repositoryClass)) {
-                return (R) repoRegistry.get(repositoryClass);
+            if (repositoryRegistry.containsKey(repositoryClass)) {
+                return (R) repositoryRegistry.get(repositoryClass);
             }
 
             // Parse annotated collection name and create pojo-related mongo collection
@@ -167,7 +176,7 @@ public class MongoManager {
             if (entityCollectionName.trim().equalsIgnoreCase("")) {
                 throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
             }
-            for (RepositoryMeta<?, ?, ?> meta : repoMetaRegistry.values()) {
+            for (RepositoryMeta<?, ?, ?> meta : repositoryMetaRegistry.values()) {
                 if (meta.getCollectionName().equalsIgnoreCase(entityCollectionName)) {
                     throw new RepositoryNameDuplicateException(repositoryClass, Collection.class);
                 }
@@ -420,9 +429,15 @@ public class MongoManager {
                 entityCollection.dropIndexes();
             }
 
+            // Check for invalid index configuration
+            if (!repositoryMeta.isSeparateEntityId() && entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
+                throw new RepositoryNonIndexIdException(repositoryClass);
+            }
+
             // Creating an index on the uniqueIdentifier field of the entity to speed up queries,
             // but only if wanted. Users can disable that with the annotation.
-            if (!entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
+            if (repositoryMeta.isSeparateEntityId()
+                    && !entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
                 entityCollection.createIndex(Indexes.ascending(entityUniqueIdField.getName()), new IndexOptions().unique(true));
             }
             Set<CompoundIndex> compoundIndexSet = AnnotationUtils.collectAnnotations(entityClass, CompoundIndex.class);
@@ -485,8 +500,8 @@ public class MongoManager {
             Class<?>[] interfaces = new Class[]{repositoryClass};
             Repository<E, ID> repository = (Repository<E, ID>) Proxy.newProxyInstance(repoClassLoader, interfaces,
                     new RepositoryInvocationHandler<>(repositoryMeta));
-            repoRegistry.put(repositoryClass, repository);
-            repoMetaRegistry.put(repositoryClass, repositoryMeta);
+            repositoryRegistry.put(repositoryClass, repository);
+            repositoryMetaRegistry.put(repositoryClass, repositoryMeta);
             return (R) repository;
         } catch (Exception e) {
             throw new RuntimeException(e);

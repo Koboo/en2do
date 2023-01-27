@@ -32,16 +32,16 @@ public class Validator {
 
     public static <E, ID, R extends Repository<E, ID>> void validateCompatibility(
             Class<R> repositoryClass, Class<?> typeClass) throws Exception {
-        if(typeClass == null) {
+        if (typeClass == null) {
             throw new RuntimeException("Class for validation is null! Please open an issue on github!");
         }
         // It's a primitive? No validation needed for that.
-        if(typeClass.isPrimitive()) {
+        if (typeClass.isPrimitive()) {
             return;
         }
         // We already got a codec for the type? No validation needed for that.
         Codec<?> typeCodec = getCodec(typeClass);
-        if(typeCodec != null) {
+        if (typeCodec != null) {
             return;
         }
 
@@ -57,13 +57,13 @@ public class Validator {
             }
             hasValidConstructor = true;
         }
-        if(!hasValidConstructor) {
+        if (!hasValidConstructor) {
             throw new RepositoryConstructorException(typeClass, repositoryClass);
         }
 
         // No fields found? That's too bad. We need something to save.
         Set<Field> fieldSet = FieldUtils.collectFields(typeClass);
-        if(fieldSet.isEmpty()) {
+        if (fieldSet.isEmpty()) {
             throw new RepositoryNoFieldsException(typeClass, repositoryClass);
         }
 
@@ -76,7 +76,7 @@ public class Validator {
             for (PropertyDescriptor descriptor : beanInfo.getPropertyDescriptors()) {
 
                 // Ignore "class" descriptor.
-                if(descriptor.getName().equalsIgnoreCase("class")) {
+                if (descriptor.getName().equalsIgnoreCase("class")) {
                     continue;
                 }
 
@@ -85,12 +85,12 @@ public class Validator {
                         .filter(f -> f.getName().equals(descriptor.getName()))
                         .findFirst()
                         .orElse(null);
-                if(field == null) {
+                if (field == null) {
                     throw new RepositoryDescriptorException(typeClass, repositoryClass, descriptor.getName());
                 }
 
                 // Ignore all fields annotated with transient, because pojo doesn't touch that.
-                if(field.isAnnotationPresent(Transient.class)) {
+                if (field.isAnnotationPresent(Transient.class)) {
                     continue;
                 }
 
@@ -101,25 +101,25 @@ public class Validator {
 
                 // Check the declaration of the setter method. It needs to be public and have exactly 1 parameter.
                 Method writeMethod = descriptor.getWriteMethod();
-                if(writeMethod == null) {
+                if (writeMethod == null) {
                     throw new RepositorySetterNotFoundException(typeClass, repositoryClass, field.getName());
                 }
-                if(writeMethod.getParameterCount() != 1) {
+                if (writeMethod.getParameterCount() != 1) {
                     throw new RepositoryInvalidSetterException(typeClass, repositoryClass, field.getName());
                 }
-                if(!Modifier.isPublic(writeMethod.getModifiers())) {
+                if (!Modifier.isPublic(writeMethod.getModifiers())) {
                     throw new RepositoryInvalidSetterException(typeClass, repositoryClass, field.getName());
                 }
 
                 // Check the declaration of the getter method. It needs to be public and have exactly 0 parameter.
                 Method readMethod = descriptor.getReadMethod();
-                if(readMethod == null) {
+                if (readMethod == null) {
                     throw new RepositoryGetterNotFoundException(typeClass, repositoryClass, field.getName());
                 }
-                if(readMethod.getParameterCount() != 0) {
+                if (readMethod.getParameterCount() != 0) {
                     throw new RepositoryInvalidGetterException(typeClass, repositoryClass, field.getName());
                 }
-                if(!Modifier.isPublic(readMethod.getModifiers())) {
+                if (!Modifier.isPublic(readMethod.getModifiers())) {
                     throw new RepositoryInvalidGetterException(typeClass, repositoryClass, field.getName());
                 }
 
@@ -130,22 +130,22 @@ public class Validator {
 
                 // Check for duplicated field names.
                 String lowerCaseName = field.getName().toLowerCase(Locale.ROOT);
-                if(fieldNameSet.contains(lowerCaseName)) {
+                if (fieldNameSet.contains(lowerCaseName)) {
                     throw new RepositoryDuplicatedFieldException(field, repositoryClass);
                 }
                 fieldNameSet.add(lowerCaseName);
 
                 TransformField transformField = field.getAnnotation(TransformField.class);
-                if(transformField != null && transformField.value().trim().equalsIgnoreCase("")) {
+                if (transformField != null && transformField.value().trim().equalsIgnoreCase("")) {
                     throw new RepositoryInvalidFieldNameException(typeClass, repositoryClass, field.getName());
                 }
                 String bsonName;
-                if(transformField != null) {
+                if (transformField != null) {
                     bsonName = transformField.value();
                 } else {
                     bsonName = field.getName();
                 }
-                if(bsonNameSet.contains(bsonName.toLowerCase(Locale.ROOT))) {
+                if (bsonNameSet.contains(bsonName.toLowerCase(Locale.ROOT))) {
                     throw new RepositoryDuplicatedFieldException(field, repositoryClass);
                 }
                 bsonNameSet.add(bsonName.toLowerCase(Locale.ROOT));

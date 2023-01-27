@@ -16,10 +16,10 @@ public class MethodEquals<E, ID, R extends Repository<E, ID>> extends Predefined
     @Override
     public Object handle(Method method, Object[] arguments) throws Exception {
         Object object = arguments[0];
-        if(object == null) {
+        if (object == null) {
             return false;
         }
-        if(!(object instanceof Repository<?,?> repository)) {
+        if (!(object instanceof Repository<?, ?> repository)) {
             return false;
         }
         return repository.getClass().getName().equalsIgnoreCase(repositoryMeta.getClass().getName());

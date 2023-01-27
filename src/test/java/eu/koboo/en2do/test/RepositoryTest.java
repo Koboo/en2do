@@ -7,8 +7,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -26,6 +25,8 @@ public abstract class RepositoryTest<E, ID, R extends Repository<E, ID>> {
         assertNotNull(manager);
         repository = manager.create(repositoryClass());
         assertNotNull(repository);
+        assertTrue(repository.drop());
+        assertEquals(0, repository.findAll().size());
     }
 
     @AfterAll
@@ -33,7 +34,7 @@ public abstract class RepositoryTest<E, ID, R extends Repository<E, ID>> {
         log.info("Stopping Unit-Test [" + getClass().getName() + "]");
         assertNotNull(manager);
         assertNotNull(repository);
-        assertTrue(repository.drop());
+        //assertTrue(repository.drop());
         assertTrue(manager.close());
     }
 
