@@ -44,7 +44,7 @@ public class AnnotationConvention implements Convention {
                 }
                 if (readAnnotation instanceof Id) {
                     RepositoryMeta<?, ?, ?> repositoryMeta = findRepositoryMetaOf(classModelBuilder.getType());
-                    if(repositoryMeta != null && !repositoryMeta.isSeparateEntityId()) {
+                    if (repositoryMeta != null && !repositoryMeta.isSeparateEntityId()) {
                         classModelBuilder.idPropertyName(propertyModelBuilder.getName());
                     }
                 }

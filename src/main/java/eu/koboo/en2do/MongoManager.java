@@ -22,7 +22,9 @@ import eu.koboo.en2do.internal.methods.operators.FilterOperator;
 import eu.koboo.en2do.internal.methods.operators.MethodOperator;
 import eu.koboo.en2do.internal.methods.predefined.impl.*;
 import eu.koboo.en2do.repository.Collection;
-import eu.koboo.en2do.repository.*;
+import eu.koboo.en2do.repository.DropEntitiesOnStart;
+import eu.koboo.en2do.repository.DropIndexesOnStart;
+import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.entity.Id;
 import eu.koboo.en2do.repository.entity.NonIndex;
 import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
@@ -428,7 +430,7 @@ public class MongoManager {
             }
 
             // Check for invalid index configuration
-            if(!repositoryMeta.isSeparateEntityId() && entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
+            if (!repositoryMeta.isSeparateEntityId() && entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
                 throw new RepositoryNonIndexIdException(repositoryClass);
             }
 
