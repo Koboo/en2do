@@ -10,6 +10,9 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * A utility class for working with "java.util.Date".
+ */
 @UtilityClass
 @SuppressWarnings("unused")
 public class DateUtils {

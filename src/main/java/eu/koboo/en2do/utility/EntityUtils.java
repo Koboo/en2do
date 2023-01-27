@@ -10,9 +10,18 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * A utility class for everything related to entity properties.
+ */
 @UtilityClass
 public class EntityUtils {
 
+    /**
+     * This method is used to copy all field values from one entity to another.
+     * It also works with inheritance.
+     * @param from The entity to copy from
+     * @param to The entity to copy to
+     */
     public void copyProperties(Object from, Object to) {
         Class<?> fromClass = from.getClass();
         Class<?> toClass = to.getClass();

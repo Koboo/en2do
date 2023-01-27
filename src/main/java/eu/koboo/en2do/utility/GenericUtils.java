@@ -7,6 +7,9 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
+/**
+ * A utility class for everything related to generic types or class types.
+ */
 @UtilityClass
 public class GenericUtils {
 
