@@ -427,6 +427,11 @@ public class MongoManager {
                 entityCollection.dropIndexes();
             }
 
+            // Check for invalid index configuration
+            if(!repositoryMeta.isSeparateEntityId() && entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
+                throw new RepositoryNonIndexIdException(repositoryClass);
+            }
+
             // Creating an index on the uniqueIdentifier field of the entity to speed up queries,
             // but only if wanted. Users can disable that with the annotation.
             if (repositoryMeta.isSeparateEntityId()
