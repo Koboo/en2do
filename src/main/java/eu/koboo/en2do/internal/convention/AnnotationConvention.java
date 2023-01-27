@@ -32,7 +32,6 @@ public class AnnotationConvention implements Convention {
 
     @Override
     public void apply(ClassModelBuilder<?> classModelBuilder) {
-        RepositoryMeta<?, ?, ?> repositoryMeta = findRepositoryMetaOf(classModelBuilder.getType());
         for (PropertyModelBuilder<?> propertyModelBuilder : classModelBuilder.getPropertyModelBuilders()) {
             for (Annotation readAnnotation : propertyModelBuilder.getReadAnnotations()) {
                 if (readAnnotation instanceof Transient) {
@@ -43,8 +42,11 @@ public class AnnotationConvention implements Convention {
                     propertyModelBuilder.readName(transformField.value());
                     continue;
                 }
-                if (repositoryMeta != null && readAnnotation instanceof Id && repositoryMeta.isOverrideObjectId()) {
-                    classModelBuilder.idPropertyName(propertyModelBuilder.getName());
+                if (readAnnotation instanceof Id) {
+                    RepositoryMeta<?, ?, ?> repositoryMeta = findRepositoryMetaOf(classModelBuilder.getType());
+                    if(repositoryMeta != null && !repositoryMeta.isSeparateEntityId()) {
+                        classModelBuilder.idPropertyName(propertyModelBuilder.getName());
+                    }
                 }
             }
             for (Annotation writeAnnotation : propertyModelBuilder.getWriteAnnotations()) {

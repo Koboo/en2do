@@ -10,7 +10,7 @@ import eu.koboo.en2do.internal.exception.methods.MethodInvalidSortSkipException;
 import eu.koboo.en2do.internal.methods.dynamic.DynamicMethod;
 import eu.koboo.en2do.internal.methods.predefined.PredefinedMethod;
 import eu.koboo.en2do.repository.AppendMethodAsComment;
-import eu.koboo.en2do.repository.OverrideObjectID;
+import eu.koboo.en2do.repository.SeparateEntityId;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Limit;
@@ -46,7 +46,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
     @Getter(AccessLevel.NONE)
     boolean appendMethodAsComment;
-    boolean overrideObjectId;
+    boolean separateEntityId;
 
     @Getter(AccessLevel.NONE)
     Map<String, PredefinedMethod<E, ID, R>> methodRegistry;
@@ -70,7 +70,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         this.entityUniqueIdField = entityUniqueIdField;
 
         this.appendMethodAsComment = repositoryClass.isAnnotationPresent(AppendMethodAsComment.class);
-        this.overrideObjectId = repositoryClass.isAnnotationPresent(OverrideObjectID.class);
+        this.separateEntityId = repositoryClass.isAnnotationPresent(SeparateEntityId.class);
 
         this.methodRegistry = new HashMap<>();
         this.dynamicMethodRegistry = new HashMap<>();
@@ -144,7 +144,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     }
 
     public Bson createIdFilter(ID uniqueId) {
-        if (overrideObjectId) {
+        if (!separateEntityId) {
             return Filters.eq("_id", uniqueId);
         } else {
             return Filters.eq(entityUniqueIdField.getName(), uniqueId);

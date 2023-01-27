@@ -429,7 +429,7 @@ public class MongoManager {
 
             // Creating an index on the uniqueIdentifier field of the entity to speed up queries,
             // but only if wanted. Users can disable that with the annotation.
-            if (!repositoryClass.isAnnotationPresent(OverrideObjectID.class)
+            if (repositoryMeta.isSeparateEntityId()
                     && !entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
                 entityCollection.createIndex(Indexes.ascending(entityUniqueIdField.getName()), new IndexOptions().unique(true));
             }

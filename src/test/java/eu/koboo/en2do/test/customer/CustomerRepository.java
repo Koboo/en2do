@@ -15,7 +15,7 @@ import java.util.UUID;
 @Collection("customer_repository")
 @DropIndexesOnStart
 @DropEntitiesOnStart
-@OverrideObjectID
+//@SeparateEntityId
 @AppendMethodAsComment
 public interface CustomerRepository extends Repository<Customer, UUID> {
 
