@@ -8,10 +8,10 @@ import eu.koboo.en2do.internal.exception.methods.MethodInvalidPageException;
 import eu.koboo.en2do.internal.exception.methods.MethodInvalidSortLimitException;
 import eu.koboo.en2do.internal.exception.methods.MethodInvalidSortSkipException;
 import eu.koboo.en2do.internal.methods.dynamic.DynamicMethod;
-import eu.koboo.en2do.repository.OverrideObjectID;
-import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.internal.methods.predefined.PredefinedMethod;
 import eu.koboo.en2do.repository.AppendMethodAsComment;
+import eu.koboo.en2do.repository.OverrideObjectID;
+import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Limit;
 import eu.koboo.en2do.repository.methods.sort.Skip;
@@ -144,7 +144,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     }
 
     public Bson createIdFilter(ID uniqueId) {
-        if(overrideObjectId) {
+        if (overrideObjectId) {
             return Filters.eq("_id", uniqueId);
         } else {
             return Filters.eq(entityUniqueIdField.getName(), uniqueId);

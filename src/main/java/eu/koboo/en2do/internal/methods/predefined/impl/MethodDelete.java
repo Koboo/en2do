@@ -3,8 +3,8 @@ package eu.koboo.en2do.internal.methods.predefined.impl;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
 import eu.koboo.en2do.internal.RepositoryMeta;
-import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.internal.methods.predefined.PredefinedMethod;
+import eu.koboo.en2do.repository.Repository;
 import org.bson.conversions.Bson;
 
 import java.lang.reflect.Method;

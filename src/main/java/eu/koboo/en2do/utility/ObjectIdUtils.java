@@ -7,10 +7,10 @@ import org.bson.types.ObjectId;
 public class ObjectIdUtils {
 
     public ObjectId of(Object object) {
-        if(object instanceof ObjectId objectId) {
+        if (object instanceof ObjectId objectId) {
             return objectId;
         }
-        if(object instanceof String string) {
+        if (object instanceof String string) {
             return new ObjectId(string);
         }
         return new ObjectId(String.valueOf(object));
