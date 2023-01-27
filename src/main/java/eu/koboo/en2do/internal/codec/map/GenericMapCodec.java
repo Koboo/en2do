@@ -21,6 +21,7 @@ import java.util.logging.Level;
 /**
  * This codec is used to allow different types as map keys, because
  * mongodb pojo-codec only supports strings as map keys.
+ *
  * @param <K> The type of the key of the generic map
  * @param <T> The type of the value of the generic map
  */

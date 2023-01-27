@@ -11,8 +11,9 @@ import java.util.Properties;
 /**
  * This object is used to simplify creating credentials to the mongodb server.
  * See documentation: <a href="https://koboo.gitbook.io/en2do/get-started/create-the-mongomanager">...</a>
+ *
  * @param connectString The connection string to the mongodb database server
- * @param database The database, which should be used
+ * @param database      The database, which should be used
  */
 @SuppressWarnings("unused")
 public record Credentials(String connectString, String database) {

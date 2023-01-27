@@ -22,6 +22,7 @@ public class Sort {
 
     /**
      * Use this method to create a new Sort object
+     *
      * @return The new created sort object.
      */
     public static Sort of() {
@@ -40,6 +41,7 @@ public class Sort {
 
     /**
      * Use this method to define the order / sorting by the given fields
+     *
      * @param fieldName The field which is used to sort
      * @param ascending The direction of the sorting
      * @return The used Sort object
@@ -52,6 +54,7 @@ public class Sort {
     /**
      * Use this method to define the order / sorting by the given fields,
      * but sets the ascending value to "true"
+     *
      * @param fieldName The field which is used to sort
      * @return The used Sort object
      */
@@ -61,6 +64,7 @@ public class Sort {
 
     /**
      * Use this method to set the limit of entities of the current sorting.
+     *
      * @param limit The amount of the entities in the returned List.
      * @return The used Sort object
      */
@@ -71,6 +75,7 @@ public class Sort {
 
     /**
      * Use this method to set the skipped entities of the current sorting.
+     *
      * @param skip The amount of the entities, which should be skipped, before creating the List.
      * @return The used Sort object
      */

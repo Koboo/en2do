@@ -15,8 +15,9 @@ public class ClassCodec implements Codec<Class> {
 
     /**
      * See org.bson.codecs.Encoder
-     * @param writer the BSON writer to encode into
-     * @param value the value to encode
+     *
+     * @param writer         the BSON writer to encode into
+     * @param value          the value to encode
      * @param encoderContext the encoder context
      */
     @Override
@@ -26,6 +27,7 @@ public class ClassCodec implements Codec<Class> {
 
     /**
      * See org.bson.codecs.Decoder
+     *
      * @param reader         the BSON reader
      * @param decoderContext the decoder context
      * @return the decoded Class
@@ -42,6 +44,7 @@ public class ClassCodec implements Codec<Class> {
 
     /**
      * See org.bson.codecs.Encoder
+     *
      * @return the class of the encoded class
      */
     @Override
