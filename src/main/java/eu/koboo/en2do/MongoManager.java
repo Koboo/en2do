@@ -21,10 +21,8 @@ import eu.koboo.en2do.internal.methods.dynamic.MethodFilterPart;
 import eu.koboo.en2do.internal.methods.operators.FilterOperator;
 import eu.koboo.en2do.internal.methods.operators.MethodOperator;
 import eu.koboo.en2do.internal.methods.predefined.impl.*;
+import eu.koboo.en2do.repository.*;
 import eu.koboo.en2do.repository.Collection;
-import eu.koboo.en2do.repository.DropEntitiesOnStart;
-import eu.koboo.en2do.repository.DropIndexesOnStart;
-import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.entity.Id;
 import eu.koboo.en2do.repository.entity.NonIndex;
 import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
@@ -62,14 +60,17 @@ public class MongoManager {
             "notify", "notifyAll", "wait", "finalize", "clone"
     );
 
+    Map<Class<?>, Repository<?, ?>> repositoryRegistry;
+    Map<Class<?>, RepositoryMeta<?, ?, ?>> repositoryMetaRegistry;
+
     @Getter
     CodecRegistry codecRegistry;
     MongoClient client;
     MongoDatabase database;
-    Map<Class<?>, Repository<?, ?>> repoRegistry;
-    Map<Class<?>, RepositoryMeta<?, ?, ?>> repoMetaRegistry;
 
     public MongoManager(Credentials credentials) {
+        repositoryRegistry = new ConcurrentHashMap<>();
+        repositoryMetaRegistry = new ConcurrentHashMap<>();
 
         // If no credentials given, try loading them from default file.
         if (credentials == null) {
@@ -106,7 +107,7 @@ public class MongoManager {
                         .register(new InternalPropertyCodecProvider())
                         .automatic(true)
                         .conventions(List.of(
-                                new AnnotationConvention(),
+                                new AnnotationConvention(repositoryMetaRegistry),
                                 Conventions.ANNOTATION_CONVENTION,
                                 Conventions.SET_PRIVATE_FIELDS_CONVENTION,
                                 Conventions.USE_GETTERS_FOR_SETTERS
@@ -123,9 +124,6 @@ public class MongoManager {
 
         client = MongoClients.create(clientSettings);
         database = client.getDatabase(databaseString);
-
-        repoRegistry = new ConcurrentHashMap<>();
-        repoMetaRegistry = new ConcurrentHashMap<>();
     }
 
     public MongoManager() {
@@ -134,14 +132,14 @@ public class MongoManager {
 
     public boolean close() {
         try {
-            if (repoRegistry != null) {
-                repoRegistry.clear();
+            if (repositoryRegistry != null) {
+                repositoryRegistry.clear();
             }
-            if (repoMetaRegistry != null) {
-                for (RepositoryMeta<?, ?, ?> meta : repoMetaRegistry.values()) {
+            if (repositoryMetaRegistry != null) {
+                for (RepositoryMeta<?, ?, ?> meta : repositoryMetaRegistry.values()) {
                     meta.destroy();
                 }
-                repoMetaRegistry.clear();
+                repositoryMetaRegistry.clear();
             }
             if (client != null) {
                 client.close();
@@ -158,8 +156,8 @@ public class MongoManager {
         try {
 
             // Check for already created repository to avoid multiply instances of the same repository
-            if (repoRegistry.containsKey(repositoryClass)) {
-                return (R) repoRegistry.get(repositoryClass);
+            if (repositoryRegistry.containsKey(repositoryClass)) {
+                return (R) repositoryRegistry.get(repositoryClass);
             }
 
             // Parse annotated collection name and create pojo-related mongo collection
@@ -173,7 +171,7 @@ public class MongoManager {
             if (entityCollectionName.trim().equalsIgnoreCase("")) {
                 throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
             }
-            for (RepositoryMeta<?, ?, ?> meta : repoMetaRegistry.values()) {
+            for (RepositoryMeta<?, ?, ?> meta : repositoryMetaRegistry.values()) {
                 if (meta.getCollectionName().equalsIgnoreCase(entityCollectionName)) {
                     throw new RepositoryNameDuplicateException(repositoryClass, Collection.class);
                 }
@@ -428,7 +426,8 @@ public class MongoManager {
 
             // Creating an index on the uniqueIdentifier field of the entity to speed up queries,
             // but only if wanted. Users can disable that with the annotation.
-            if (!entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
+            if (!repositoryClass.isAnnotationPresent(OverrideObjectID.class)
+                    && !entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
                 entityCollection.createIndex(Indexes.ascending(entityUniqueIdField.getName()), new IndexOptions().unique(true));
             }
             Set<CompoundIndex> compoundIndexSet = AnnotationUtils.collectAnnotations(entityClass, CompoundIndex.class);
@@ -491,8 +490,8 @@ public class MongoManager {
             Class<?>[] interfaces = new Class[]{repositoryClass};
             Repository<E, ID> repository = (Repository<E, ID>) Proxy.newProxyInstance(repoClassLoader, interfaces,
                     new RepositoryInvocationHandler<>(repositoryMeta));
-            repoRegistry.put(repositoryClass, repository);
-            repoMetaRegistry.put(repositoryClass, repositoryMeta);
+            repositoryRegistry.put(repositoryClass, repository);
+            repositoryMetaRegistry.put(repositoryClass, repositoryMeta);
             return (R) repository;
         } catch (Exception e) {
             throw new RuntimeException(e);
