@@ -13,13 +13,13 @@ import java.lang.reflect.Type;
 @UtilityClass
 public class GenericUtils {
 
-    public Class<?> getGenericTypeOfReturnList(Method method) {
+    public Class<?> getGenericTypeOfReturnType(Method method) {
         Type returnType = method.getGenericReturnType();
         ParameterizedType type = (ParameterizedType) returnType;
         return (Class<?>) type.getActualTypeArguments()[0];
     }
 
-    public Class<?> getGenericTypeOfParameterList(Method method, int paramIndex) {
+    public Class<?> getGenericTypeOfParameter(Method method, int paramIndex) {
         Parameter parameter = method.getParameters()[paramIndex];
         Type parameterType = parameter.getParameterizedType();
         ParameterizedType type = (ParameterizedType) parameterType;
