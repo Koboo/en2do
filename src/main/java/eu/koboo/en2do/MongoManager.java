@@ -53,6 +53,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
@@ -65,6 +66,7 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
  * See documentation: <a href="https://koboo.gitbook.io/en2do/get-started/create-the-mongomanager">...</a>
  */
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@SuppressWarnings("unused")
 public class MongoManager {
 
     // Predefined methods by Java objects
@@ -76,14 +78,18 @@ public class MongoManager {
     Map<Class<?>, Repository<?, ?>> repositoryRegistry;
     Map<Class<?>, RepositoryMeta<?, ?, ?>> repositoryMetaRegistry;
 
+    ExecutorService executorService;
+
     @Getter
     CodecRegistry codecRegistry;
     MongoClient client;
     MongoDatabase database;
 
-    public MongoManager(Credentials credentials) {
+    public MongoManager(Credentials credentials, ExecutorService executorService) {
         repositoryRegistry = new ConcurrentHashMap<>();
         repositoryMetaRegistry = new ConcurrentHashMap<>();
+
+        this.executorService = executorService;
 
         // If no credentials given, try loading them from default file.
         if (credentials == null) {
@@ -139,12 +145,24 @@ public class MongoManager {
         database = client.getDatabase(databaseString);
     }
 
-    public MongoManager() {
-        this(null);
+    public MongoManager(Credentials credentials) {
+        this(credentials, null);
     }
 
+    public MongoManager() {
+        this(null, null);
+    }
+
+
     public boolean close() {
+        return close(true);
+    }
+
+    public boolean close(boolean shutdownExecutor) {
         try {
+            if(executorService != null && shutdownExecutor) {
+                executorService.shutdown();
+            }
             if (repositoryRegistry != null) {
                 repositoryRegistry.clear();
             }
@@ -240,7 +258,7 @@ public class MongoManager {
 
             MongoCollection<E> entityCollection = database.getCollection(entityCollectionName, entityClass);
 
-            RepositoryMeta<E, ID, R> repositoryMeta = new RepositoryMeta<>(this,
+            RepositoryMeta<E, ID, R> repositoryMeta = new RepositoryMeta<>(
                     repositoryClass, entityClass,
                     entityFieldSet,
                     entityUniqueIdClass, entityUniqueIdField,
@@ -529,7 +547,7 @@ public class MongoManager {
             ClassLoader repoClassLoader = repositoryClass.getClassLoader();
             Class<?>[] interfaces = new Class[]{repositoryClass};
             Repository<E, ID> repository = (Repository<E, ID>) Proxy.newProxyInstance(repoClassLoader, interfaces,
-                    new RepositoryInvocationHandler<>(repositoryMeta));
+                    new RepositoryInvocationHandler<>(repositoryMeta, executorService));
             repositoryRegistry.put(repositoryClass, repository);
             repositoryMetaRegistry.put(repositoryClass, repositoryMeta);
             return (R) repository;

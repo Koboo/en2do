@@ -4,7 +4,6 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
-import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.internal.exception.methods.MethodInvalidPageException;
 import eu.koboo.en2do.internal.exception.methods.MethodInvalidSortLimitException;
 import eu.koboo.en2do.internal.exception.methods.MethodInvalidSortSkipException;
@@ -31,7 +30,6 @@ import java.util.*;
 @Getter
 public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
-    MongoManager mongoManager;
     String collectionName;
     MongoCollection<E> collection;
 
@@ -53,11 +51,10 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     @Getter(AccessLevel.NONE)
     Map<String, DynamicMethod<E, ID, R>> dynamicMethodRegistry;
 
-    public RepositoryMeta(MongoManager mongoManager, Class<R> repositoryClass, Class<E> entityClass,
+    public RepositoryMeta(Class<R> repositoryClass, Class<E> entityClass,
                           Set<Field> entityFieldSet,
                           Class<ID> entityUniqueIdClass, Field entityUniqueIdField,
                           MongoCollection<E> collection, String collectionName) {
-        this.mongoManager = mongoManager;
         this.collectionName = collectionName;
         this.collection = collection;
 

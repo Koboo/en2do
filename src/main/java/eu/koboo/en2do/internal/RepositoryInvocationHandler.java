@@ -17,12 +17,14 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @AllArgsConstructor
 public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> implements InvocationHandler {
 
     RepositoryMeta<E, ID, R> repositoryMeta;
+    ExecutorService executorService;
 
     @Override
     @SuppressWarnings("all")
@@ -106,13 +108,12 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
     }
 
     private void executeFuture(CompletableFuture<Object> future, MethodCallable callable) {
-        //TODO: Check for ExecutorService from manager
         future.completeAsync(() -> {
             try {
                 return callable.call();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        });
+        }, executorService == null ? future.defaultExecutor() : executorService);
     }
 }
