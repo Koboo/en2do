@@ -4,6 +4,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.internal.exception.methods.MethodInvalidPageException;
 import eu.koboo.en2do.internal.exception.methods.MethodInvalidSortLimitException;
 import eu.koboo.en2do.internal.exception.methods.MethodInvalidSortSkipException;
@@ -24,15 +25,13 @@ import org.bson.conversions.Bson;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Getter
 public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
+    MongoManager mongoManager;
     String collectionName;
     MongoCollection<E> collection;
 
@@ -54,10 +53,11 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     @Getter(AccessLevel.NONE)
     Map<String, DynamicMethod<E, ID, R>> dynamicMethodRegistry;
 
-    public RepositoryMeta(Class<R> repositoryClass, Class<E> entityClass,
+    public RepositoryMeta(MongoManager mongoManager, Class<R> repositoryClass, Class<E> entityClass,
                           Set<Field> entityFieldSet,
                           Class<ID> entityUniqueIdClass, Field entityUniqueIdField,
                           MongoCollection<E> collection, String collectionName) {
+        this.mongoManager = mongoManager;
         this.collectionName = collectionName;
         this.collection = collection;
 
@@ -253,5 +253,10 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         findIterable = findIterable.limit(pageObject.getEntitiesPerPage()).skip(skip);
         findIterable.allowDiskUse(true);
         return findIterable;
+    }
+
+    public String getPredefinedNameByAsyncName(String asyncName) {
+        String predefinedName = asyncName.replaceFirst("async", "");
+        return predefinedName.substring(0, 1).toLowerCase(Locale.ROOT) + predefinedName.substring(1);
     }
 }
