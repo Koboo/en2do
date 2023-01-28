@@ -21,15 +21,14 @@ import eu.koboo.en2do.internal.methods.dynamic.MethodFilterPart;
 import eu.koboo.en2do.internal.methods.operators.FilterOperator;
 import eu.koboo.en2do.internal.methods.operators.MethodOperator;
 import eu.koboo.en2do.internal.methods.predefined.impl.*;
+import eu.koboo.en2do.repository.*;
 import eu.koboo.en2do.repository.Collection;
-import eu.koboo.en2do.repository.DropEntitiesOnStart;
-import eu.koboo.en2do.repository.DropIndexesOnStart;
-import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.entity.Id;
 import eu.koboo.en2do.repository.entity.NonIndex;
 import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
 import eu.koboo.en2do.repository.entity.compound.Index;
 import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
+import eu.koboo.en2do.repository.methods.async.Async;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.*;
 import eu.koboo.en2do.repository.methods.transform.Transform;
@@ -50,6 +49,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
@@ -238,7 +238,7 @@ public class MongoManager {
 
             MongoCollection<E> entityCollection = database.getCollection(entityCollectionName, entityClass);
 
-            RepositoryMeta<E, ID, R> repositoryMeta = new RepositoryMeta<>(
+            RepositoryMeta<E, ID, R> repositoryMeta = new RepositoryMeta<>(this,
                     repositoryClass, entityClass,
                     entityFieldSet,
                     entityUniqueIdClass, entityUniqueIdField,
@@ -273,11 +273,13 @@ public class MongoManager {
             for (Method method : repositoryClass.getMethods()) {
                 String methodName = method.getName();
 
+                // Apply transform annotation
                 Transform transform = method.getAnnotation(Transform.class);
                 if (transform != null) {
                     methodName = transform.value();
                 }
 
+                // Check if we catch a predefined method
                 if (repositoryMeta.isRepositoryMethod(methodName)) {
                     continue;
                 }
@@ -286,8 +288,28 @@ public class MongoManager {
                 if (IGNORED_DEFAULT_METHODS.contains(methodName)) {
                     continue;
                 }
-                // Check for the return-types of the methods, and their defined names to match our pattern.
+
+                // Get the default return type of the method
                 Class<?> returnType = method.getReturnType();
+
+                // Check if the method is async and if so, check for completable future return type.
+                boolean isAsyncMethod = method.isAnnotationPresent(Async.class);
+                if(isAsyncMethod) {
+                    // Check async method name
+                    if(methodName.startsWith("async")) {
+                        String predefinedName = repositoryMeta.getPredefinedNameByAsyncName(methodName);
+                        if(repositoryMeta.isRepositoryMethod(predefinedName)) {
+                            continue;
+                        }
+                        throw new MethodInvalidAsyncNameException(method, repositoryClass);
+                    }
+                    // Check CompletableFuture return type
+                    if(GenericUtils.isNotTypeOf(returnType, CompletableFuture.class)) {
+                        throw new MethodInvalidAsyncReturnException(method, repositoryClass);
+                    }
+                    returnType = GenericUtils.getGenericTypeOfReturnType(method);
+                }
+
 
                 // Parse the MethodOperator by the methodName
                 MethodOperator methodOperator = MethodOperator.parseMethodStartsWith(methodName);
@@ -341,7 +363,7 @@ public class MongoManager {
                                 if (GenericUtils.isNotTypeOf(List.class, paramClass)) {
                                     throw new MethodMismatchingTypeException(method, repositoryClass, List.class, paramClass);
                                 }
-                                Class<?> listType = GenericUtils.getGenericTypeOfParameterList(method, paramIndex);
+                                Class<?> listType = GenericUtils.getGenericTypeOfParameter(method, paramIndex);
                                 if (GenericUtils.isNotTypeOf(fieldClass, listType)) {
                                     throw new MethodInvalidListParameterException(method, repositoryClass, fieldClass, listType);
                                 }
