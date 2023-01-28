@@ -65,7 +65,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         }
 
         MethodCallable methodCallable = () -> executeMethod(dynamicMethod, arguments, method, methodName);
-        if(isAsyncMethod) {
+        if (isAsyncMethod) {
             CompletableFuture<Object> future = new CompletableFuture<>();
             executeFuture(future, methodCallable);
             return future;

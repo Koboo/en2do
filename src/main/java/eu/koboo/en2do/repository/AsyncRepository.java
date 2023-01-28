@@ -20,6 +20,7 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
+     *
      * @see Repository#countAll()
      */
     @Async
@@ -27,6 +28,7 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
+     *
      * @see Repository#delete(Object)
      */
     @Async
@@ -34,6 +36,7 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
+     *
      * @see Repository#deleteAll(List)
      */
     @Async
@@ -41,6 +44,7 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
+     *
      * @see Repository#deleteById(Object)
      */
     @Async
@@ -48,6 +52,7 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
+     *
      * @see Repository#drop()
      */
     @Async
@@ -55,6 +60,7 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
+     *
      * @see Repository#exists(Object)
      */
     @Async
@@ -62,6 +68,7 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
+     *
      * @see Repository#existsById(Object)
      */
     @Async
@@ -69,6 +76,7 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
+     *
      * @see Repository#findAll()
      */
     @Async
@@ -76,6 +84,7 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
+     *
      * @see Repository#findFirstById(Object)
      */
     @Async
@@ -83,6 +92,7 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
+     *
      * @see Repository#pageAll(Pagination)
      */
     @Async
@@ -90,6 +100,7 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
+     *
      * @see Repository#save(Object)
      */
     @Async
@@ -97,6 +108,7 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
+     *
      * @see Repository#saveAll(List)
      */
     @Async
@@ -104,6 +116,7 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
+     *
      * @see Repository#sortAll(Sort)
      */
     @Async

@@ -21,8 +21,10 @@ import eu.koboo.en2do.internal.methods.dynamic.MethodFilterPart;
 import eu.koboo.en2do.internal.methods.operators.FilterOperator;
 import eu.koboo.en2do.internal.methods.operators.MethodOperator;
 import eu.koboo.en2do.internal.methods.predefined.impl.*;
-import eu.koboo.en2do.repository.*;
 import eu.koboo.en2do.repository.Collection;
+import eu.koboo.en2do.repository.DropEntitiesOnStart;
+import eu.koboo.en2do.repository.DropIndexesOnStart;
+import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.entity.Id;
 import eu.koboo.en2do.repository.entity.NonIndex;
 import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
@@ -294,17 +296,17 @@ public class MongoManager {
 
                 // Check if the method is async and if so, check for completable future return type.
                 boolean isAsyncMethod = method.isAnnotationPresent(Async.class);
-                if(isAsyncMethod) {
+                if (isAsyncMethod) {
                     // Check async method name
-                    if(methodName.startsWith("async")) {
+                    if (methodName.startsWith("async")) {
                         String predefinedName = repositoryMeta.getPredefinedNameByAsyncName(methodName);
-                        if(repositoryMeta.isRepositoryMethod(predefinedName)) {
+                        if (repositoryMeta.isRepositoryMethod(predefinedName)) {
                             continue;
                         }
                         throw new MethodInvalidAsyncNameException(method, repositoryClass);
                     }
                     // Check CompletableFuture return type
-                    if(GenericUtils.isNotTypeOf(returnType, CompletableFuture.class)) {
+                    if (GenericUtils.isNotTypeOf(returnType, CompletableFuture.class)) {
                         throw new MethodInvalidAsyncReturnException(method, repositoryClass);
                     }
                     returnType = GenericUtils.getGenericTypeOfReturnType(method);
