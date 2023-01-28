@@ -40,6 +40,12 @@ public class GenericMapCodec<K, T> implements Codec<Map<K, T>> {
         this.valueCodec = valueCodec;
     }
 
+    /**
+     * @see org.bson.codecs.Encoder
+     * @param writer the BSON writer to encode into
+     * @param map the value to encode
+     * @param encoderContext the encoder context
+     */
     @Override
     public void encode(BsonWriter writer, Map<K, T> map, EncoderContext encoderContext) {
         try (BsonDocumentWriter documentWriter = new BsonDocumentWriter(new BsonDocument())) {
@@ -70,6 +76,12 @@ public class GenericMapCodec<K, T> implements Codec<Map<K, T>> {
         writer.writeEndDocument();
     }
 
+    /**
+     * @see org.bson.codecs.Decoder
+     * @param reader         the BSON reader
+     * @param context the decoder context
+     * @return The decoded map instance
+     */
     @Override
     @SuppressWarnings("unchecked")
     public Map<K, T> decode(BsonReader reader, DecoderContext context) {
@@ -97,6 +109,10 @@ public class GenericMapCodec<K, T> implements Codec<Map<K, T>> {
         return map;
     }
 
+    /**
+     * Used to get a new instance of the saved map
+     * @return The new created map instance
+     */
     private Map<K, T> getInstance() {
         if (encoderClass.isInterface()) {
             return new HashMap<>();
