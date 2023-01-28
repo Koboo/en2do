@@ -23,7 +23,7 @@ public enum MethodOperator {
         if (GenericUtils.isNotTypeOf(List.class, returnType)) {
             throw new MethodFindListReturnTypeException(method, entityClass, repoClass);
         }
-        Class<?> listType = GenericUtils.getGenericTypeOfReturnList(method);
+        Class<?> listType = GenericUtils.getGenericTypeOfReturnType(method);
         if (!listType.isAssignableFrom(entityClass)) {
             throw new MethodFindListTypeException(method, repoClass, listType);
         }
@@ -47,7 +47,7 @@ public enum MethodOperator {
         if (GenericUtils.isNotTypeOf(List.class, returnType)) {
             throw new MethodFindListReturnTypeException(method, entityClass, repoClass);
         }
-        Class<?> listType = GenericUtils.getGenericTypeOfReturnList(method);
+        Class<?> listType = GenericUtils.getGenericTypeOfReturnType(method);
         if (!listType.isAssignableFrom(entityClass)) {
             throw new MethodFindListTypeException(method, repoClass, listType);
         }
