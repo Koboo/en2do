@@ -24,10 +24,7 @@ import org.bson.conversions.Bson;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Getter
@@ -253,5 +250,10 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         findIterable = findIterable.limit(pageObject.getEntitiesPerPage()).skip(skip);
         findIterable.allowDiskUse(true);
         return findIterable;
+    }
+
+    public String getPredefinedNameByAsyncName(String asyncName) {
+        String predefinedName = asyncName.replaceFirst("async", "");
+        return predefinedName.substring(0, 1).toLowerCase(Locale.ROOT) + predefinedName.substring(1);
     }
 }
