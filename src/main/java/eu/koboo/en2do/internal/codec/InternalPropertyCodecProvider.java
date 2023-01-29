@@ -16,6 +16,13 @@ import java.util.Map;
 @Log
 public class InternalPropertyCodecProvider implements PropertyCodecProvider {
 
+    /**
+     * @see PropertyCodecProvider
+     * @param type the class and bound type parameters for which to get a Codec
+     * @param registry the registry to use for resolving dependent Codec instances
+     * @return The codec from the type
+     * @param <T> The type of the codec
+     */
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
     public <T> Codec<T> get(TypeWithTypeParameters<T> type, PropertyCodecRegistry registry) {

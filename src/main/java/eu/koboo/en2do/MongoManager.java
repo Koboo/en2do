@@ -30,6 +30,7 @@ import eu.koboo.en2do.repository.entity.NonIndex;
 import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
 import eu.koboo.en2do.repository.entity.compound.Index;
 import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
+import eu.koboo.en2do.repository.methods.async.Async;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.*;
 import eu.koboo.en2do.repository.methods.transform.Transform;
@@ -50,7 +51,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
@@ -63,6 +66,7 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
  * See documentation: <a href="https://koboo.gitbook.io/en2do/get-started/create-the-mongomanager">...</a>
  */
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@SuppressWarnings("unused")
 public class MongoManager {
 
     // Predefined methods by Java objects
@@ -74,14 +78,18 @@ public class MongoManager {
     Map<Class<?>, Repository<?, ?>> repositoryRegistry;
     Map<Class<?>, RepositoryMeta<?, ?, ?>> repositoryMetaRegistry;
 
+    ExecutorService executorService;
+
     @Getter
     CodecRegistry codecRegistry;
     MongoClient client;
     MongoDatabase database;
 
-    public MongoManager(Credentials credentials) {
+    public MongoManager(Credentials credentials, ExecutorService executorService) {
         repositoryRegistry = new ConcurrentHashMap<>();
         repositoryMetaRegistry = new ConcurrentHashMap<>();
+
+        this.executorService = executorService;
 
         // If no credentials given, try loading them from default file.
         if (credentials == null) {
@@ -137,12 +145,24 @@ public class MongoManager {
         database = client.getDatabase(databaseString);
     }
 
-    public MongoManager() {
-        this(null);
+    public MongoManager(Credentials credentials) {
+        this(credentials, null);
     }
 
+    public MongoManager() {
+        this(null, null);
+    }
+
+
     public boolean close() {
+        return close(true);
+    }
+
+    public boolean close(boolean shutdownExecutor) {
         try {
+            if(executorService != null && shutdownExecutor) {
+                executorService.shutdown();
+            }
             if (repositoryRegistry != null) {
                 repositoryRegistry.clear();
             }
@@ -273,11 +293,13 @@ public class MongoManager {
             for (Method method : repositoryClass.getMethods()) {
                 String methodName = method.getName();
 
+                // Apply transform annotation
                 Transform transform = method.getAnnotation(Transform.class);
                 if (transform != null) {
                     methodName = transform.value();
                 }
 
+                // Check if we catch a predefined method
                 if (repositoryMeta.isRepositoryMethod(methodName)) {
                     continue;
                 }
@@ -286,8 +308,28 @@ public class MongoManager {
                 if (IGNORED_DEFAULT_METHODS.contains(methodName)) {
                     continue;
                 }
-                // Check for the return-types of the methods, and their defined names to match our pattern.
+
+                // Get the default return type of the method
                 Class<?> returnType = method.getReturnType();
+
+                // Check if the method is async and if so, check for completable future return type.
+                boolean isAsyncMethod = method.isAnnotationPresent(Async.class);
+                if (isAsyncMethod) {
+                    // Check async method name
+                    if (methodName.startsWith("async")) {
+                        String predefinedName = repositoryMeta.getPredefinedNameByAsyncName(methodName);
+                        if (repositoryMeta.isRepositoryMethod(predefinedName)) {
+                            continue;
+                        }
+                        throw new MethodInvalidAsyncNameException(method, repositoryClass);
+                    }
+                    // Check CompletableFuture return type
+                    if (GenericUtils.isNotTypeOf(returnType, CompletableFuture.class)) {
+                        throw new MethodInvalidAsyncReturnException(method, repositoryClass);
+                    }
+                    returnType = GenericUtils.getGenericTypeOfReturnType(method);
+                }
+
 
                 // Parse the MethodOperator by the methodName
                 MethodOperator methodOperator = MethodOperator.parseMethodStartsWith(methodName);
@@ -341,7 +383,7 @@ public class MongoManager {
                                 if (GenericUtils.isNotTypeOf(List.class, paramClass)) {
                                     throw new MethodMismatchingTypeException(method, repositoryClass, List.class, paramClass);
                                 }
-                                Class<?> listType = GenericUtils.getGenericTypeOfParameterList(method, paramIndex);
+                                Class<?> listType = GenericUtils.getGenericTypeOfParameter(method, paramIndex);
                                 if (GenericUtils.isNotTypeOf(fieldClass, listType)) {
                                     throw new MethodInvalidListParameterException(method, repositoryClass, fieldClass, listType);
                                 }
@@ -505,7 +547,7 @@ public class MongoManager {
             ClassLoader repoClassLoader = repositoryClass.getClassLoader();
             Class<?>[] interfaces = new Class[]{repositoryClass};
             Repository<E, ID> repository = (Repository<E, ID>) Proxy.newProxyInstance(repoClassLoader, interfaces,
-                    new RepositoryInvocationHandler<>(repositoryMeta));
+                    new RepositoryInvocationHandler<>(repositoryMeta, executorService));
             repositoryRegistry.put(repositoryClass, repository);
             repositoryMetaRegistry.put(repositoryClass, repositoryMeta);
             return (R) repository;

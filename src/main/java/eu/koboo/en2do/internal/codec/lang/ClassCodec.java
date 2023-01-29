@@ -43,8 +43,7 @@ public class ClassCodec implements Codec<Class> {
     }
 
     /**
-     * See org.bson.codecs.Encoder
-     *
+     * @see org.bson.codecs.Encoder
      * @return the class of the encoded class
      */
     @Override

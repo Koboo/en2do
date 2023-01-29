@@ -86,7 +86,7 @@ public class Validator {
                         .findFirst()
                         .orElse(null);
                 if (field == null) {
-                    throw new RepositoryDescriptorException(typeClass, repositoryClass, descriptor.getName());
+                    continue;
                 }
 
                 // Ignore all fields annotated with transient, because pojo doesn't touch that.
