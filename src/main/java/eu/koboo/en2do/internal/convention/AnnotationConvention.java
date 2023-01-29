@@ -14,12 +14,23 @@ import org.bson.codecs.pojo.PropertyModelBuilder;
 import java.lang.annotation.Annotation;
 import java.util.Map;
 
+/**
+ * This convention implementation enables the usage of the annotations from en2do
+ * inside entity classes. This convention checks the annotations in the class model
+ * and modifies it accordingly.
+ */
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class AnnotationConvention implements Convention {
 
     Map<Class<?>, RepositoryMeta<?, ?, ?>> repositoryMetaRegistry;
 
+    /**
+     * This method is used to get the RepositoryMeta object by the given typeClass,
+     * and if non is found, it returns null.
+     * @param typeClass The type of RepositoryMeta (should be the entity class)
+     * @return The RepositoryMeta if found, otherwise "null"
+     */
     private RepositoryMeta<?, ?, ?> findRepositoryMetaOf(Class<?> typeClass) {
         for (RepositoryMeta<?, ?, ?> meta : repositoryMetaRegistry.values()) {
             if (!meta.getEntityClass().equals(typeClass)) {
@@ -30,6 +41,10 @@ public class AnnotationConvention implements Convention {
         return null;
     }
 
+    /**
+     * @see Convention
+     * @param classModelBuilder the ClassModelBuilder to apply the convention to
+     */
     @Override
     public void apply(ClassModelBuilder<?> classModelBuilder) {
         for (PropertyModelBuilder<?> propertyModelBuilder : classModelBuilder.getPropertyModelBuilders()) {
