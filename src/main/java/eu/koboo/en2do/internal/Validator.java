@@ -6,6 +6,7 @@ import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.entity.TransformField;
 import eu.koboo.en2do.repository.entity.Transient;
 import eu.koboo.en2do.utility.FieldUtils;
+import lombok.experimental.UtilityClass;
 import org.bson.codecs.Codec;
 
 import java.beans.BeanInfo;
@@ -20,9 +21,18 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
+/**
+ * Represents the validation of a class. This can be an entity or an embedded class inside the entity.
+ */
+@UtilityClass
 public class Validator {
 
-    private static Codec<?> getCodec(Class<?> typeClass) {
+    /**
+     * Returns a codec for the given type class or if no codec is found, it returns null.
+     * @param typeClass The type class to search a codec for.
+     * @return The codec if found, otherwise null.
+     */
+    private Codec<?> getCodec(Class<?> typeClass) {
         try {
             return MongoClientSettings.getDefaultCodecRegistry().get(typeClass);
         } catch (Exception ignored) {
@@ -30,7 +40,16 @@ public class Validator {
         }
     }
 
-    public static <E, ID, R extends Repository<E, ID>> void validateCompatibility(
+    /**
+     * Validates the compatibility of the given type class
+     * @param repositoryClass The class of the repository
+     * @param typeClass The type class, which should be validated
+     * @param <E> The generic type of the entity
+     * @param <ID> The generic type of the id of the entity
+     * @param <R> The generic type of the repository
+     * @throws Exception if type class is not valid.
+     */
+    public <E, ID, R extends Repository<E, ID>> void validateCompatibility(
             Class<R> repositoryClass, Class<?> typeClass) throws Exception {
         if (typeClass == null) {
             throw new RuntimeException("Class for validation is null! Please open an issue on github!");

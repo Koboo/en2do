@@ -15,11 +15,6 @@ import java.util.Map;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Sort {
 
-    @Deprecated
-    public static Sort create() {
-        return of();
-    }
-
     /**
      * Use this method to create a new Sort object
      *

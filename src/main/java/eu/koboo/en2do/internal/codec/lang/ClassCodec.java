@@ -8,14 +8,13 @@ import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 
 /**
- * ClassCodec is used to encode and decode java.lang.Class objects to mongodb document fields
+ * ClassCodec is used to encode and decode java.lang.Class objects to mongodb document fields.
  */
 @SuppressWarnings("rawtypes")
 public class ClassCodec implements Codec<Class> {
 
     /**
-     * See org.bson.codecs.Encoder
-     *
+     * @see org.bson.codecs.Encoder
      * @param writer         the BSON writer to encode into
      * @param value          the value to encode
      * @param encoderContext the encoder context
@@ -26,8 +25,7 @@ public class ClassCodec implements Codec<Class> {
     }
 
     /**
-     * See org.bson.codecs.Decoder
-     *
+     * @see org.bson.codecs.Decoder
      * @param reader         the BSON reader
      * @param decoderContext the decoder context
      * @return the decoded Class

@@ -37,20 +37,13 @@ test {
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+    withJavadocJar()
+    withSourcesJar()
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.fork = true
     options.encoding = 'UTF-8'
-}
-
-task sourcesJar(type: Jar) {
-    from sourceSets.main.allJava
-    archiveClassifier.set('sources')
-}
-task javadocJar(type: Jar) {
-    from javadoc
-    archiveClassifier.set('javadocs')
 }
 
 publishing {
@@ -66,8 +59,6 @@ publishing {
     publications {
         maven(MavenPublication) {
             from components.java
-            artifact sourcesJar
-            artifact javadocJar
         }
     }
 }

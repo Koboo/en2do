@@ -84,15 +84,6 @@ public class DateUtils {
         return date.toInstant().atZone(zoneId).toLocalDate();
     }
 
-
-    public Date localDateToDate(LocalDate localDateTime) {
-        return localDateToDate(localDateTime, ZoneId.systemDefault());
-    }
-
-    public Date localDateToDate(LocalDate localDateTime, TimeZone timeZone) {
-        return localDateToDate(localDateTime, timeZone.toZoneId());
-    }
-
     public Date localDateToDate(LocalDate localDateTime, ZoneId zoneId) {
         return Date.from(localDateTime.atStartOfDay(zoneId).toInstant());
     }

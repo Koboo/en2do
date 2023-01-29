@@ -110,8 +110,8 @@ public class GenericMapCodec<K, T> implements Codec<Map<K, T>> {
     }
 
     /**
-     * Used to get a new instance of the saved map
-     * @return The new created map instance
+     * Used to get a new instance of the saved map.
+     * @return The new created map instance.
      */
     private Map<K, T> getInstance() {
         if (encoderClass.isInterface()) {
