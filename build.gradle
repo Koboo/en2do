@@ -73,10 +73,10 @@ githubRelease {
     body { """\
 ## Links to $version
 
-* [Documentation](https://koboo.gitbook.com/en2do)
-* [Maven](https://reposilite.koboo.eu/#/releases/eu/koboo/en2do/$version/)
-* [JavaDocs](https://reposilite.koboo.eu/javadoc/releases/eu/koboo/en2do/$version/)
-* [Jenkins](https://jenkins.koboo.eu/job/en2do/job/Build%20and%20Publish%20(main)/)
+* [Check the Documentation](https://koboo.gitbook.com/en2do)
+* [Check the JavaDocs](https://reposilite.koboo.eu/javadoc/releases/eu/koboo/en2do/$version/)
+* [Add the Maven dependency](https://reposilite.koboo.eu/#/releases/eu/koboo/en2do/$version/)
+* [Download artifacts from Jenkins](https://jenkins.koboo.eu/job/en2do/job/Build%20and%20Publish%20(main)/)
 
 ${
         changelog().call()
