@@ -3,8 +3,8 @@ import java.util.stream.Collectors
 plugins {
     id('java')
     id('maven-publish')
-    id('com.github.johnrengelman.shadow') version('7.1.2')
-    id('com.github.breadmoirai.github-release') version('2.4.1')
+    id('com.github.johnrengelman.shadow') version('5.2.0')
+    id('com.github.breadmoirai.github-release') version('2.3.1')
 }
 
 group("$projectGroup")
@@ -35,15 +35,22 @@ test {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-    withJavadocJar()
-    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.fork = true
     options.encoding = 'UTF-8'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier.set('sources')
+}
+task javadocJar(type: Jar) {
+    from javadoc
+    archiveClassifier.set('javadoc')
 }
 
 publishing {
@@ -59,13 +66,14 @@ publishing {
     publications {
         maven(MavenPublication) {
             from components.java
+            artifact sourcesJar
+            artifact javadocJar
         }
     }
 }
 
 githubRelease {
     token System.getenv('GITHUB_TOKEN')
-    generateReleaseNotes = true
     draft = true
 
     releaseAssets jar.destinationDir.listFiles()

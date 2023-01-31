@@ -3,6 +3,7 @@ package eu.koboo.en2do.internal;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.internal.exception.methods.MethodUnsupportedException;
+import eu.koboo.en2do.internal.exception.repository.RepositoryInvalidCallException;
 import eu.koboo.en2do.internal.methods.dynamic.DynamicMethod;
 import eu.koboo.en2do.internal.methods.predefined.PredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
@@ -82,29 +83,32 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         // Switch-case the method operator to use the correct mongo query.
         final MongoCollection<E> collection = repositoryMeta.getCollection();
 
-        return switch (dynamicMethod.getMethodOperator()) {
-            case COUNT -> collection.countDocuments(filter);
-            case DELETE -> collection.deleteMany(filter).wasAcknowledged();
-            case EXISTS -> collection.countDocuments(filter) > 0;
-            case FIND_MANY -> {
-                FindIterable<E> findIterable = repositoryMeta.createIterable(filter, methodName);
+        FindIterable<E> findIterable;
+        switch (dynamicMethod.getMethodOperator()) {
+            case COUNT:
+                return collection.countDocuments(filter);
+            case DELETE:
+                return collection.deleteMany(filter).wasAcknowledged();
+            case EXISTS:
+                return collection.countDocuments(filter) > 0;
+            case FIND_MANY:
+                findIterable = repositoryMeta.createIterable(filter, methodName);
                 findIterable = repositoryMeta.applySortObject(method, findIterable, arguments);
                 findIterable = repositoryMeta.applySortAnnotations(method, findIterable);
-                yield findIterable.into(new ArrayList<>());
-            }
-            case FIND_FIRST -> {
-                FindIterable<E> findIterable = repositoryMeta.createIterable(filter, methodName);
+                return findIterable.into(new ArrayList<>());
+            case FIND_FIRST:
+                findIterable = repositoryMeta.createIterable(filter, methodName);
                 findIterable = repositoryMeta.applySortObject(method, findIterable, arguments);
                 findIterable = repositoryMeta.applySortAnnotations(method, findIterable);
-                yield findIterable.limit(1).first();
-            }
-            case PAGE -> {
-                FindIterable<E> findIterable = repositoryMeta.createIterable(filter, methodName);
+                return findIterable.limit(1).first();
+            case PAGE:
+                findIterable = repositoryMeta.createIterable(filter, methodName);
                 findIterable = repositoryMeta.applyPageObject(method, findIterable, arguments);
-                yield findIterable.into(new ArrayList<>());
-            }
-            // Couldn't find any match method operator, but that shouldn't happen
-        };
+                return findIterable.into(new ArrayList<>());
+            default:
+                // Couldn't find any match method operator, but that shouldn't happen
+                throw new RepositoryInvalidCallException(method, repositoryMeta.getRepositoryClass());
+        }
     }
 
     private void executeFuture(CompletableFuture<Object> future, MethodCallable callable) {

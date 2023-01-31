@@ -1,5 +1,10 @@
 package eu.koboo.en2do;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -11,18 +16,31 @@ import java.util.Properties;
 /**
  * This object is used to simplify creating credentials to the mongodb server.
  * See documentation: <a href="https://koboo.gitbook.io/en2do/get-started/create-the-mongomanager">...</a>
- *
- * @param connectString The connection string to the mongodb database server
- * @param database      The database, which should be used
  */
 @SuppressWarnings("unused")
-public record Credentials(String connectString, String database) {
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Getter
+public class Credentials {
 
+    /**
+     * The default key of the connection string.
+     */
     private static final String CONNECT_KEY = "en2do.connectstring";
+    /**
+     * The default key of the database.
+     */
     private static final String DATABASE_KEY = "en2do.database";
-
+    /**
+     * The default name of the credentials file.
+     */
     private static final String DEFAULT_CREDENTIAL_FILE = "credentials.properties";
 
+    /**
+     * Utility method for reading credentials from an input stream.
+     * @param inputStream The input stream, which should be read.
+     * @return The new created credentials object.
+     */
     private static Credentials fromStreamProperties(InputStream inputStream) {
         try {
             Properties properties = new Properties();
@@ -34,10 +52,20 @@ public record Credentials(String connectString, String database) {
         return null;
     }
 
+    /**
+     * Automatically reading credentials from the default resourcePath, which is
+     * "{applicationJar}/credentials.properties"
+     * @return The new created credentials object.
+     */
     public static Credentials fromResource() {
         return fromResource("/" + DEFAULT_CREDENTIAL_FILE);
     }
 
+    /**
+     * Automatically reading credentials from a resource file from given resourcePath.
+     * @param resourcePath The resource path with the containing credentials.
+     * @return The new created credentials object.
+     */
     public static Credentials fromResource(String resourcePath) {
         if (resourcePath == null) {
             throw new RuntimeException("Couldn't read resource from null path!");
@@ -54,10 +82,20 @@ public record Credentials(String connectString, String database) {
         }
     }
 
+    /**
+     * Automatically reading credentials from the default filePath, which is
+     * "{applicationDirectory}/credentials.properties"
+     * @return The new created credentials object.
+     */
     public static Credentials fromFile() {
         return fromFile(DEFAULT_CREDENTIAL_FILE);
     }
 
+    /**
+     * Automatically reading credentials from a file from given filePath.
+     * @param filePath The file path with the containing credentials.
+     * @return The new created credentials object.
+     */
     public static Credentials fromFile(String filePath) {
         if (filePath == null) {
             throw new RuntimeException("Couldn't read file from null path!");
@@ -73,24 +111,61 @@ public record Credentials(String connectString, String database) {
         }
     }
 
+    /**
+     * Automatically reading credentials from the system properties.
+     * @return The new created credentials object.
+     */
     public static Credentials fromSystemProperties() {
         return fromSystemProperties(CONNECT_KEY, DATABASE_KEY);
     }
 
+    /**
+     * Automatically reading credentials from the system properties,
+     * using custom keys for the connectString and database
+     * @param propertyConnectKey The property key for the connection string
+     * @param propertyDatabaseKey The property key for the database
+     * @return The new created credentials object.
+     */
     public static Credentials fromSystemProperties(String propertyConnectKey, String propertyDatabaseKey) {
         return new Credentials(System.getProperty(propertyConnectKey), System.getProperty(propertyDatabaseKey));
     }
 
+    /**
+     * Automatically reading credentials from the system environmental variables.
+     * @return The new created credentials object.
+     */
     public static Credentials fromSystemEnvVars() {
         return fromSystemEnvVars(CONNECT_KEY.toUpperCase(Locale.ROOT).replaceFirst("\\.", "_"),
                 DATABASE_KEY.toUpperCase(Locale.ROOT).replaceFirst("\\.", "_"));
     }
 
+    /**
+     * Automatically reading credentials from the system environmental variables.
+     * using custom keys for the connectString and database
+     * @param envVarConnectKey The environmental variable key for the connection string
+     * @param envVarDatabaseKey The environmental variable key for the database
+     * @return The new created credentials object.
+     */
     public static Credentials fromSystemEnvVars(String envVarConnectKey, String envVarDatabaseKey) {
         return new Credentials(System.getenv(envVarConnectKey), System.getenv(envVarDatabaseKey));
     }
 
+    /**
+     * Create a new credentials object by passing the two values directly.
+     * @param connectString The connection string to the mongodb server.
+     * @param database The database which should be used.
+     * @return A new created credentials object.
+     */
     public static Credentials of(String connectString, String database) {
         return new Credentials(connectString, database);
     }
+
+    /**
+     * The connection string to the mongodb database server
+     */
+    String connectString;
+    /**
+     * The database, which should be used
+     */
+    String database;
 }

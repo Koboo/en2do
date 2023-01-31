@@ -105,14 +105,14 @@ public class MongoManager {
                     "accessible credentials.");
         }
 
-        String connectString = credentials.connectString();
+        String connectString = credentials.getConnectString();
         // If credentials connectString is null, throw exception
         if (connectString == null) {
             throw new NullPointerException("No connectString given! Please make sure to provide a " +
                     "accessible connectString.");
         }
         // If credentials databaseString is null, throw exception
-        String databaseString = credentials.database();
+        String databaseString = credentials.getDatabase();
         if (databaseString == null) {
             throw new NullPointerException("No databaseString given! Please make sure to provide a " +
                     "accessible databaseString.");
@@ -160,7 +160,7 @@ public class MongoManager {
 
     public boolean close(boolean shutdownExecutor) {
         try {
-            if(executorService != null && shutdownExecutor) {
+            if (executorService != null && shutdownExecutor) {
                 executorService.shutdown();
             }
             if (repositoryRegistry != null) {
@@ -363,7 +363,7 @@ public class MongoManager {
                 for (String filterOperatorString : methodFilterPartArray) {
                     FilterType filterType = createFilterType(entityClass, repositoryClass, method, filterOperatorString,
                             entityFieldSet);
-                    int filterTypeParameterCount = filterType.operator().getExpectedParameterCount();
+                    int filterTypeParameterCount = filterType.getOperator().getExpectedParameterCount();
                     for (int i = 0; i < filterTypeParameterCount; i++) {
                         int paramIndex = nextParameterIndex + i;
                         Class<?> paramClass = method.getParameters()[paramIndex].getType();
@@ -372,14 +372,14 @@ public class MongoManager {
                                     method.getParameterCount());
                         }
                         // Special checks for some operators
-                        Class<?> fieldClass = filterType.field().getType();
-                        switch (filterType.operator()) {
-                            case REGEX -> {
+                        Class<?> fieldClass = filterType.getField().getType();
+                        switch (filterType.getOperator()) {
+                            case REGEX:
                                 if (GenericUtils.isNotTypeOf(String.class, paramClass) && GenericUtils.isNotTypeOf(Pattern.class, paramClass)) {
                                     throw new MethodInvalidRegexParameterException(method, repositoryClass, paramClass);
                                 }
-                            }
-                            case IN -> {
+                                break;
+                            case IN:
                                 if (GenericUtils.isNotTypeOf(List.class, paramClass)) {
                                     throw new MethodMismatchingTypeException(method, repositoryClass, List.class, paramClass);
                                 }
@@ -387,12 +387,12 @@ public class MongoManager {
                                 if (GenericUtils.isNotTypeOf(fieldClass, listType)) {
                                     throw new MethodInvalidListParameterException(method, repositoryClass, fieldClass, listType);
                                 }
-                            }
-                            default -> {
+                                break;
+                            default:
                                 if (GenericUtils.isNotTypeOf(fieldClass, paramClass)) {
                                     throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
                                 }
-                            }
+                                break;
                         }
                     }
                     MethodFilterPart filterPart = new MethodFilterPart(filterType, nextParameterIndex);

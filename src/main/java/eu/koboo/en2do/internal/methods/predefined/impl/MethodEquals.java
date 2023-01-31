@@ -19,9 +19,10 @@ public class MethodEquals<E, ID, R extends Repository<E, ID>> extends Predefined
         if (object == null) {
             return false;
         }
-        if (!(object instanceof Repository<?, ?> repository)) {
+        if (!(object instanceof Repository<?, ?>)) {
             return false;
         }
+        Repository<?, ?> repository = (Repository<?, ?>) object;
         return repository.getClass().getName().equalsIgnoreCase(repositoryMeta.getClass().getName());
     }
 }

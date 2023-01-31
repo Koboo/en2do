@@ -171,9 +171,10 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
             return findIterable;
         }
         Object lastParamObject = args == null ? null : args[args.length - 1];
-        if (!(lastParamObject instanceof Sort sortOptions)) {
+        if (!(lastParamObject instanceof Sort)) {
             return findIterable;
         }
+        Sort sortOptions = (Sort) lastParamObject;
         if (!sortOptions.getFieldDirectionMap().isEmpty()) {
             for (Map.Entry<String, Integer> byField : sortOptions.getFieldDirectionMap().entrySet()) {
                 findIterable = findIterable.sort(new BasicDBObject(byField.getKey(), byField.getValue()));
@@ -235,19 +236,20 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
             return findIterable;
         }
         Object lastParamObject = args == null ? null : args[args.length - 1];
-        if (!(lastParamObject instanceof Pagination pageObject)) {
+        if (!(lastParamObject instanceof Pagination)) {
             return findIterable;
         }
-        if (pageObject.getPage() <= 0) {
+        Pagination pagination = (Pagination) lastParamObject;
+        if (pagination.getPage() <= 0) {
             throw new MethodInvalidPageException(method, repositoryClass);
         }
-        if (!pageObject.getPageDirectionMap().isEmpty()) {
-            for (Map.Entry<String, Integer> byField : pageObject.getPageDirectionMap().entrySet()) {
+        if (!pagination.getPageDirectionMap().isEmpty()) {
+            for (Map.Entry<String, Integer> byField : pagination.getPageDirectionMap().entrySet()) {
                 findIterable = findIterable.sort(new BasicDBObject(byField.getKey(), byField.getValue()));
             }
         }
-        int skip = (int) ((pageObject.getPage() - 1) * pageObject.getEntitiesPerPage());
-        findIterable = findIterable.limit(pageObject.getEntitiesPerPage()).skip(skip);
+        int skip = (int) ((pagination.getPage() - 1) * pagination.getEntitiesPerPage());
+        findIterable = findIterable.limit(pagination.getEntitiesPerPage()).skip(skip);
         findIterable.allowDiskUse(true);
         return findIterable;
     }
