@@ -73,7 +73,7 @@ publishing {
 }
 
 githubRelease {
-    token System.getenv('GITHUB_TOKEN')
+    token(System.getenv('GITHUB_TOKEN').toString())
     draft = true
 
     releaseAssets jar.destinationDir.listFiles()
