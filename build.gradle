@@ -14,8 +14,13 @@ repositories {
 }
 
 dependencies {
+    // MongoDB
     implementation("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
     testImplementation("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
+
+    // JetBrains annotations
+    implementation("org.jetbrains:annotations:$jetbrainsAnnotationsVersion")
+    testImplementation("org.jetbrains:annotations:$jetbrainsAnnotationsVersion")
 
     // Lombok
     compileOnly("org.projectlombok:lombok:$lombokVersion")
