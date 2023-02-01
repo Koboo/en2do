@@ -5,6 +5,7 @@ import eu.koboo.en2do.test.alien.Planet;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerType;
 import eu.koboo.en2do.test.customer.Order;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,7 +32,7 @@ public class Const {
     );
     public static final CustomerType TYPE = CustomerType.DEFAULT;
 
-    public static Customer createNewCustomer() {
+    public static @NotNull Customer createNewCustomer() {
         Customer customer = new Customer();
         customer.setUniqueId(UNIQUE_ID);
         customer.setCustomerId(CUSTOMER_ID);
@@ -49,7 +50,7 @@ public class Const {
         return customer;
     }
 
-    public static Alien createNewAlien() {
+    public static @NotNull Alien createNewAlien() {
         Alien alien = new Alien();
         alien.setUniqueId(UNIQUE_ID);
         alien.setUfoIdList(Map.of(10L, "Millenium Falcon", 20L, "X-WING", 30L, "Death-Star"));
