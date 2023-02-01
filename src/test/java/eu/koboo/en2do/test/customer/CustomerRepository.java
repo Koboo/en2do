@@ -1,6 +1,7 @@
 package eu.koboo.en2do.test.customer;
 
 import eu.koboo.en2do.repository.*;
+import eu.koboo.en2do.repository.methods.async.Async;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Limit;
 import eu.koboo.en2do.repository.methods.sort.Skip;
@@ -10,6 +11,7 @@ import eu.koboo.en2do.repository.methods.transform.Transform;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
 @Collection("customer_repository")
@@ -17,11 +19,15 @@ import java.util.UUID;
 @DropEntitiesOnStart
 //@SeparateEntityId
 @AppendMethodAsComment
-public interface CustomerRepository extends Repository<Customer, UUID> {
+public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRepository<Customer, UUID> {
 
     Customer findFirstByFirstName(String firstName);
 
     long countByFirstName(String firstName);
+
+    @Transform("countByCustomerIdExistsAndCustomerId")
+    @Async
+    CompletableFuture<Long> asyncCountCustomerId(int customerId);
 
     long countByCustomerId(int customerId);
 
