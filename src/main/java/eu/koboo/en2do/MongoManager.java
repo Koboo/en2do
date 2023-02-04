@@ -31,6 +31,7 @@ import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
 import eu.koboo.en2do.repository.entity.compound.Index;
 import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
 import eu.koboo.en2do.repository.methods.async.Async;
+import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.*;
 import eu.koboo.en2do.repository.methods.transform.Transform;
@@ -294,6 +295,7 @@ public class MongoManager {
             repositoryMeta.registerPredefinedMethod(new MethodSaveAll<>(repositoryMeta, entityCollection));
             repositoryMeta.registerPredefinedMethod(new MethodSortAll<>(repositoryMeta, entityCollection));
             repositoryMeta.registerPredefinedMethod(new MethodToString<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodUpdateAllFields<>(repositoryMeta, entityCollection));
 
             // Iterate through the repository methods
             for (Method method : repositoryClass.getMethods()) {
@@ -431,6 +433,14 @@ public class MongoManager {
                         if (lastMethodParameter.isAssignableFrom(Pagination.class)) {
                             if (methodOperator != MethodOperator.PAGE) {
                                 throw new MethodPageNotAllowedException(method, repositoryClass);
+                            }
+                            if ((expectedParameterCount + 1) != methodParameterCount) {
+                                throw new MethodParameterCountException(method, repositoryClass, (expectedParameterCount + 1), methodParameterCount);
+                            }
+                        }
+                        if(lastMethodParameter.isAssignableFrom(UpdateBatch.class)) {
+                            if(methodOperator != MethodOperator.UPDATE_FIELD) {
+                                throw new MethodBatchNotAllowedException(method, repositoryClass);
                             }
                             if ((expectedParameterCount + 1) != methodParameterCount) {
                                 throw new MethodParameterCountException(method, repositoryClass, (expectedParameterCount + 1), methodParameterCount);

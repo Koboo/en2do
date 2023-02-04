@@ -2,12 +2,15 @@ package eu.koboo.en2do.internal;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.result.UpdateResult;
 import eu.koboo.en2do.internal.exception.methods.MethodUnsupportedException;
 import eu.koboo.en2do.internal.exception.repository.RepositoryInvalidCallException;
 import eu.koboo.en2do.internal.methods.dynamic.DynamicMethod;
 import eu.koboo.en2do.internal.methods.predefined.PredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.methods.async.Async;
+import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.transform.Transform;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -110,6 +113,11 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 findIterable = repositoryMeta.createIterable(filter, methodName);
                 findIterable = repositoryMeta.applyPageObject(method, findIterable, arguments);
                 return findIterable.into(new ArrayList<>());
+            case UPDATE_FIELD:
+                UpdateBatch updateBatch = (UpdateBatch) arguments[arguments.length - 1];
+                UpdateResult result = collection.updateMany(filter, repositoryMeta.createUpdateDocument(updateBatch),
+                        new UpdateOptions().upsert(false));
+                return result.wasAcknowledged();
             default:
                 // Couldn't find any match method operator, but that shouldn't happen
                 throw new RepositoryInvalidCallException(method, repositoryMeta.getRepositoryClass());
