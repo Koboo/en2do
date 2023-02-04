@@ -1,5 +1,6 @@
 package eu.koboo.en2do.repository;
 
+import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Sort;
 import org.jetbrains.annotations.NotNull;
@@ -153,4 +154,11 @@ public interface Repository<E, ID> {
      */
     @NotNull
     List<E> sortAll(@NotNull Sort sort);
+
+    /**
+     * This method uses the UpdateBatch object to update the fields of all documents.
+     * @param updateBatch The UpdateBatch to use.
+     * @return true, if the operation was successful.
+     */
+    boolean updateAllFields(UpdateBatch updateBatch);
 }

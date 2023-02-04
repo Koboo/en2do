@@ -1,6 +1,7 @@
 package eu.koboo.en2do.repository;
 
 import eu.koboo.en2do.repository.methods.async.Async;
+import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Sort;
 import org.jetbrains.annotations.NotNull;
@@ -158,4 +159,14 @@ public interface AsyncRepository<E, ID> {
     @Async
     @NotNull
     CompletableFuture<List<E>> asyncSortAll(@NotNull Sort sort);
+
+    /**
+     * Async representation
+     *
+     * @param updateBatch The UpdateBatch to use.
+     * @return true, if the operation was successful.
+     * @see Repository#updateAllFields(UpdateBatch)
+     */
+    @Async
+    CompletableFuture<Boolean> asyncUpdateAllFields(UpdateBatch updateBatch);
 }
