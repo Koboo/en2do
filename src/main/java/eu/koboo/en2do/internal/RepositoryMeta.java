@@ -12,6 +12,9 @@ import eu.koboo.en2do.internal.methods.predefined.PredefinedMethod;
 import eu.koboo.en2do.repository.AppendMethodAsComment;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.SeparateEntityId;
+import eu.koboo.en2do.repository.methods.fields.FieldUpdate;
+import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
+import eu.koboo.en2do.repository.methods.fields.UpdateType;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Limit;
 import eu.koboo.en2do.repository.methods.sort.Skip;
@@ -20,6 +23,7 @@ import eu.koboo.en2do.repository.methods.sort.SortBy;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
+import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -162,6 +166,14 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         }
     }
 
+    public @NotNull Bson createIdExistsFilter() {
+        if (!separateEntityId) {
+            return Filters.exists("_id");
+        } else {
+            return Filters.exists(entityUniqueIdField.getName());
+        }
+    }
+
     public @NotNull FindIterable<E> createIterable(@Nullable Bson filter, @NotNull String methodName) {
         FindIterable<E> findIterable;
         if (filter != null) {
@@ -245,19 +257,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
     public @NotNull FindIterable<E> applyPageObject(@NotNull Method method,
                                                     @NotNull FindIterable<E> findIterable, Object[] args) throws Exception {
-        int parameterCount = method.getParameterCount();
-        if (parameterCount <= 0) {
-            return findIterable;
-        }
-        Class<?> lastParamType = method.getParameterTypes()[method.getParameterCount() - 1];
-        if (!lastParamType.isAssignableFrom(Pagination.class)) {
-            return findIterable;
-        }
-        Object lastParamObject = args == null ? null : args[args.length - 1];
-        if (!(lastParamObject instanceof Pagination)) {
-            return findIterable;
-        }
-        Pagination pagination = (Pagination) lastParamObject;
+        Pagination pagination = (Pagination) args[args.length -1];
         if (pagination.getPage() <= 0) {
             throw new MethodInvalidPageException(method, repositoryClass);
         }
@@ -275,5 +275,48 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     public @NotNull String getPredefinedNameByAsyncName(@NotNull String asyncName) {
         String predefinedName = asyncName.replaceFirst("async", "");
         return predefinedName.substring(0, 1).toLowerCase(Locale.ROOT) + predefinedName.substring(1);
+    }
+
+    public @NotNull Object getFilterableValue(@NotNull Object object) {
+        if (object instanceof Enum<?>) {
+            return ((Enum<?>) object).name();
+        }
+        return object;
+    }
+
+    public Document createUpdateDocument(UpdateBatch updateBatch) {
+        Document document = new Document();
+        Document fieldSetDocument = new Document();
+        Document fieldRenameDocument = new Document();
+        Document fieldUnsetDocument = new Document();
+        for (FieldUpdate fieldUpdate : updateBatch.getUpdateList()) {
+            String field = fieldUpdate.getFieldName();
+            UpdateType updateType = fieldUpdate.getUpdateType();
+            Object filterableValue = null;
+            if (fieldUpdate.getValue() != null && (updateType == UpdateType.SET || updateType == UpdateType.RENAME)) {
+                filterableValue = getFilterableValue(fieldUpdate.getValue());
+            }
+            switch (updateType) {
+                case SET:
+                    fieldSetDocument.append(field, filterableValue);
+                    break;
+                case RENAME:
+                    fieldRenameDocument.append(field, filterableValue);
+                    break;
+                case REMOVE:
+                    fieldUnsetDocument.append(field, 0);
+                    break;
+            }
+        }
+        if(!fieldUnsetDocument.isEmpty()) {
+            document.append("$unset", fieldUnsetDocument);
+        }
+        if(!fieldSetDocument.isEmpty()) {
+            document.append("$set", fieldSetDocument);
+        }
+        if(!fieldRenameDocument.isEmpty()) {
+            document.append("$rename", fieldRenameDocument);
+        }
+        return document;
     }
 }
