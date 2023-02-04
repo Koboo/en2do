@@ -19,6 +19,7 @@ public class MethodDeleteAll<E, ID, R extends Repository<E, ID>> extends Predefi
 
     @Override
     public @Nullable Object handle(@NotNull Method method, @NotNull Object[] arguments) throws Exception {
+        // TODO: Check for Id in check instead of deleting every single entity itself.
         List<E> entityList = repositoryMeta.checkEntityList(method, arguments[0]);
         for (E entity : entityList) {
             ID uniqueId = repositoryMeta.checkUniqueId(method, repositoryMeta.getUniqueId(entity));
