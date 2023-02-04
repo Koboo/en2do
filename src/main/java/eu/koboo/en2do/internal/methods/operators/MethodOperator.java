@@ -74,6 +74,14 @@ public enum MethodOperator {
         if (!listType.isAssignableFrom(entityClass)) {
             throw new MethodFindListTypeException(method, repoClass, listType);
         }
+    }),
+    /**
+     * Updates specific fields on all entities with the given filters.
+     */
+    UPDATE_FIELD("updateFieldsBy", (method, returnType, entityClass, repoClass) -> {
+        if (GenericUtils.isNotTypeOf(Boolean.class, returnType)) {
+            throw new MethodBooleanReturnTypeException(method, repoClass);
+        }
     });
 
     public static final MethodOperator[] VALUES = MethodOperator.values();
