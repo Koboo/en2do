@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Represents multiple field updates, like set, rename or remove.
@@ -18,9 +20,10 @@ public class UpdateBatch {
 
     /**
      * Creates a UpdateBatch instance from a List of
-     * @see FieldUpdate
+     *
      * @param fieldUpdateList The given list, which gets wrapped.
      * @return The new created UpdateBatch instance.
+     * @see FieldUpdate
      */
     public static @NotNull UpdateBatch of(@NotNull List<FieldUpdate> fieldUpdateList) {
         return new UpdateBatch(new LinkedList<>()).addAll(fieldUpdateList);
@@ -28,9 +31,10 @@ public class UpdateBatch {
 
     /**
      * Creates a UpdateBatch instance from an Array of
-     * @see FieldUpdate
+     *
      * @param fieldUpdateArray The given array, which gets wrapped.
      * @return The new created UpdateBatch instance.
+     * @see FieldUpdate
      */
     public static @NotNull UpdateBatch of(@NotNull FieldUpdate... fieldUpdateArray) {
         return new UpdateBatch(new LinkedList<>()).addAll(fieldUpdateArray);
@@ -38,9 +42,10 @@ public class UpdateBatch {
 
     /**
      * Creates a UpdateBatch instance from a single
-     * @see FieldUpdate
+     *
      * @param fieldUpdate The given instance, which gets wrapped.
      * @return The new created UpdateBatch instance.
+     * @see FieldUpdate
      */
     public static @NotNull UpdateBatch of(@NotNull FieldUpdate fieldUpdate) {
         return new UpdateBatch(new LinkedList<>()).add(fieldUpdate);
@@ -51,6 +56,7 @@ public class UpdateBatch {
 
     /**
      * Adds a single FieldUpdate to the list.
+     *
      * @param fieldUpdate The FieldUpdate, which should be added.
      * @return The instance of the UpdateBatch
      */
@@ -61,6 +67,7 @@ public class UpdateBatch {
 
     /**
      * Adds an Array of FieldUpdates to the list.
+     *
      * @param fieldUpdateArray The array, which should be added.
      * @return The instance of the UpdateBatch
      */
@@ -70,6 +77,7 @@ public class UpdateBatch {
 
     /**
      * Adds a List of FieldUpdates to the list.
+     *
      * @param fieldUpdateList The array, which should be added.
      * @return The instance of the UpdateBatch
      */

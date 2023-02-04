@@ -438,8 +438,8 @@ public class MongoManager {
                                 throw new MethodParameterCountException(method, repositoryClass, (expectedParameterCount + 1), methodParameterCount);
                             }
                         }
-                        if(lastMethodParameter.isAssignableFrom(UpdateBatch.class)) {
-                            if(methodOperator != MethodOperator.UPDATE_FIELD) {
+                        if (lastMethodParameter.isAssignableFrom(UpdateBatch.class)) {
+                            if (methodOperator != MethodOperator.UPDATE_FIELD) {
                                 throw new MethodBatchNotAllowedException(method, repositoryClass);
                             }
                             if ((expectedParameterCount + 1) != methodParameterCount) {

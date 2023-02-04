@@ -257,7 +257,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
     public @NotNull FindIterable<E> applyPageObject(@NotNull Method method,
                                                     @NotNull FindIterable<E> findIterable, Object[] args) throws Exception {
-        Pagination pagination = (Pagination) args[args.length -1];
+        Pagination pagination = (Pagination) args[args.length - 1];
         if (pagination.getPage() <= 0) {
             throw new MethodInvalidPageException(method, repositoryClass);
         }
@@ -308,13 +308,13 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
                     break;
             }
         }
-        if(!fieldUnsetDocument.isEmpty()) {
+        if (!fieldUnsetDocument.isEmpty()) {
             document.append("$unset", fieldUnsetDocument);
         }
-        if(!fieldSetDocument.isEmpty()) {
+        if (!fieldSetDocument.isEmpty()) {
             document.append("$set", fieldSetDocument);
         }
-        if(!fieldRenameDocument.isEmpty()) {
+        if (!fieldRenameDocument.isEmpty()) {
             document.append("$rename", fieldRenameDocument);
         }
         return document;

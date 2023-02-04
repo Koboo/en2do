@@ -157,6 +157,7 @@ public interface Repository<E, ID> {
 
     /**
      * This method uses the UpdateBatch object to update the fields of all documents.
+     *
      * @param updateBatch The UpdateBatch to use.
      * @return true, if the operation was successful.
      */
