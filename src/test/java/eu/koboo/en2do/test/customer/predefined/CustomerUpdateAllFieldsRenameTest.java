@@ -57,6 +57,9 @@ public class CustomerUpdateAllFieldsRenameTest extends CustomerRepositoryTest {
     @Order(5)
     public void checkFieldValue() {
         List<Customer> customerList = repository.findAll();
+        assertNotNull(customerList);
+        assertFalse(customerList.isEmpty());
+        assertEquals(15, customerList.size());
         for (Customer customer : customerList) {
             assertEquals(0, customer.getBalance());
             assertEquals(Const.BALANCE, customer.getBalanceRenamed());

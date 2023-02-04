@@ -57,6 +57,9 @@ public class CustomerUpdateFieldByFirstNameSetTest extends CustomerRepositoryTes
     @Order(5)
     public void checkFieldValue() {
         List<Customer> customerList = repository.findAll();
+        assertNotNull(customerList);
+        assertFalse(customerList.isEmpty());
+        assertEquals(15, customerList.size());
         for (Customer customer : customerList) {
             assertEquals(987654321, customer.getPostalCode());
         }
