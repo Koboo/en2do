@@ -1,6 +1,7 @@
 package eu.koboo.en2do.utility;
 
 import lombok.experimental.UtilityClass;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -18,7 +19,7 @@ public class GenericUtils {
      * @param method The method with the return type
      * @return The class of the generic type
      */
-    public Class<?> getGenericTypeOfReturnType(Method method) {
+    public @NotNull Class<?> getGenericTypeOfReturnType(@NotNull Method method) {
         Type returnType = method.getGenericReturnType();
         ParameterizedType type = (ParameterizedType) returnType;
         return (Class<?>) type.getActualTypeArguments()[0];
@@ -30,7 +31,7 @@ public class GenericUtils {
      * @param paramIndex The index of the parameter
      * @return The class of the generic type of the parameter
      */
-    public Class<?> getGenericTypeOfParameter(Method method, int paramIndex) {
+    public @NotNull Class<?> getGenericTypeOfParameter(@NotNull Method method, int paramIndex) {
         Parameter parameter = method.getParameters()[paramIndex];
         Type parameterType = parameter.getParameterizedType();
         ParameterizedType type = (ParameterizedType) parameterType;
@@ -41,9 +42,9 @@ public class GenericUtils {
      * Checks if class1 and class2 is not the same type
      * @param class1 The first given class
      * @param class2 The second given class
-     * @return true if class1 and class2 are not same type type
+     * @return true if class1 and class2 are not same type
      */
-    public boolean isNotTypeOf(Class<?> class1, Class<?> class2) {
+    public boolean isNotTypeOf(@NotNull Class<?> class1, @NotNull Class<?> class2) {
         if (isBoolean(class1) && isBoolean(class2)) {
             return false;
         }
@@ -73,7 +74,7 @@ public class GenericUtils {
      * @param clazz The class to check
      * @return true, if the class is type boolean
      */
-    private boolean isBoolean(Class<?> clazz) {
+    private boolean isBoolean(@NotNull Class<?> clazz) {
         return clazz.isAssignableFrom(Boolean.class) || clazz.isAssignableFrom(boolean.class);
     }
 
@@ -82,7 +83,7 @@ public class GenericUtils {
      * @param clazz The class to check
      * @return true, if the class is type short
      */
-    private boolean isShort(Class<?> clazz) {
+    private boolean isShort(@NotNull Class<?> clazz) {
         return clazz.isAssignableFrom(Short.class) || clazz.isAssignableFrom(short.class);
     }
 
@@ -91,7 +92,7 @@ public class GenericUtils {
      * @param clazz The class to check
      * @return true, if the class is type float
      */
-    private boolean isFloat(Class<?> clazz) {
+    private boolean isFloat(@NotNull Class<?> clazz) {
         return clazz.isAssignableFrom(Float.class) || clazz.isAssignableFrom(float.class);
     }
 
@@ -100,7 +101,7 @@ public class GenericUtils {
      * @param clazz The class to check
      * @return true, if the class is type int
      */
-    private boolean isInteger(Class<?> clazz) {
+    private boolean isInteger(@NotNull Class<?> clazz) {
         return clazz.isAssignableFrom(Integer.class) || clazz.isAssignableFrom(int.class);
     }
 
@@ -109,7 +110,7 @@ public class GenericUtils {
      * @param clazz The class to check
      * @return true, if the class is type long
      */
-    private boolean isLong(Class<?> clazz) {
+    private boolean isLong(@NotNull Class<?> clazz) {
         return clazz.isAssignableFrom(Long.class) || clazz.isAssignableFrom(long.class);
     }
 
@@ -118,7 +119,7 @@ public class GenericUtils {
      * @param clazz The class to check
      * @return true, if the class is type double
      */
-    private boolean isDouble(Class<?> clazz) {
+    private boolean isDouble(@NotNull Class<?> clazz) {
         return clazz.isAssignableFrom(Double.class) || clazz.isAssignableFrom(double.class);
     }
 
@@ -127,7 +128,7 @@ public class GenericUtils {
      * @param clazz The class to check
      * @return true, if the class is type char
      */
-    private boolean isChar(Class<?> clazz) {
+    private boolean isChar(@NotNull Class<?> clazz) {
         return clazz.isAssignableFrom(Character.class) || clazz.isAssignableFrom(char.class);
     }
 }

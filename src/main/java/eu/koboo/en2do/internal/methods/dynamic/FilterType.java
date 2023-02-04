@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 
@@ -19,6 +20,7 @@ public class FilterType {
     /**
      * The field, which should be filtered
      */
+    @NotNull
     Field field;
     /**
      * is true if the filter is negotiated
@@ -27,5 +29,6 @@ public class FilterType {
     /**
      * The operator of the filter
      */
+    @NotNull
     FilterOperator operator;
 }

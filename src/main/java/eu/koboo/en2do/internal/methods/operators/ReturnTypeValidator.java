@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 /**
  * Represents the validation of the return type from a method.
  */
+@FunctionalInterface
 public interface ReturnTypeValidator {
 
     /**

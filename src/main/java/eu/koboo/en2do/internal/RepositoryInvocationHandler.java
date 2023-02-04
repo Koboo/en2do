@@ -13,6 +13,8 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.bson.conversions.Bson;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -24,7 +26,10 @@ import java.util.concurrent.ExecutorService;
 @AllArgsConstructor
 public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> implements InvocationHandler {
 
+    @NotNull
     RepositoryMeta<E, ID, R> repositoryMeta;
+
+    @Nullable
     ExecutorService executorService;
 
     @Override
@@ -111,7 +116,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         }
     }
 
-    private void executeFuture(CompletableFuture<Object> future, MethodCallable callable) {
+    private void executeFuture(@NotNull CompletableFuture<Object> future, @NotNull MethodCallable callable) {
         future.completeAsync(() -> {
             try {
                 return callable.call();

@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.bson.conversions.Bson;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
 import java.util.LinkedList;
@@ -21,15 +22,23 @@ import java.util.regex.Pattern;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class DynamicMethod<E, ID, R extends Repository<E, ID>> {
 
+    @NotNull
     Method method;
+
+    @NotNull
     RepositoryMeta<E, ID, R> repositoryMeta;
+
     @Getter
+    @NotNull
     MethodOperator methodOperator;
+
     boolean multipleFilter;
     boolean andFilter;
+
+    @NotNull
     List<MethodFilterPart> filterPartList;
 
-    public Bson createBsonFilter(Object[] arguments) throws Exception {
+    public @NotNull Bson createBsonFilter(@NotNull Object[] arguments) throws Exception {
         Bson filter;
         List<Bson> filterList = new LinkedList<>();
         for (MethodFilterPart filterPart : filterPartList) {
@@ -51,7 +60,8 @@ public class DynamicMethod<E, ID, R extends Repository<E, ID>> {
     }
 
     @SuppressWarnings("unchecked")
-    private Bson processBson(FilterType filterType, int paramsIndexAt, Object[] args) throws Exception {
+    private @NotNull Bson processBson(@NotNull FilterType filterType, int paramsIndexAt,
+                                      @NotNull Object[] args) throws Exception {
         String fieldName = filterType.getField().getName();
         Bson retFilter = null;
         switch (filterType.getOperator()) {
@@ -125,7 +135,7 @@ public class DynamicMethod<E, ID, R extends Repository<E, ID>> {
         return retFilter;
     }
 
-    private Object getFilterableValue(Object object) {
+    private @NotNull Object getFilterableValue(@NotNull Object object) {
         if (object instanceof Enum<?>) {
             return ((Enum<?>) object).name();
         }

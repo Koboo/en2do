@@ -1,6 +1,7 @@
 package eu.koboo.en2do.utility;
 
 import lombok.experimental.UtilityClass;
+import org.jetbrains.annotations.NotNull;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -19,11 +20,10 @@ public class EntityUtils {
     /**
      * This method is used to copy all field values from one entity to another.
      * It also works with inheritance.
-     *
      * @param from The entity to copy from
      * @param to   The entity to copy to
      */
-    public void copyProperties(Object from, Object to) {
+    public void copyProperties(@NotNull Object from, @NotNull Object to) {
         Class<?> fromClass = from.getClass();
         Class<?> toClass = to.getClass();
 

@@ -45,6 +45,8 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.Conventions;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.conversions.Bson;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -71,21 +73,31 @@ public class MongoManager {
 
     // Predefined methods by Java objects
     // These methods are ignored by our method processing proxy / invocation handler.
+    @NotNull
     private static final List<String> IGNORED_DEFAULT_METHODS = Arrays.asList(
             "notify", "notifyAll", "wait", "finalize", "clone"
     );
 
+    @NotNull
     Map<Class<?>, Repository<?, ?>> repositoryRegistry;
+
+    @NotNull
     Map<Class<?>, RepositoryMeta<?, ?, ?>> repositoryMetaRegistry;
 
+    @Nullable
     ExecutorService executorService;
 
     @Getter
+    @NotNull
     CodecRegistry codecRegistry;
+
+    @NotNull
     MongoClient client;
+
+    @NotNull
     MongoDatabase database;
 
-    public MongoManager(Credentials credentials, ExecutorService executorService) {
+    public MongoManager(@Nullable Credentials credentials, @Nullable ExecutorService executorService) {
         repositoryRegistry = new ConcurrentHashMap<>();
         repositoryMetaRegistry = new ConcurrentHashMap<>();
 
@@ -145,7 +157,7 @@ public class MongoManager {
         database = client.getDatabase(databaseString);
     }
 
-    public MongoManager(Credentials credentials) {
+    public MongoManager(@Nullable Credentials credentials) {
         this(credentials, null);
     }
 
@@ -163,18 +175,12 @@ public class MongoManager {
             if (executorService != null && shutdownExecutor) {
                 executorService.shutdown();
             }
-            if (repositoryRegistry != null) {
-                repositoryRegistry.clear();
+            repositoryRegistry.clear();
+            for (RepositoryMeta<?, ?, ?> meta : repositoryMetaRegistry.values()) {
+                meta.destroy();
             }
-            if (repositoryMetaRegistry != null) {
-                for (RepositoryMeta<?, ?, ?> meta : repositoryMetaRegistry.values()) {
-                    meta.destroy();
-                }
-                repositoryMetaRegistry.clear();
-            }
-            if (client != null) {
-                client.close();
-            }
+            repositoryMetaRegistry.clear();
+            client.close();
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -183,7 +189,7 @@ public class MongoManager {
     }
 
     @SuppressWarnings("unchecked")
-    public <E, ID, R extends Repository<E, ID>> R create(Class<R> repositoryClass) {
+    public <E, ID, R extends Repository<E, ID>> @NotNull R create(@NotNull Class<R> repositoryClass) {
         try {
 
             // Check for already created repository to avoid multiply instances of the same repository
@@ -556,12 +562,10 @@ public class MongoManager {
         }
     }
 
-    private <E> FilterType createFilterType(Class<E> entityClass, Class<?> repoClass, Method method,
-                                            String filterOperatorString, Set<Field> fieldSet) throws Exception {
+    private <E> @NotNull FilterType createFilterType(@NotNull Class<E> entityClass, @NotNull Class<?> repoClass,
+                                                     @NotNull Method method, @NotNull String filterOperatorString,
+                                                     @NotNull Set<Field> fieldSet) throws Exception {
         FilterOperator filterOperator = FilterOperator.parseFilterEndsWith(filterOperatorString);
-        if (filterOperator == null) {
-            throw new MethodNoFilterOperatorException(method, repoClass);
-        }
         String expectedFieldName = filterOperator.removeOperatorFrom(filterOperatorString);
         boolean notFilter = false;
         if (expectedFieldName.endsWith("Not")) {

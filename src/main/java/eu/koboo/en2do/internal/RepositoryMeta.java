@@ -21,6 +21,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import org.bson.conversions.Bson;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -30,15 +32,25 @@ import java.util.*;
 @Getter
 public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
+    @NotNull
     String collectionName;
+
+    @NotNull
     MongoCollection<E> collection;
 
+    @NotNull
     Class<R> repositoryClass;
+
+    @NotNull
     Class<E> entityClass;
 
+    @NotNull
     Set<Field> entityFieldSet;
 
+    @NotNull
     Class<ID> entityUniqueIdClass;
+
+    @NotNull
     Field entityUniqueIdField;
 
     @Getter(AccessLevel.NONE)
@@ -46,15 +58,17 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     boolean separateEntityId;
 
     @Getter(AccessLevel.NONE)
+    @NotNull
     Map<String, PredefinedMethod<E, ID, R>> methodRegistry;
 
     @Getter(AccessLevel.NONE)
+    @NotNull
     Map<String, DynamicMethod<E, ID, R>> dynamicMethodRegistry;
 
-    public RepositoryMeta(Class<R> repositoryClass, Class<E> entityClass,
-                          Set<Field> entityFieldSet,
-                          Class<ID> entityUniqueIdClass, Field entityUniqueIdField,
-                          MongoCollection<E> collection, String collectionName) {
+    public RepositoryMeta(@NotNull Class<R> repositoryClass, @NotNull Class<E> entityClass,
+                          @NotNull Set<Field> entityFieldSet,
+                          @NotNull Class<ID> entityUniqueIdClass, @NotNull Field entityUniqueIdField,
+                          @NotNull MongoCollection<E> collection, @NotNull String collectionName) {
         this.collectionName = collectionName;
         this.collection = collection;
 
@@ -78,11 +92,11 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         dynamicMethodRegistry.clear();
     }
 
-    public boolean isRepositoryMethod(String methodName) {
+    public boolean isRepositoryMethod(@NotNull String methodName) {
         return methodRegistry.containsKey(methodName);
     }
 
-    public void registerPredefinedMethod(PredefinedMethod<E, ID, R> methodHandler) {
+    public void registerPredefinedMethod(@NotNull PredefinedMethod<E, ID, R> methodHandler) {
         String methodName = methodHandler.getMethodName();
         if (methodRegistry.containsKey(methodName)) {
             throw new RuntimeException("Already registered method with name \"" + methodName + "\".");
@@ -90,11 +104,11 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         methodRegistry.put(methodName, methodHandler);
     }
 
-    public PredefinedMethod<E, ID, R> lookupPredefinedMethod(String methodName) {
+    public @Nullable PredefinedMethod<E, ID, R> lookupPredefinedMethod(@NotNull String methodName) {
         return methodRegistry.get(methodName);
     }
 
-    public void registerDynamicMethod(String methodName, DynamicMethod<E, ID, R> dynamicMethod) {
+    public void registerDynamicMethod(@NotNull String methodName, @NotNull DynamicMethod<E, ID, R> dynamicMethod) {
         if (dynamicMethodRegistry.containsKey(methodName)) {
             // Removed regex condition, because the hashmap couldn't handle methods with the same name.
             throw new RuntimeException("Already registered dynamicMethod with name \"" + methodName + "\".");
@@ -102,12 +116,12 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         dynamicMethodRegistry.put(methodName, dynamicMethod);
     }
 
-    public DynamicMethod<E, ID, R> lookupDynamicMethod(String methodName) {
+    public @Nullable DynamicMethod<E, ID, R> lookupDynamicMethod(@NotNull String methodName) {
         return dynamicMethodRegistry.get(methodName);
     }
 
     @SuppressWarnings("unchecked")
-    public E checkEntity(Method method, Object argument) {
+    public @NotNull E checkEntity(@NotNull Method method, @Nullable Object argument) {
         E entity = (E) argument;
         if (entity == null) {
             throw new NullPointerException("Entity of type " + entityClass.getName() + " as parameter of method " +
@@ -117,7 +131,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     }
 
     @SuppressWarnings("unchecked")
-    public ID checkUniqueId(Method method, Object argument) {
+    public @NotNull ID checkUniqueId(@NotNull Method method, @Nullable Object argument) {
         ID uniqueId = (ID) argument;
         if (uniqueId == null) {
             throw new NullPointerException("UniqueId of Entity of type " + entityClass.getName() + " as parameter of method " +
@@ -127,7 +141,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     }
 
     @SuppressWarnings("unchecked")
-    public List<E> checkEntityList(Method method, Object argument) {
+    public @NotNull List<E> checkEntityList(@NotNull Method method, @Nullable Object argument) {
         List<E> entity = (List<E>) argument;
         if (entity == null) {
             throw new NullPointerException("List of Entities of type " + entityClass.getName() + " as parameter of method " +
@@ -136,11 +150,11 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         return entity;
     }
 
-    public ID getUniqueId(E entity) throws IllegalAccessException {
+    public @Nullable ID getUniqueId(@NotNull E entity) throws IllegalAccessException {
         return entityUniqueIdClass.cast(entityUniqueIdField.get(entity));
     }
 
-    public Bson createIdFilter(ID uniqueId) {
+    public @NotNull Bson createIdFilter(@NotNull ID uniqueId) {
         if (!separateEntityId) {
             return Filters.eq("_id", uniqueId);
         } else {
@@ -148,7 +162,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         }
     }
 
-    public FindIterable<E> createIterable(Bson filter, String methodName) {
+    public @NotNull FindIterable<E> createIterable(@Nullable Bson filter, @NotNull String methodName) {
         FindIterable<E> findIterable;
         if (filter != null) {
             findIterable = collection.find(filter);
@@ -161,7 +175,9 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         return findIterable;
     }
 
-    public FindIterable<E> applySortObject(Method method, FindIterable<E> findIterable, Object[] args) throws Exception {
+    public @NotNull FindIterable<E> applySortObject(@NotNull Method method,
+                                                    @NotNull FindIterable<E> findIterable,
+                                                    @NotNull Object[] args) throws Exception {
         int parameterCount = method.getParameterCount();
         if (parameterCount <= 0) {
             return findIterable;
@@ -198,7 +214,8 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         return findIterable;
     }
 
-    public FindIterable<E> applySortAnnotations(Method method, FindIterable<E> findIterable) throws Exception {
+    public @NotNull FindIterable<E> applySortAnnotations(@NotNull Method method,
+                                                         @NotNull FindIterable<E> findIterable) throws Exception {
         SortBy[] sortAnnotations = method.getAnnotationsByType(SortBy.class);
         if (sortAnnotations != null) {
             for (SortBy sortBy : sortAnnotations) {
@@ -226,7 +243,8 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         return findIterable;
     }
 
-    public FindIterable<E> applyPageObject(Method method, FindIterable<E> findIterable, Object[] args) throws Exception {
+    public @NotNull FindIterable<E> applyPageObject(@NotNull Method method,
+                                                    @NotNull FindIterable<E> findIterable, Object[] args) throws Exception {
         int parameterCount = method.getParameterCount();
         if (parameterCount <= 0) {
             return findIterable;
@@ -254,7 +272,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         return findIterable;
     }
 
-    public String getPredefinedNameByAsyncName(String asyncName) {
+    public @NotNull String getPredefinedNameByAsyncName(@NotNull String asyncName) {
         String predefinedName = asyncName.replaceFirst("async", "");
         return predefinedName.substring(0, 1).toLowerCase(Locale.ROOT) + predefinedName.substring(1);
     }

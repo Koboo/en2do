@@ -2,6 +2,8 @@ package eu.koboo.en2do.repository;
 
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Sort;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -29,7 +31,7 @@ public interface Repository<E, ID> {
      * @param entity The entity, which should be deleted.
      * @return true, if the entity was deleted successfully.
      */
-    boolean delete(E entity);
+    boolean delete(@NotNull E entity);
 
     /**
      * This method deletes all entities of the given list, filtering like the "#delete(E entity)" method.
@@ -37,7 +39,7 @@ public interface Repository<E, ID> {
      * @param entityList The List with the entities, which should be deleted.
      * @return true, if all entities were deleted successfully.
      */
-    boolean deleteAll(List<E> entityList);
+    boolean deleteAll(@NotNull List<E> entityList);
 
     /**
      * This method deletes the entity with the given identifier, filtering like the "#delete(E entity)" method.
@@ -45,7 +47,7 @@ public interface Repository<E, ID> {
      * @param identifier The unique identifier of the entity, which should be deleted.
      * @return true, if the entity was deleted successfully.
      */
-    boolean deleteById(ID identifier);
+    boolean deleteById(@NotNull ID identifier);
 
     /**
      * Drops / deletes all entities of the repository.
@@ -61,7 +63,7 @@ public interface Repository<E, ID> {
      * @param entity The entity, which should be checked.
      * @return true, if the entity exists in the collection.
      */
-    boolean exists(E entity);
+    boolean exists(@NotNull E entity);
 
     /**
      * Checks if an entity with the given unique identifier exists in the repository, like the "#exists(E entity)" method.
@@ -69,7 +71,7 @@ public interface Repository<E, ID> {
      * @param identifier The identifier of the entity, which should be checked.
      * @return true, if an entity with the given identifier exists in the collection.
      */
-    boolean existsById(ID identifier);
+    boolean existsById(@NotNull ID identifier);
 
     /**
      * Finds all entities of the collection
@@ -85,21 +87,25 @@ public interface Repository<E, ID> {
      * @param identifier The unique identifier of the entity, which is used to filter.
      * @return The found entity, if it exists, or "null" if it not exists.
      */
-    E findFirstById(ID identifier);
+    @Nullable
+    E findFirstById(@NotNull ID identifier);
 
     /**
      * @return The collection name, defined by the "@Collection" annotation of the repository.
      */
+    @NotNull
     String getCollectionName();
 
     /**
      * @return The Class of the entity of the repository.
      */
+    @NotNull
     Class<E> getEntityClass();
 
     /**
      * @return The Class of the unique identifier of the entity of the repository.
      */
+    @NotNull
     Class<ID> getEntityUniqueIdClass();
 
     /**
@@ -109,7 +115,8 @@ public interface Repository<E, ID> {
      * @param entity The entity, which unique identifier, should be returned
      * @return The unique identifier of the given entity.
      */
-    ID getUniqueId(E entity);
+    @Nullable
+    ID getUniqueId(@NotNull E entity);
 
     /**
      * This method applies the pagination of all entities of the repository.
@@ -117,7 +124,8 @@ public interface Repository<E, ID> {
      * @param pagination The pagination, which is used to page the entities.
      * @return A List with the paged entities.
      */
-    List<E> pageAll(Pagination pagination);
+    @NotNull
+    List<E> pageAll(@NotNull Pagination pagination);
 
     /**
      * Saves the given entity to the database.
@@ -127,7 +135,7 @@ public interface Repository<E, ID> {
      * @param entity The entity, which should be saved.
      * @return true, if the entity was successfully saved.
      */
-    boolean save(E entity);
+    boolean save(@NotNull E entity);
 
     /**
      * Saves all entities of the given List to the database.
@@ -135,7 +143,7 @@ public interface Repository<E, ID> {
      * @param entityList A List of the entities, which should be saved
      * @return true, if the entities were successfully saved.
      */
-    boolean saveAll(List<E> entityList);
+    boolean saveAll(@NotNull List<E> entityList);
 
     /**
      * This method applies the Sort object of all entities of the repository.
@@ -143,5 +151,6 @@ public interface Repository<E, ID> {
      * @param sort The Sort object, which should be used to sort all entities.
      * @return A List with the sorted entities.
      */
-    List<E> sortAll(Sort sort);
+    @NotNull
+    List<E> sortAll(@NotNull Sort sort);
 }

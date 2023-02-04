@@ -3,6 +3,7 @@ package eu.koboo.en2do.repository;
 import eu.koboo.en2do.repository.methods.async.Async;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Sort;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -24,6 +25,7 @@ public interface AsyncRepository<E, ID> {
      * @return Future, with the count of all entities
      */
     @Async
+    @NotNull
     CompletableFuture<Long> asyncCountAll();
 
     /**
@@ -33,7 +35,8 @@ public interface AsyncRepository<E, ID> {
      * @return Future, with a boolean of success
      */
     @Async
-    CompletableFuture<Boolean> asyncDelete(E entity);
+    @NotNull
+    CompletableFuture<Boolean> asyncDelete(@NotNull E entity);
 
     /**
      * Async representation
@@ -42,7 +45,8 @@ public interface AsyncRepository<E, ID> {
      * @return Future, with a boolean of success
      */
     @Async
-    CompletableFuture<Boolean> asyncDeleteAll(List<E> entityList);
+    @NotNull
+    CompletableFuture<Boolean> asyncDeleteAll(@NotNull List<E> entityList);
 
     /**
      * Async representation
@@ -51,7 +55,8 @@ public interface AsyncRepository<E, ID> {
      * @return Future, with a boolean of success
      */
     @Async
-    CompletableFuture<Boolean> asyncDeleteById(ID identifier);
+    @NotNull
+    CompletableFuture<Boolean> asyncDeleteById(@NotNull ID identifier);
 
     /**
      * Async representation
@@ -59,6 +64,7 @@ public interface AsyncRepository<E, ID> {
      * @return Future, with a boolean of success
      */
     @Async
+    @NotNull
     CompletableFuture<Boolean> asyncDrop();
 
     /**
@@ -68,7 +74,8 @@ public interface AsyncRepository<E, ID> {
      * @return Future, with a boolean, which indicates if the entity exists
      */
     @Async
-    CompletableFuture<Boolean> asyncExists(E entity);
+    @NotNull
+    CompletableFuture<Boolean> asyncExists(@NotNull E entity);
 
     /**
      * Async representation
@@ -77,7 +84,8 @@ public interface AsyncRepository<E, ID> {
      * @return Future, with a boolean, which indicates if an entity with the id exists
      */
     @Async
-    CompletableFuture<Boolean> asyncExistsById(ID identifier);
+    @NotNull
+    CompletableFuture<Boolean> asyncExistsById(@NotNull ID identifier);
 
     /**
      * Async representation
@@ -85,6 +93,7 @@ public interface AsyncRepository<E, ID> {
      * @return Future, with all entities
      */
     @Async
+    @NotNull
     CompletableFuture<List<E>> asyncFindAll();
 
     /**
@@ -94,7 +103,8 @@ public interface AsyncRepository<E, ID> {
      * @return Future, with the first entity with the id
      */
     @Async
-    CompletableFuture<E> asyncFindFirstById(ID identifier);
+    @NotNull
+    CompletableFuture<E> asyncFindFirstById(@NotNull ID identifier);
 
     /**
      * Async representation
@@ -103,7 +113,8 @@ public interface AsyncRepository<E, ID> {
      * @return Future, with all entities, paged by the Pagination object
      */
     @Async
-    CompletableFuture<List<E>> asyncPageAll(Pagination pagination);
+    @NotNull
+    CompletableFuture<List<E>> asyncPageAll(@NotNull Pagination pagination);
 
     /**
      * Async representation
@@ -112,7 +123,8 @@ public interface AsyncRepository<E, ID> {
      * @return Future, with a boolean of success
      */
     @Async
-    CompletableFuture<Boolean> asyncSave(E entity);
+    @NotNull
+    CompletableFuture<Boolean> asyncSave(@NotNull E entity);
 
     /**
      * Async representation
@@ -121,7 +133,8 @@ public interface AsyncRepository<E, ID> {
      * @return Future, with a boolean of success
      */
     @Async
-    CompletableFuture<Boolean> asyncSaveAll(List<E> entityList);
+    @NotNull
+    CompletableFuture<Boolean> asyncSaveAll(@NotNull List<E> entityList);
 
     /**
      * Async representation
@@ -130,5 +143,6 @@ public interface AsyncRepository<E, ID> {
      * @return Future, with all entities, sorted by the Sort object
      */
     @Async
-    CompletableFuture<List<E>> asyncSortAll(Sort sort);
+    @NotNull
+    CompletableFuture<List<E>> asyncSortAll(@NotNull Sort sort);
 }

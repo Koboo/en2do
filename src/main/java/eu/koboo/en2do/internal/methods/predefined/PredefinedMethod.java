@@ -7,6 +7,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Method;
 
@@ -32,5 +34,5 @@ public abstract class PredefinedMethod<E, ID, R extends Repository<E, ID>> {
      * @return The object created by the method invocation
      * @throws Exception any, if something bad happens
      */
-    public abstract Object handle(Method method, Object[] arguments) throws Exception;
+    public abstract @Nullable Object handle(@NotNull Method method, @NotNull Object[] arguments) throws Exception;
 }

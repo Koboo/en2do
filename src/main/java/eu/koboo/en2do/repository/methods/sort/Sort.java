@@ -3,6 +3,7 @@ package eu.koboo.en2do.repository.methods.sort;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +21,7 @@ public class Sort {
      *
      * @return The new created sort object.
      */
-    public static Sort of() {
+    public static @NotNull Sort of() {
         return new Sort();
     }
 
@@ -41,7 +42,7 @@ public class Sort {
      * @param ascending The direction of the sorting
      * @return The used Sort object
      */
-    public Sort order(String fieldName, boolean ascending) {
+    public @NotNull Sort order(@NotNull String fieldName, boolean ascending) {
         fieldDirectionMap.put(fieldName, ascending ? 1 : -1);
         return this;
     }
@@ -53,7 +54,7 @@ public class Sort {
      * @param fieldName The field which is used to sort
      * @return The used Sort object
      */
-    public Sort order(String fieldName) {
+    public @NotNull Sort order(@NotNull String fieldName) {
         return order(fieldName, true);
     }
 
@@ -63,7 +64,7 @@ public class Sort {
      * @param limit The amount of the entities in the returned List.
      * @return The used Sort object
      */
-    public Sort limit(int limit) {
+    public @NotNull Sort limit(int limit) {
         this.limit = limit;
         return this;
     }
@@ -74,7 +75,7 @@ public class Sort {
      * @param skip The amount of the entities, which should be skipped, before creating the List.
      * @return The used Sort object
      */
-    public Sort skip(int skip) {
+    public @NotNull Sort skip(int skip) {
         this.skip = skip;
         return this;
     }

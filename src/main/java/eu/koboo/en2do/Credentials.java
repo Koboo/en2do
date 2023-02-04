@@ -4,6 +4,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,6 +26,10 @@ import java.util.Properties;
 public class Credentials {
 
     /**
+     * Empty representation of the credentials object
+     */
+    private static final Credentials EMPTY = new Credentials(null, null);
+    /**
      * The default key of the connection string.
      */
     private static final String CONNECT_KEY = "en2do.connectstring";
@@ -41,15 +47,14 @@ public class Credentials {
      * @param inputStream The input stream, which should be read.
      * @return The new created credentials object.
      */
-    private static Credentials fromStreamProperties(InputStream inputStream) {
+    private static @NotNull Credentials fromStreamProperties(@NotNull InputStream inputStream) {
         try {
             Properties properties = new Properties();
             properties.load(inputStream);
             return new Credentials(properties.getProperty(CONNECT_KEY), properties.getProperty(DATABASE_KEY));
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error while loading credentials");
         }
-        return null;
     }
 
     /**
@@ -57,7 +62,7 @@ public class Credentials {
      * "{applicationJar}/credentials.properties"
      * @return The new created credentials object.
      */
-    public static Credentials fromResource() {
+    public static @Nullable Credentials fromResource() {
         return fromResource("/" + DEFAULT_CREDENTIAL_FILE);
     }
 
@@ -66,7 +71,7 @@ public class Credentials {
      * @param resourcePath The resource path with the containing credentials.
      * @return The new created credentials object.
      */
-    public static Credentials fromResource(String resourcePath) {
+    public static @Nullable Credentials fromResource(@Nullable String resourcePath) {
         if (resourcePath == null) {
             throw new RuntimeException("Couldn't read resource from null path!");
         }
@@ -76,6 +81,9 @@ public class Credentials {
             return null;
         }
         try (InputStream inputStream = managerClass.getResourceAsStream(resourcePath)) {
+            if(inputStream == null) {
+                throw new RuntimeException("Couldn't create a stream from the resource in the path \"" + resourcePath + "\"!");
+            }
             return fromStreamProperties(inputStream);
         } catch (IOException e) {
             throw new RuntimeException("Couldn't read resource from path \"" + resourcePath + "\": ", e);
@@ -87,7 +95,7 @@ public class Credentials {
      * "{applicationDirectory}/credentials.properties"
      * @return The new created credentials object.
      */
-    public static Credentials fromFile() {
+    public static @Nullable Credentials fromFile() {
         return fromFile(DEFAULT_CREDENTIAL_FILE);
     }
 
@@ -96,7 +104,7 @@ public class Credentials {
      * @param filePath The file path with the containing credentials.
      * @return The new created credentials object.
      */
-    public static Credentials fromFile(String filePath) {
+    public static @Nullable Credentials fromFile(@Nullable String filePath) {
         if (filePath == null) {
             throw new RuntimeException("Couldn't read file from null path!");
         }
@@ -115,7 +123,7 @@ public class Credentials {
      * Automatically reading credentials from the system properties.
      * @return The new created credentials object.
      */
-    public static Credentials fromSystemProperties() {
+    public static @NotNull Credentials fromSystemProperties() {
         return fromSystemProperties(CONNECT_KEY, DATABASE_KEY);
     }
 
@@ -126,7 +134,7 @@ public class Credentials {
      * @param propertyDatabaseKey The property key for the database
      * @return The new created credentials object.
      */
-    public static Credentials fromSystemProperties(String propertyConnectKey, String propertyDatabaseKey) {
+    public static @NotNull Credentials fromSystemProperties(@NotNull String propertyConnectKey, @NotNull String propertyDatabaseKey) {
         return new Credentials(System.getProperty(propertyConnectKey), System.getProperty(propertyDatabaseKey));
     }
 
@@ -134,7 +142,7 @@ public class Credentials {
      * Automatically reading credentials from the system environmental variables.
      * @return The new created credentials object.
      */
-    public static Credentials fromSystemEnvVars() {
+    public static @NotNull Credentials fromSystemEnvVars() {
         return fromSystemEnvVars(CONNECT_KEY.toUpperCase(Locale.ROOT).replaceFirst("\\.", "_"),
                 DATABASE_KEY.toUpperCase(Locale.ROOT).replaceFirst("\\.", "_"));
     }
@@ -146,7 +154,7 @@ public class Credentials {
      * @param envVarDatabaseKey The environmental variable key for the database
      * @return The new created credentials object.
      */
-    public static Credentials fromSystemEnvVars(String envVarConnectKey, String envVarDatabaseKey) {
+    public static @NotNull Credentials fromSystemEnvVars(@NotNull String envVarConnectKey, @NotNull String envVarDatabaseKey) {
         return new Credentials(System.getenv(envVarConnectKey), System.getenv(envVarDatabaseKey));
     }
 
@@ -156,16 +164,18 @@ public class Credentials {
      * @param database The database which should be used.
      * @return A new created credentials object.
      */
-    public static Credentials of(String connectString, String database) {
+    public static @NotNull Credentials of(@Nullable String connectString, @Nullable String database) {
         return new Credentials(connectString, database);
     }
 
     /**
      * The connection string to the mongodb database server
      */
+    @Nullable
     String connectString;
     /**
      * The database, which should be used
      */
+    @Nullable
     String database;
 }

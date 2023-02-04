@@ -3,6 +3,7 @@ package eu.koboo.en2do.internal;
 /**
  * This interface is used to retrieve a return value of the dynamic method
  */
+@FunctionalInterface
 public interface MethodCallable {
 
     /**

@@ -10,6 +10,8 @@ import lombok.experimental.FieldDefaults;
 import org.bson.codecs.pojo.ClassModelBuilder;
 import org.bson.codecs.pojo.Convention;
 import org.bson.codecs.pojo.PropertyModelBuilder;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;
@@ -23,6 +25,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AnnotationConvention implements Convention {
 
+    @NotNull
     Map<Class<?>, RepositoryMeta<?, ?, ?>> repositoryMetaRegistry;
 
     /**
@@ -31,7 +34,7 @@ public class AnnotationConvention implements Convention {
      * @param typeClass The type of RepositoryMeta (should be the entity class)
      * @return The RepositoryMeta if found, otherwise "null"
      */
-    private RepositoryMeta<?, ?, ?> findRepositoryMetaOf(Class<?> typeClass) {
+    private @Nullable RepositoryMeta<?, ?, ?> findRepositoryMetaOf(@NotNull Class<?> typeClass) {
         for (RepositoryMeta<?, ?, ?> meta : repositoryMetaRegistry.values()) {
             if (!meta.getEntityClass().equals(typeClass)) {
                 continue;

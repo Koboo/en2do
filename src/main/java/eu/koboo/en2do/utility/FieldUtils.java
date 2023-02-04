@@ -1,6 +1,8 @@
 package eu.koboo.en2do.utility;
 
 import lombok.experimental.UtilityClass;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -20,7 +22,7 @@ public class FieldUtils {
      * @param <E>       The generic type of the class
      * @return The Set with all found fields of the given class.
      */
-    public <E> Set<Field> collectFields(Class<E> typeClass) {
+    public <E> @NotNull Set<Field> collectFields(@NotNull Class<E> typeClass) {
         Set<Field> fields = new HashSet<>();
         Class<?> clazz = typeClass;
         while (clazz != Object.class) {
@@ -41,7 +43,7 @@ public class FieldUtils {
      * @param fieldSet  The Set, which should be iterated through
      * @return The field, if found. If not found, it returns "null"
      */
-    public Field findFieldByName(String fieldName, Set<Field> fieldSet) {
+    public @Nullable Field findFieldByName(@NotNull String fieldName, @NotNull Set<Field> fieldSet) {
         for (Field field : fieldSet) {
             if (!field.getName().equalsIgnoreCase(fieldName)) {
                 continue;
