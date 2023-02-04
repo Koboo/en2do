@@ -16,6 +16,7 @@ public class GenericUtils {
 
     /**
      * Gets the generic type of the return type from the given method
+     *
      * @param method The method with the return type
      * @return The class of the generic type
      */
@@ -27,7 +28,8 @@ public class GenericUtils {
 
     /**
      * Gets the generic type of the parameter at the given from the given method
-     * @param method The method with the parameter
+     *
+     * @param method     The method with the parameter
      * @param paramIndex The index of the parameter
      * @return The class of the generic type of the parameter
      */
@@ -40,6 +42,7 @@ public class GenericUtils {
 
     /**
      * Checks if class1 and class2 is not the same type
+     *
      * @param class1 The first given class
      * @param class2 The second given class
      * @return true if class1 and class2 are not same type
@@ -71,6 +74,7 @@ public class GenericUtils {
 
     /**
      * Checks if the given class is a type of "boolean"
+     *
      * @param clazz The class to check
      * @return true, if the class is type boolean
      */
@@ -80,6 +84,7 @@ public class GenericUtils {
 
     /**
      * Checks if the given class is a type of "short"
+     *
      * @param clazz The class to check
      * @return true, if the class is type short
      */
@@ -89,6 +94,7 @@ public class GenericUtils {
 
     /**
      * Checks if the given class is a type of "float"
+     *
      * @param clazz The class to check
      * @return true, if the class is type float
      */
@@ -98,6 +104,7 @@ public class GenericUtils {
 
     /**
      * Checks if the given class is a type of "int"
+     *
      * @param clazz The class to check
      * @return true, if the class is type int
      */
@@ -107,6 +114,7 @@ public class GenericUtils {
 
     /**
      * Checks if the given class is a type of "long"
+     *
      * @param clazz The class to check
      * @return true, if the class is type long
      */
@@ -116,6 +124,7 @@ public class GenericUtils {
 
     /**
      * Checks if the given class is a type of "double"
+     *
      * @param clazz The class to check
      * @return true, if the class is type double
      */
@@ -125,6 +134,7 @@ public class GenericUtils {
 
     /**
      * Checks if the given class is a type of "char"
+     *
      * @param clazz The class to check
      * @return true, if the class is type char
      */

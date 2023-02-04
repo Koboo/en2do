@@ -31,6 +31,7 @@ public class Validator {
 
     /**
      * Returns a codec for the given type class or if no codec is found, it returns null.
+     *
      * @param typeClass The type class to search a codec for.
      * @return The codec if found, otherwise null.
      */
@@ -44,11 +45,12 @@ public class Validator {
 
     /**
      * Validates the compatibility of the given type class
+     *
      * @param repositoryClass The class of the repository
-     * @param typeClass The type class, which should be validated
-     * @param <E> The generic type of the entity
-     * @param <ID> The generic type of the id of the entity
-     * @param <R> The generic type of the repository
+     * @param typeClass       The type class, which should be validated
+     * @param <E>             The generic type of the entity
+     * @param <ID>            The generic type of the id of the entity
+     * @param <R>             The generic type of the repository
      * @throws Exception if type class is not valid.
      */
     public <E, ID, R extends Repository<E, ID>> void validateCompatibility(

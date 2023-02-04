@@ -20,6 +20,7 @@ public class EntityUtils {
     /**
      * This method is used to copy all field values from one entity to another.
      * It also works with inheritance.
+     *
      * @param from The entity to copy from
      * @param to   The entity to copy to
      */

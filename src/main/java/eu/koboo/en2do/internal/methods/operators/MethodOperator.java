@@ -84,6 +84,7 @@ public enum MethodOperator {
 
     /**
      * Replaces the method operator keyword from the given text and returns it.
+     *
      * @param textWithOperator The text, with the method operator at the start
      * @return The text, without the method operator
      */
@@ -93,10 +94,11 @@ public enum MethodOperator {
 
     /**
      * Validates the return type of the specific method operator, using the given parameters.
-     * @param method The method, which should be validated
+     *
+     * @param method      The method, which should be validated
      * @param returnType, The return type of the method (Could be overridden, due to async methods)
      * @param entityClass The entity class of the validated repository
-     * @param repoClass THe repository classs
+     * @param repoClass   THe repository classs
      * @throws Exception if the validation is unsuccessful.
      */
     public void validate(@NotNull Method method, @NotNull Class<?> returnType,
@@ -107,6 +109,7 @@ public enum MethodOperator {
     /**
      * Parses the method operator by the name of the method. It just checks if the method is starting
      * with any method operator of the enumeration.
+     *
      * @param methodNamePart The name of the method.
      * @return The MethodOperator if any is found, otherwise null.
      */

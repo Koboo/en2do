@@ -44,6 +44,7 @@ public class Credentials {
 
     /**
      * Utility method for reading credentials from an input stream.
+     *
      * @param inputStream The input stream, which should be read.
      * @return The new created credentials object.
      */
@@ -60,6 +61,7 @@ public class Credentials {
     /**
      * Automatically reading credentials from the default resourcePath, which is
      * "{applicationJar}/credentials.properties"
+     *
      * @return The new created credentials object.
      */
     public static @Nullable Credentials fromResource() {
@@ -68,6 +70,7 @@ public class Credentials {
 
     /**
      * Automatically reading credentials from a resource file from given resourcePath.
+     *
      * @param resourcePath The resource path with the containing credentials.
      * @return The new created credentials object.
      */
@@ -81,7 +84,7 @@ public class Credentials {
             return null;
         }
         try (InputStream inputStream = managerClass.getResourceAsStream(resourcePath)) {
-            if(inputStream == null) {
+            if (inputStream == null) {
                 throw new RuntimeException("Couldn't create a stream from the resource in the path \"" + resourcePath + "\"!");
             }
             return fromStreamProperties(inputStream);
@@ -93,6 +96,7 @@ public class Credentials {
     /**
      * Automatically reading credentials from the default filePath, which is
      * "{applicationDirectory}/credentials.properties"
+     *
      * @return The new created credentials object.
      */
     public static @Nullable Credentials fromFile() {
@@ -101,6 +105,7 @@ public class Credentials {
 
     /**
      * Automatically reading credentials from a file from given filePath.
+     *
      * @param filePath The file path with the containing credentials.
      * @return The new created credentials object.
      */
@@ -121,6 +126,7 @@ public class Credentials {
 
     /**
      * Automatically reading credentials from the system properties.
+     *
      * @return The new created credentials object.
      */
     public static @NotNull Credentials fromSystemProperties() {
@@ -130,7 +136,8 @@ public class Credentials {
     /**
      * Automatically reading credentials from the system properties,
      * using custom keys for the connectString and database
-     * @param propertyConnectKey The property key for the connection string
+     *
+     * @param propertyConnectKey  The property key for the connection string
      * @param propertyDatabaseKey The property key for the database
      * @return The new created credentials object.
      */
@@ -140,6 +147,7 @@ public class Credentials {
 
     /**
      * Automatically reading credentials from the system environmental variables.
+     *
      * @return The new created credentials object.
      */
     public static @NotNull Credentials fromSystemEnvVars() {
@@ -150,7 +158,8 @@ public class Credentials {
     /**
      * Automatically reading credentials from the system environmental variables.
      * using custom keys for the connectString and database
-     * @param envVarConnectKey The environmental variable key for the connection string
+     *
+     * @param envVarConnectKey  The environmental variable key for the connection string
      * @param envVarDatabaseKey The environmental variable key for the database
      * @return The new created credentials object.
      */
@@ -160,8 +169,9 @@ public class Credentials {
 
     /**
      * Create a new credentials object by passing the two values directly.
+     *
      * @param connectString The connection string to the mongodb server.
-     * @param database The database which should be used.
+     * @param database      The database which should be used.
      * @return A new created credentials object.
      */
     public static @NotNull Credentials of(@Nullable String connectString, @Nullable String database) {

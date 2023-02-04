@@ -41,10 +41,10 @@ public class GenericMapCodec<K, T> implements Codec<Map<K, T>> {
     }
 
     /**
-     * @see org.bson.codecs.Encoder
-     * @param writer the BSON writer to encode into
-     * @param map the value to encode
+     * @param writer         the BSON writer to encode into
+     * @param map            the value to encode
      * @param encoderContext the encoder context
+     * @see org.bson.codecs.Encoder
      */
     @Override
     public void encode(BsonWriter writer, Map<K, T> map, EncoderContext encoderContext) {
@@ -77,10 +77,10 @@ public class GenericMapCodec<K, T> implements Codec<Map<K, T>> {
     }
 
     /**
-     * @see org.bson.codecs.Decoder
-     * @param reader         the BSON reader
+     * @param reader  the BSON reader
      * @param context the decoder context
      * @return The decoded map instance
+     * @see org.bson.codecs.Decoder
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -111,6 +111,7 @@ public class GenericMapCodec<K, T> implements Codec<Map<K, T>> {
 
     /**
      * Used to get a new instance of the saved map.
+     *
      * @return The new created map instance.
      */
     private Map<K, T> getInstance() {

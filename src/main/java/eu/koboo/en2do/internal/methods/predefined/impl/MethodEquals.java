@@ -17,7 +17,7 @@ public class MethodEquals<E, ID, R extends Repository<E, ID>> extends Predefined
 
     @Override
     public @Nullable Object handle(@NotNull Method method, @NotNull Object[] arguments) throws Exception {
-        if(arguments.length != 1) {
+        if (arguments.length != 1) {
             return false;
         }
         Object object = arguments[0];

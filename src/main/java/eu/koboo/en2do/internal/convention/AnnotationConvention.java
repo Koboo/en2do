@@ -31,6 +31,7 @@ public class AnnotationConvention implements Convention {
     /**
      * This method is used to get the RepositoryMeta object by the given typeClass,
      * and if non is found, it returns null.
+     *
      * @param typeClass The type of RepositoryMeta (should be the entity class)
      * @return The RepositoryMeta if found, otherwise "null"
      */
@@ -45,8 +46,8 @@ public class AnnotationConvention implements Convention {
     }
 
     /**
-     * @see Convention
      * @param classModelBuilder the ClassModelBuilder to apply the convention to
+     * @see Convention
      */
     @Override
     public void apply(ClassModelBuilder<?> classModelBuilder) {

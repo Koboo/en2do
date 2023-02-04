@@ -21,8 +21,9 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
-     * @see Repository#countAll()
+     *
      * @return Future, with the count of all entities
+     * @see Repository#countAll()
      */
     @Async
     @NotNull
@@ -30,9 +31,10 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
-     * @see Repository#delete(Object)
+     *
      * @param entity The entity, which should be deleted
      * @return Future, with a boolean of success
+     * @see Repository#delete(Object)
      */
     @Async
     @NotNull
@@ -40,9 +42,10 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
-     * @see Repository#deleteAll(List)
+     *
      * @param entityList The List with entities, which should be deleted
      * @return Future, with a boolean of success
+     * @see Repository#deleteAll(List)
      */
     @Async
     @NotNull
@@ -50,9 +53,10 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
-     * @see Repository#deleteById(Object)
+     *
      * @param identifier The identifier of the entity, which should be deleted
      * @return Future, with a boolean of success
+     * @see Repository#deleteById(Object)
      */
     @Async
     @NotNull
@@ -60,8 +64,9 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
-     * @see Repository#drop()
+     *
      * @return Future, with a boolean of success
+     * @see Repository#drop()
      */
     @Async
     @NotNull
@@ -69,9 +74,10 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
-     * @see Repository#exists(Object)
+     *
      * @param entity The entity, which should be checked
      * @return Future, with a boolean, which indicates if the entity exists
+     * @see Repository#exists(Object)
      */
     @Async
     @NotNull
@@ -79,9 +85,10 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
-     * @see Repository#existsById(Object)
+     *
      * @param identifier The identifier of the entity, which should be checked
      * @return Future, with a boolean, which indicates if an entity with the id exists
+     * @see Repository#existsById(Object)
      */
     @Async
     @NotNull
@@ -89,8 +96,9 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
-     * @see Repository#findAll()
+     *
      * @return Future, with all entities
+     * @see Repository#findAll()
      */
     @Async
     @NotNull
@@ -98,9 +106,10 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
-     * @see Repository#findFirstById(Object)
+     *
      * @param identifier The identifier of the entity, which should be found
      * @return Future, with the first entity with the id
+     * @see Repository#findFirstById(Object)
      */
     @Async
     @NotNull
@@ -108,9 +117,10 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
-     * @see Repository#pageAll(Pagination)
+     *
      * @param pagination The options, which should be used for pagination
      * @return Future, with all entities, paged by the Pagination object
+     * @see Repository#pageAll(Pagination)
      */
     @Async
     @NotNull
@@ -118,9 +128,10 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
-     * @see Repository#save(Object)
+     *
      * @param entity The entity, which should be saved
      * @return Future, with a boolean of success
+     * @see Repository#save(Object)
      */
     @Async
     @NotNull
@@ -128,9 +139,10 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
-     * @see Repository#saveAll(List)
+     *
      * @param entityList The List of entities, which should be saved
      * @return Future, with a boolean of success
+     * @see Repository#saveAll(List)
      */
     @Async
     @NotNull
@@ -138,9 +150,10 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
-     * @see Repository#sortAll(Sort)
+     *
      * @param sort The options, which should be used for sorting
      * @return Future, with all entities, sorted by the Sort object
+     * @see Repository#sortAll(Sort)
      */
     @Async
     @NotNull

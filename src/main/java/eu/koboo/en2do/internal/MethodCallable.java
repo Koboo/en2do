@@ -8,6 +8,7 @@ public interface MethodCallable {
 
     /**
      * Called to get the object
+     *
      * @return The return value of the method
      * @throws Exception if anything bad happens
      */
