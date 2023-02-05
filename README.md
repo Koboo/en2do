@@ -10,16 +10,19 @@ You need help or want to share a project, which uses en2do?
 
 [Feel free to join our Discord](https://discord.gg/VGrxZDQu2n)!
 
-## Overview
+## Documentation
 
-- [License](LICENSE)
-- [Discord Support](https://discord.gg/VGrxZDQu2n)
 - [Documentation](https://koboo.gitbook.io/en2do/)
 - [JavaDocs](https://reposilite.koboo.eu/javadoc/releases/eu/koboo/en2do)
 - [Repository](https://reposilite.koboo.eu/#/releases/eu/koboo/en2do)
-- [References](#references)
+- [Jenkins](https://jenkins.koboo.eu/job/en2do/job/Build%20and%20Publish%20(main)/)
 
-## References
+### Other
+
+- [License](LICENSE)
+- [Discord Support](https://discord.gg/VGrxZDQu2n)
+
+### References
 
 - [JUnit 5 User Guide](https://junit.org/junit5/docs/current/user-guide/)
 - [JUnit 5 Test-Units](https://www.baeldung.com/junit-5-test-byField)
@@ -29,6 +32,7 @@ You need help or want to share a project, which uses en2do?
 - [MongoDB Default POJO Codec](https://github.com/mongodb/mongo-java-driver/tree/master/bson/src/main/org/bson/codecs)
 - [MongoDB MapCodec GitHub](https://github.com/benjamonnguyen/mongodb-bson-codec)
 - [MongoDB MapCodec StackOverflow](https://stackoverflow.com/questions/67849754/mongodb-mapk-v-codec-maps-must-have-string-keys-fix)
+- [Spring Data](https://spring.io/projects/spring-data)
 - [Spring MongoDB Repositories](https://docs.spring.io/spring-data/mongodb/docs/1.2.0.RELEASE/reference/html/mongo.repositories.html)
 - [Advanced MongoDB Performance Tuning](https://medium.com/idealo-tech-blog/advanced-mongodb-performance-tuning-2ddcd01a27d2)
 - [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
