@@ -31,6 +31,7 @@ import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
 import eu.koboo.en2do.repository.entity.compound.Index;
 import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
 import eu.koboo.en2do.repository.methods.async.Async;
+import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.*;
 import eu.koboo.en2do.repository.methods.transform.Transform;
@@ -45,6 +46,8 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.Conventions;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.conversions.Bson;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -71,21 +74,31 @@ public class MongoManager {
 
     // Predefined methods by Java objects
     // These methods are ignored by our method processing proxy / invocation handler.
+    @NotNull
     private static final List<String> IGNORED_DEFAULT_METHODS = Arrays.asList(
             "notify", "notifyAll", "wait", "finalize", "clone"
     );
 
+    @NotNull
     Map<Class<?>, Repository<?, ?>> repositoryRegistry;
+
+    @NotNull
     Map<Class<?>, RepositoryMeta<?, ?, ?>> repositoryMetaRegistry;
 
+    @Nullable
     ExecutorService executorService;
 
     @Getter
+    @NotNull
     CodecRegistry codecRegistry;
+
+    @NotNull
     MongoClient client;
+
+    @NotNull
     MongoDatabase database;
 
-    public MongoManager(Credentials credentials, ExecutorService executorService) {
+    public MongoManager(@Nullable Credentials credentials, @Nullable ExecutorService executorService) {
         repositoryRegistry = new ConcurrentHashMap<>();
         repositoryMetaRegistry = new ConcurrentHashMap<>();
 
@@ -105,14 +118,14 @@ public class MongoManager {
                     "accessible credentials.");
         }
 
-        String connectString = credentials.connectString();
+        String connectString = credentials.getConnectString();
         // If credentials connectString is null, throw exception
         if (connectString == null) {
             throw new NullPointerException("No connectString given! Please make sure to provide a " +
                     "accessible connectString.");
         }
         // If credentials databaseString is null, throw exception
-        String databaseString = credentials.database();
+        String databaseString = credentials.getDatabase();
         if (databaseString == null) {
             throw new NullPointerException("No databaseString given! Please make sure to provide a " +
                     "accessible databaseString.");
@@ -145,7 +158,7 @@ public class MongoManager {
         database = client.getDatabase(databaseString);
     }
 
-    public MongoManager(Credentials credentials) {
+    public MongoManager(@Nullable Credentials credentials) {
         this(credentials, null);
     }
 
@@ -160,21 +173,15 @@ public class MongoManager {
 
     public boolean close(boolean shutdownExecutor) {
         try {
-            if(executorService != null && shutdownExecutor) {
+            if (executorService != null && shutdownExecutor) {
                 executorService.shutdown();
             }
-            if (repositoryRegistry != null) {
-                repositoryRegistry.clear();
+            repositoryRegistry.clear();
+            for (RepositoryMeta<?, ?, ?> meta : repositoryMetaRegistry.values()) {
+                meta.destroy();
             }
-            if (repositoryMetaRegistry != null) {
-                for (RepositoryMeta<?, ?, ?> meta : repositoryMetaRegistry.values()) {
-                    meta.destroy();
-                }
-                repositoryMetaRegistry.clear();
-            }
-            if (client != null) {
-                client.close();
-            }
+            repositoryMetaRegistry.clear();
+            client.close();
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -183,7 +190,7 @@ public class MongoManager {
     }
 
     @SuppressWarnings("unchecked")
-    public <E, ID, R extends Repository<E, ID>> R create(Class<R> repositoryClass) {
+    public <E, ID, R extends Repository<E, ID>> @NotNull R create(@NotNull Class<R> repositoryClass) {
         try {
 
             // Check for already created repository to avoid multiply instances of the same repository
@@ -288,6 +295,7 @@ public class MongoManager {
             repositoryMeta.registerPredefinedMethod(new MethodSaveAll<>(repositoryMeta, entityCollection));
             repositoryMeta.registerPredefinedMethod(new MethodSortAll<>(repositoryMeta, entityCollection));
             repositoryMeta.registerPredefinedMethod(new MethodToString<>(repositoryMeta, entityCollection));
+            repositoryMeta.registerPredefinedMethod(new MethodUpdateAllFields<>(repositoryMeta, entityCollection));
 
             // Iterate through the repository methods
             for (Method method : repositoryClass.getMethods()) {
@@ -363,7 +371,7 @@ public class MongoManager {
                 for (String filterOperatorString : methodFilterPartArray) {
                     FilterType filterType = createFilterType(entityClass, repositoryClass, method, filterOperatorString,
                             entityFieldSet);
-                    int filterTypeParameterCount = filterType.operator().getExpectedParameterCount();
+                    int filterTypeParameterCount = filterType.getOperator().getExpectedParameterCount();
                     for (int i = 0; i < filterTypeParameterCount; i++) {
                         int paramIndex = nextParameterIndex + i;
                         Class<?> paramClass = method.getParameters()[paramIndex].getType();
@@ -372,14 +380,14 @@ public class MongoManager {
                                     method.getParameterCount());
                         }
                         // Special checks for some operators
-                        Class<?> fieldClass = filterType.field().getType();
-                        switch (filterType.operator()) {
-                            case REGEX -> {
+                        Class<?> fieldClass = filterType.getField().getType();
+                        switch (filterType.getOperator()) {
+                            case REGEX:
                                 if (GenericUtils.isNotTypeOf(String.class, paramClass) && GenericUtils.isNotTypeOf(Pattern.class, paramClass)) {
                                     throw new MethodInvalidRegexParameterException(method, repositoryClass, paramClass);
                                 }
-                            }
-                            case IN -> {
+                                break;
+                            case IN:
                                 if (GenericUtils.isNotTypeOf(List.class, paramClass)) {
                                     throw new MethodMismatchingTypeException(method, repositoryClass, List.class, paramClass);
                                 }
@@ -387,12 +395,12 @@ public class MongoManager {
                                 if (GenericUtils.isNotTypeOf(fieldClass, listType)) {
                                     throw new MethodInvalidListParameterException(method, repositoryClass, fieldClass, listType);
                                 }
-                            }
-                            default -> {
+                                break;
+                            default:
                                 if (GenericUtils.isNotTypeOf(fieldClass, paramClass)) {
                                     throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
                                 }
-                            }
+                                break;
                         }
                     }
                     MethodFilterPart filterPart = new MethodFilterPart(filterType, nextParameterIndex);
@@ -425,6 +433,14 @@ public class MongoManager {
                         if (lastMethodParameter.isAssignableFrom(Pagination.class)) {
                             if (methodOperator != MethodOperator.PAGE) {
                                 throw new MethodPageNotAllowedException(method, repositoryClass);
+                            }
+                            if ((expectedParameterCount + 1) != methodParameterCount) {
+                                throw new MethodParameterCountException(method, repositoryClass, (expectedParameterCount + 1), methodParameterCount);
+                            }
+                        }
+                        if (lastMethodParameter.isAssignableFrom(UpdateBatch.class)) {
+                            if (methodOperator != MethodOperator.UPDATE_FIELD) {
+                                throw new MethodBatchNotAllowedException(method, repositoryClass);
                             }
                             if ((expectedParameterCount + 1) != methodParameterCount) {
                                 throw new MethodParameterCountException(method, repositoryClass, (expectedParameterCount + 1), methodParameterCount);
@@ -556,12 +572,10 @@ public class MongoManager {
         }
     }
 
-    private <E> FilterType createFilterType(Class<E> entityClass, Class<?> repoClass, Method method,
-                                            String filterOperatorString, Set<Field> fieldSet) throws Exception {
+    private <E> @NotNull FilterType createFilterType(@NotNull Class<E> entityClass, @NotNull Class<?> repoClass,
+                                                     @NotNull Method method, @NotNull String filterOperatorString,
+                                                     @NotNull Set<Field> fieldSet) throws Exception {
         FilterOperator filterOperator = FilterOperator.parseFilterEndsWith(filterOperatorString);
-        if (filterOperator == null) {
-            throw new MethodNoFilterOperatorException(method, repoClass);
-        }
         String expectedFieldName = filterOperator.removeOperatorFrom(filterOperatorString);
         boolean notFilter = false;
         if (expectedFieldName.endsWith("Not")) {

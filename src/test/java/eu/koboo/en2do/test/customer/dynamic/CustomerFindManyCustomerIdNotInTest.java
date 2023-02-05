@@ -27,6 +27,7 @@ public class CustomerFindManyCustomerIdNotInTest extends CustomerRepositoryTest 
     public void saveCustomer() {
         for (int i = 0; i < 10; i++) {
             Customer customer = Const.createNewCustomer();
+            assertNotNull(customer);
             customer.setUniqueId(UUID.randomUUID());
             customer.setCustomerId(i);
             assertTrue(repository.save(customer));

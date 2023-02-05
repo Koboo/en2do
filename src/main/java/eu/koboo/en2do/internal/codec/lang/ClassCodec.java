@@ -14,10 +14,10 @@ import org.bson.codecs.EncoderContext;
 public class ClassCodec implements Codec<Class> {
 
     /**
-     * @see org.bson.codecs.Encoder
      * @param writer         the BSON writer to encode into
      * @param value          the value to encode
      * @param encoderContext the encoder context
+     * @see org.bson.codecs.Encoder
      */
     @Override
     public void encode(BsonWriter writer, Class value, EncoderContext encoderContext) {
@@ -25,10 +25,10 @@ public class ClassCodec implements Codec<Class> {
     }
 
     /**
-     * @see org.bson.codecs.Decoder
      * @param reader         the BSON reader
      * @param decoderContext the decoder context
      * @return the decoded Class
+     * @see org.bson.codecs.Decoder
      */
     @Override
     public Class decode(BsonReader reader, DecoderContext decoderContext) {
@@ -41,8 +41,8 @@ public class ClassCodec implements Codec<Class> {
     }
 
     /**
-     * @see org.bson.codecs.Encoder
      * @return the class of the encoded class
+     * @see org.bson.codecs.Encoder
      */
     @Override
     public Class<Class> getEncoderClass() {

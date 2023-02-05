@@ -6,6 +6,8 @@ import eu.koboo.en2do.internal.RepositoryMeta;
 import eu.koboo.en2do.internal.methods.predefined.PredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
 import org.bson.conversions.Bson;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Method;
 
@@ -16,7 +18,7 @@ public class MethodFindFirstById<E, ID, R extends Repository<E, ID>> extends Pre
     }
 
     @Override
-    public Object handle(Method method, Object[] arguments) throws Exception {
+    public @Nullable Object handle(@NotNull Method method, @NotNull Object[] arguments) throws Exception {
         ID uniqueId = repositoryMeta.checkUniqueId(method, arguments[0]);
         Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
         FindIterable<E> findIterable = repositoryMeta.createIterable(idFilter, methodName);

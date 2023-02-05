@@ -25,6 +25,7 @@ public class CustomerCountByCustomerIdTest extends CustomerRepositoryTest {
     @Order(2)
     public void saveCustomer() {
         Customer customer = Const.createNewCustomer();
+        assertNotNull(customer);
         customer.setUniqueId(UUID.randomUUID());
         assertTrue(repository.save(customer));
         assertTrue(repository.exists(customer));

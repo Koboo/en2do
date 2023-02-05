@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +23,7 @@ public class Pagination {
      * @param entitiesPerPage Sets the maximum entities per one page.
      * @return The created Pagination object
      */
-    public static Pagination of(int entitiesPerPage) {
+    public static @NotNull Pagination of(int entitiesPerPage) {
         return new Pagination(entitiesPerPage);
     }
 
@@ -44,7 +45,7 @@ public class Pagination {
      * @param ascending The direction of the sorting
      * @return The used Pagination object
      */
-    public Pagination order(String fieldName, boolean ascending) {
+    public @NotNull Pagination order(String fieldName, boolean ascending) {
         pageDirectionMap.put(fieldName, ascending ? 1 : -1);
         return this;
     }
@@ -56,7 +57,7 @@ public class Pagination {
      * @param fieldName The field which is used to sort
      * @return The used Pagination object
      */
-    public Pagination order(String fieldName) {
+    public @NotNull Pagination order(String fieldName) {
         return order(fieldName, true);
     }
 
@@ -67,7 +68,7 @@ public class Pagination {
      * @param page The requested page
      * @return The used Pagination object
      */
-    public Pagination page(long page) {
+    public @NotNull Pagination page(long page) {
         this.page = page;
         return this;
     }

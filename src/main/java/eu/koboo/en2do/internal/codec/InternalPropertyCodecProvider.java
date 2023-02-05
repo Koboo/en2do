@@ -17,11 +17,11 @@ import java.util.Map;
 public class InternalPropertyCodecProvider implements PropertyCodecProvider {
 
     /**
-     * @see PropertyCodecProvider
-     * @param type the class and bound type parameters for which to get a Codec
+     * @param type     the class and bound type parameters for which to get a Codec
      * @param registry the registry to use for resolving dependent Codec instances
+     * @param <T>      The type of the codec
      * @return The codec from the type
-     * @param <T> The type of the codec
+     * @see PropertyCodecProvider
      */
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})

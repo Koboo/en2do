@@ -2,16 +2,22 @@ package eu.koboo.en2do.internal;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.result.UpdateResult;
 import eu.koboo.en2do.internal.exception.methods.MethodUnsupportedException;
+import eu.koboo.en2do.internal.exception.repository.RepositoryInvalidCallException;
 import eu.koboo.en2do.internal.methods.dynamic.DynamicMethod;
 import eu.koboo.en2do.internal.methods.predefined.PredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.methods.async.Async;
+import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.transform.Transform;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.bson.conversions.Bson;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -23,7 +29,10 @@ import java.util.concurrent.ExecutorService;
 @AllArgsConstructor
 public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> implements InvocationHandler {
 
+    @NotNull
     RepositoryMeta<E, ID, R> repositoryMeta;
+
+    @Nullable
     ExecutorService executorService;
 
     @Override
@@ -82,32 +91,40 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         // Switch-case the method operator to use the correct mongo query.
         final MongoCollection<E> collection = repositoryMeta.getCollection();
 
-        return switch (dynamicMethod.getMethodOperator()) {
-            case COUNT -> collection.countDocuments(filter);
-            case DELETE -> collection.deleteMany(filter).wasAcknowledged();
-            case EXISTS -> collection.countDocuments(filter) > 0;
-            case FIND_MANY -> {
-                FindIterable<E> findIterable = repositoryMeta.createIterable(filter, methodName);
+        FindIterable<E> findIterable;
+        switch (dynamicMethod.getMethodOperator()) {
+            case COUNT:
+                return collection.countDocuments(filter);
+            case DELETE:
+                return collection.deleteMany(filter).wasAcknowledged();
+            case EXISTS:
+                return collection.countDocuments(filter) > 0;
+            case FIND_MANY:
+                findIterable = repositoryMeta.createIterable(filter, methodName);
                 findIterable = repositoryMeta.applySortObject(method, findIterable, arguments);
                 findIterable = repositoryMeta.applySortAnnotations(method, findIterable);
-                yield findIterable.into(new ArrayList<>());
-            }
-            case FIND_FIRST -> {
-                FindIterable<E> findIterable = repositoryMeta.createIterable(filter, methodName);
+                return findIterable.into(new ArrayList<>());
+            case FIND_FIRST:
+                findIterable = repositoryMeta.createIterable(filter, methodName);
                 findIterable = repositoryMeta.applySortObject(method, findIterable, arguments);
                 findIterable = repositoryMeta.applySortAnnotations(method, findIterable);
-                yield findIterable.limit(1).first();
-            }
-            case PAGE -> {
-                FindIterable<E> findIterable = repositoryMeta.createIterable(filter, methodName);
+                return findIterable.limit(1).first();
+            case PAGE:
+                findIterable = repositoryMeta.createIterable(filter, methodName);
                 findIterable = repositoryMeta.applyPageObject(method, findIterable, arguments);
-                yield findIterable.into(new ArrayList<>());
-            }
-            // Couldn't find any match method operator, but that shouldn't happen
-        };
+                return findIterable.into(new ArrayList<>());
+            case UPDATE_FIELD:
+                UpdateBatch updateBatch = (UpdateBatch) arguments[arguments.length - 1];
+                UpdateResult result = collection.updateMany(filter, repositoryMeta.createUpdateDocument(updateBatch),
+                        new UpdateOptions().upsert(false));
+                return result.wasAcknowledged();
+            default:
+                // Couldn't find any match method operator, but that shouldn't happen
+                throw new RepositoryInvalidCallException(method, repositoryMeta.getRepositoryClass());
+        }
     }
 
-    private void executeFuture(CompletableFuture<Object> future, MethodCallable callable) {
+    private void executeFuture(@NotNull CompletableFuture<Object> future, @NotNull MethodCallable callable) {
         future.completeAsync(() -> {
             try {
                 return callable.call();

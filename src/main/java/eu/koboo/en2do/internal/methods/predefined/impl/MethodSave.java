@@ -9,6 +9,8 @@ import eu.koboo.en2do.repository.Repository;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.bson.conversions.Bson;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Method;
 
@@ -23,7 +25,7 @@ public class MethodSave<E, ID, R extends Repository<E, ID>> extends PredefinedMe
     }
 
     @Override
-    public Object handle(Method method, Object[] arguments) throws Exception {
+    public @Nullable Object handle(@NotNull Method method, @NotNull Object[] arguments) throws Exception {
         E entity = repositoryMeta.checkEntity(method, arguments[0]);
         ID uniqueId = repositoryMeta.checkUniqueId(method, repositoryMeta.getUniqueId(entity));
         Bson idFilter = repositoryMeta.createIdFilter(uniqueId);

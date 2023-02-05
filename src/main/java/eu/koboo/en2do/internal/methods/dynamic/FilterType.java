@@ -1,14 +1,34 @@
 package eu.koboo.en2do.internal.methods.dynamic;
 
 import eu.koboo.en2do.internal.methods.operators.FilterOperator;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 
 /**
  * Represents a segment of a method filter.
- * @param field The field, which should be filtered
- * @param notFilter is true if the filter is negotiated
- * @param operator The operator of the filter
  */
-public record FilterType(Field field, boolean notFilter, FilterOperator operator) {
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Getter
+public class FilterType {
+
+    /**
+     * The field, which should be filtered
+     */
+    @NotNull
+    Field field;
+    /**
+     * is true if the filter is negotiated
+     */
+    boolean notFilter;
+    /**
+     * The operator of the filter
+     */
+    @NotNull
+    FilterOperator operator;
 }

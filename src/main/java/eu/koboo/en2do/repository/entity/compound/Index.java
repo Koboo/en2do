@@ -14,12 +14,14 @@ public @interface Index {
 
     /**
      * Sets the name of the field, which should be used to index.
+     *
      * @return The field name, which should be indexed.
      */
     String value();
 
     /**
      * Sets the direction of the index.
+     *
      * @return true, if the direction is ascending. false, if the direction is descending.
      */
     boolean ascending() default true;

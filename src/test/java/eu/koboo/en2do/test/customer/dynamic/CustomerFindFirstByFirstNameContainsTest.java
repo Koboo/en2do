@@ -25,6 +25,7 @@ public class CustomerFindFirstByFirstNameContainsTest extends CustomerRepository
     public void saveCustomer() {
         Customer customer = Const.createNewCustomer();
         assertNotNull(customer);
+        assertNotNull(customer);
         assertTrue(repository.save(customer));
         assertTrue(repository.exists(customer));
     }

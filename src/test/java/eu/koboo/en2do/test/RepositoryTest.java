@@ -5,6 +5,7 @@ import eu.koboo.en2do.repository.Repository;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,9 +35,9 @@ public abstract class RepositoryTest<E, ID, R extends Repository<E, ID>> {
         log.info("Stopping Unit-Test [" + getClass().getName() + "]");
         assertNotNull(manager);
         assertNotNull(repository);
-        //assertTrue(repository.drop());
+        assertTrue(repository.drop());
         assertTrue(manager.close());
     }
 
-    public abstract Class<R> repositoryClass();
+    public abstract @NotNull Class<R> repositoryClass();
 }

@@ -27,6 +27,7 @@ public class CustomerPageAllTest extends CustomerRepositoryTest {
     public void saveCustomer() {
         for (int i = 0; i < 15; i++) {
             Customer customer = Const.createNewCustomer();
+            assertNotNull(customer);
             customer.setUniqueId(UUID.randomUUID());
             customer.setCustomerId(i);
             assertTrue(repository.save(customer));

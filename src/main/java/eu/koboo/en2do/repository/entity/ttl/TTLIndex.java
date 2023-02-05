@@ -17,18 +17,21 @@ public @interface TTLIndex {
 
     /**
      * Indicates, which field should be checked for the time-to-live index
+     *
      * @return The name of the field in the entity
      */
     String value();
 
     /**
      * Sets the amount of the time unit
+     *
      * @return The amount of time
      */
     long ttl() default 0;
 
     /**
      * Sets the unit of the time-to-live index
+     *
      * @return The unit of the ttl value
      */
     TimeUnit time() default TimeUnit.SECONDS;

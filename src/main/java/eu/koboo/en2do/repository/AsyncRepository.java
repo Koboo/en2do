@@ -1,8 +1,10 @@
 package eu.koboo.en2do.repository;
 
 import eu.koboo.en2do.repository.methods.async.Async;
+import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Sort;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -20,115 +22,151 @@ public interface AsyncRepository<E, ID> {
 
     /**
      * Async representation
-     * @see Repository#countAll()
+     *
      * @return Future, with the count of all entities
+     * @see Repository#countAll()
      */
     @Async
+    @NotNull
     CompletableFuture<Long> asyncCountAll();
 
     /**
      * Async representation
-     * @see Repository#delete(Object)
+     *
      * @param entity The entity, which should be deleted
      * @return Future, with a boolean of success
+     * @see Repository#delete(Object)
      */
     @Async
-    CompletableFuture<Boolean> asyncDelete(E entity);
+    @NotNull
+    CompletableFuture<Boolean> asyncDelete(@NotNull E entity);
 
     /**
      * Async representation
-     * @see Repository#deleteAll(List)
+     *
      * @param entityList The List with entities, which should be deleted
      * @return Future, with a boolean of success
+     * @see Repository#deleteAll(List)
      */
     @Async
-    CompletableFuture<Boolean> asyncDeleteAll(List<E> entityList);
+    @NotNull
+    CompletableFuture<Boolean> asyncDeleteAll(@NotNull List<E> entityList);
 
     /**
      * Async representation
-     * @see Repository#deleteById(Object)
+     *
      * @param identifier The identifier of the entity, which should be deleted
      * @return Future, with a boolean of success
+     * @see Repository#deleteById(Object)
      */
     @Async
-    CompletableFuture<Boolean> asyncDeleteById(ID identifier);
+    @NotNull
+    CompletableFuture<Boolean> asyncDeleteById(@NotNull ID identifier);
 
     /**
      * Async representation
-     * @see Repository#drop()
+     *
      * @return Future, with a boolean of success
+     * @see Repository#drop()
      */
     @Async
+    @NotNull
     CompletableFuture<Boolean> asyncDrop();
 
     /**
      * Async representation
-     * @see Repository#exists(Object)
+     *
      * @param entity The entity, which should be checked
      * @return Future, with a boolean, which indicates if the entity exists
+     * @see Repository#exists(Object)
      */
     @Async
-    CompletableFuture<Boolean> asyncExists(E entity);
+    @NotNull
+    CompletableFuture<Boolean> asyncExists(@NotNull E entity);
 
     /**
      * Async representation
-     * @see Repository#existsById(Object)
+     *
      * @param identifier The identifier of the entity, which should be checked
      * @return Future, with a boolean, which indicates if an entity with the id exists
+     * @see Repository#existsById(Object)
      */
     @Async
-    CompletableFuture<Boolean> asyncExistsById(ID identifier);
+    @NotNull
+    CompletableFuture<Boolean> asyncExistsById(@NotNull ID identifier);
 
     /**
      * Async representation
-     * @see Repository#findAll()
+     *
      * @return Future, with all entities
+     * @see Repository#findAll()
      */
     @Async
+    @NotNull
     CompletableFuture<List<E>> asyncFindAll();
 
     /**
      * Async representation
-     * @see Repository#findFirstById(Object)
+     *
      * @param identifier The identifier of the entity, which should be found
      * @return Future, with the first entity with the id
+     * @see Repository#findFirstById(Object)
      */
     @Async
-    CompletableFuture<E> asyncFindFirstById(ID identifier);
+    @NotNull
+    CompletableFuture<E> asyncFindFirstById(@NotNull ID identifier);
 
     /**
      * Async representation
-     * @see Repository#pageAll(Pagination)
+     *
      * @param pagination The options, which should be used for pagination
      * @return Future, with all entities, paged by the Pagination object
+     * @see Repository#pageAll(Pagination)
      */
     @Async
-    CompletableFuture<List<E>> asyncPageAll(Pagination pagination);
+    @NotNull
+    CompletableFuture<List<E>> asyncPageAll(@NotNull Pagination pagination);
 
     /**
      * Async representation
-     * @see Repository#save(Object)
+     *
      * @param entity The entity, which should be saved
      * @return Future, with a boolean of success
+     * @see Repository#save(Object)
      */
     @Async
-    CompletableFuture<Boolean> asyncSave(E entity);
+    @NotNull
+    CompletableFuture<Boolean> asyncSave(@NotNull E entity);
 
     /**
      * Async representation
-     * @see Repository#saveAll(List)
+     *
      * @param entityList The List of entities, which should be saved
      * @return Future, with a boolean of success
+     * @see Repository#saveAll(List)
      */
     @Async
-    CompletableFuture<Boolean> asyncSaveAll(List<E> entityList);
+    @NotNull
+    CompletableFuture<Boolean> asyncSaveAll(@NotNull List<E> entityList);
 
     /**
      * Async representation
-     * @see Repository#sortAll(Sort)
+     *
      * @param sort The options, which should be used for sorting
      * @return Future, with all entities, sorted by the Sort object
+     * @see Repository#sortAll(Sort)
      */
     @Async
-    CompletableFuture<List<E>> asyncSortAll(Sort sort);
+    @NotNull
+    CompletableFuture<List<E>> asyncSortAll(@NotNull Sort sort);
+
+    /**
+     * Async representation
+     *
+     * @param updateBatch The UpdateBatch to use.
+     * @return true, if the operation was successful.
+     * @see Repository#updateAllFields(UpdateBatch)
+     */
+    @Async
+    CompletableFuture<Boolean> asyncUpdateAllFields(UpdateBatch updateBatch);
 }
