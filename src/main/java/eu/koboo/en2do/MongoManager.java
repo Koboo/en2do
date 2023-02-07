@@ -115,20 +115,20 @@ public class MongoManager {
         // If no credentials given, throw exception.
         if (credentials == null) {
             throw new NullPointerException("No credentials given! Please make sure to provide " +
-                    "accessible credentials.");
+                                           "accessible credentials.");
         }
 
         String connectString = credentials.getConnectString();
         // If credentials connectString is null, throw exception
         if (connectString == null) {
             throw new NullPointerException("No connectString given! Please make sure to provide a " +
-                    "accessible connectString.");
+                                           "accessible connectString.");
         }
         // If credentials databaseString is null, throw exception
         String databaseString = credentials.getDatabase();
         if (databaseString == null) {
             throw new NullPointerException("No databaseString given! Please make sure to provide a " +
-                    "accessible databaseString.");
+                                           "accessible databaseString.");
         }
 
         ConnectionString connection = new ConnectionString(connectString);
@@ -350,7 +350,7 @@ public class MongoManager {
 
                 String methodNameWithoutOperator = methodOperator.removeOperatorFrom(methodName);
                 if (methodName.contains("And") && methodName.contains("Or")) {
-                    throw new MethodDuplicatedChainException(method, entityClass);
+                    throw new MethodDuplicatedChainException(method, repositoryClass);
                 }
 
                 boolean multipleFilter = methodNameWithoutOperator.contains("And") || methodNameWithoutOperator.contains("Or");
@@ -468,9 +468,9 @@ public class MongoManager {
                     // Check if both Sort types are used.
                     // This is not allowed, even if it is possible internally.
                     boolean hasAnySortAnnotation = method.isAnnotationPresent(Limit.class)
-                            || method.isAnnotationPresent(Skip.class)
-                            || method.isAnnotationPresent(SortBy.class)
-                            || method.isAnnotationPresent(SortByArray.class);
+                                                   || method.isAnnotationPresent(Skip.class)
+                                                   || method.isAnnotationPresent(SortBy.class)
+                                                   || method.isAnnotationPresent(SortByArray.class);
                     if (hasAnySortAnnotation && lastMethodParameter.isAssignableFrom(Sort.class)) {
                         throw new MethodMixedSortException(method, repositoryClass, Sort.class, SortBy.class);
                     }
@@ -501,7 +501,7 @@ public class MongoManager {
             // Creating an index on the uniqueIdentifier field of the entity to speed up queries,
             // but only if wanted. Users can disable that with the annotation.
             if (repositoryMeta.isSeparateEntityId()
-                    && !entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
+                && !entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
                 entityCollection.createIndex(Indexes.ascending(entityUniqueIdField.getName()), new IndexOptions().unique(true));
             }
             Set<CompoundIndex> compoundIndexSet = AnnotationUtils.collectAnnotations(entityClass, CompoundIndex.class);
