@@ -6,8 +6,8 @@ import java.util.regex.Pattern;
 public class MethodInvalidRegexParameterException extends Exception {
 
     public MethodInvalidRegexParameterException(Method method, Class<?> repoClass, Class<?> paramClass) {
-        super("Invalid regex parameter on " + method.getName() + " in " + repoClass.getName() + "! " +
-                "Only " + String.class.getName() + " and " + Pattern.class.getName() + " allowed. " +
-                "(param=" + paramClass + ")");
+        super("Invalid regex parameter found in method \"" + method.getName() + "\" of the repository " + repoClass.getName() + "! " +
+              "Only regex parameters of type \"" + String.class.getSimpleName() + "\" or \"" +
+              Pattern.class.getSimpleName() + "\" are allowed, but used type is \"" + paramClass + "\".");
     }
 }
