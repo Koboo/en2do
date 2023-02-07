@@ -1,10 +1,8 @@
----
-description: Entity framework for MongoDB in Java 11 - 17
----
+# _// En2Do_
 
-# En2Do
+Entity framework for MongoDB in Java 17.
 
-**En2Do** is short for **Entity-To-Document**.
+**_En2Do_** is short for **_Entity-To-Document_**.
 
 This framework is heavily inspired by [Spring Data](https://spring.io/projects/spring-data).
 
@@ -12,23 +10,29 @@ You need help or want to share a project, which uses en2do?
 
 [Feel free to join our Discord](https://discord.gg/VGrxZDQu2n)!
 
-#### Links:
+## Documentation
 
-* [Maven](https://reposilite.koboo.eu/#/releases/eu/koboo/en2do)
-* [GitHub](https://github.com/Koboo/en2do)
-* [Documentation](https://koboo.gitbook.io/en2do/)
-* [Discord Support](https://discord.gg/VGrxZDQu2n)&#x20;
+- [Documentation](https://koboo.gitbook.io/en2do/)
+- [JavaDocs](https://reposilite.koboo.eu/javadoc/releases/eu/koboo/en2do)
+- [Repository](https://reposilite.koboo.eu/#/releases/eu/koboo/en2do)
+- [Jenkins](https://jenkins.koboo.eu/job/en2do/job/Build%20and%20Publish%20(main)/)
 
-#### Current Features
+### Other
 
-* Supports Java 11 - 17
-* MongoDB POJO-Codec classes ([Learn more](https://www.mongodb.com/developer/languages/java/java-mapping-pojos/))
-* Create methods without implementing them
-* Repositories by proxy classes to simplify usage and method declaration
-* Load credentials from files, resources or hardcoded Strings
-* Sorting via Parameter and Annotations
-* Indexes: Compound/Multi-Field, Time-To-Live, Unique-Identifier
-* Transforming field- and method-names to enable customization
-* Setting fields transient to ignore them in the database
-* Asynchronous operations
+- [License](LICENSE)
+- [Discord Support](https://discord.gg/VGrxZDQu2n)
 
+### References
+
+- [JUnit 5 User Guide](https://junit.org/junit5/docs/current/user-guide/)
+- [JUnit 5 Test-Units](https://www.baeldung.com/junit-5-test-byField)
+- [MongoDB Documentation](https://www.mongodb.com/docs/manual/introduction/)
+- [MongoDB POJO Example](https://www.mongodb.com/developer/languages/java/java-mapping-pojos/)
+- [MongoDB POJO Documentation](https://mongodb.github.io/mongo-java-driver/3.5/bson/pojos/)
+- [MongoDB Default POJO Codec](https://github.com/mongodb/mongo-java-driver/tree/master/bson/src/main/org/bson/codecs)
+- [MongoDB MapCodec GitHub](https://github.com/benjamonnguyen/mongodb-bson-codec)
+- [MongoDB MapCodec StackOverflow](https://stackoverflow.com/questions/67849754/mongodb-mapk-v-codec-maps-must-have-string-keys-fix)
+- [Spring Data](https://spring.io/projects/spring-data)
+- [Spring MongoDB Repositories](https://docs.spring.io/spring-data/mongodb/docs/1.2.0.RELEASE/reference/html/mongo.repositories.html)
+- [Advanced MongoDB Performance Tuning](https://medium.com/idealo-tech-blog/advanced-mongodb-performance-tuning-2ddcd01a27d2)
+- [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
