@@ -36,7 +36,7 @@ public enum MethodOperator {
         }
         Class<?> listType = GenericUtils.getGenericTypeOfReturnType(method);
         if (!listType.isAssignableFrom(entityClass)) {
-            throw new MethodFindListTypeException(method, repoClass, listType);
+            throw new MethodFindListTypeException(method, repoClass, listType, entityClass);
         }
     }),
     /**
@@ -72,7 +72,7 @@ public enum MethodOperator {
         }
         Class<?> listType = GenericUtils.getGenericTypeOfReturnType(method);
         if (!listType.isAssignableFrom(entityClass)) {
-            throw new MethodFindListTypeException(method, repoClass, listType);
+            throw new MethodFindListTypeException(method, repoClass, listType, entityClass);
         }
     }),
     /**
