@@ -22,9 +22,7 @@ import eu.koboo.en2do.internal.methods.operators.FilterOperator;
 import eu.koboo.en2do.internal.methods.operators.MethodOperator;
 import eu.koboo.en2do.internal.methods.predefined.impl.*;
 import eu.koboo.en2do.repository.Collection;
-import eu.koboo.en2do.repository.DropEntitiesOnStart;
-import eu.koboo.en2do.repository.DropIndexesOnStart;
-import eu.koboo.en2do.repository.Repository;
+import eu.koboo.en2do.repository.*;
 import eu.koboo.en2do.repository.entity.Id;
 import eu.koboo.en2do.repository.entity.NonIndex;
 import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
@@ -52,7 +50,6 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -215,28 +212,30 @@ public class MongoManager {
                 }
             }
 
-            // Parse Entity and UniqueId type classes by generic repository arguments
-            // (Yea, it's very hacky/unclean, but it works)
-            Type[] repoGenericTypeArray = repositoryClass.getGenericInterfaces();
-            Type repoGenericTypeParams = null;
-            for (Type type : repoGenericTypeArray) {
-                if (type.getTypeName().split("<")[0].equalsIgnoreCase(Repository.class.getName())) {
-                    repoGenericTypeParams = type;
-                    break;
-                }
-            }
-            if (repoGenericTypeParams == null) {
+            Map<Class<?>, List<Class<?>>> genericTypes = GenericUtils.getGenericTypes(repositoryClass);
+            if (genericTypes.isEmpty()) {
                 throw new RepositoryNoTypeException(repositoryClass);
             }
 
-            // Searching for entity class
-            Class<E> entityClass;
-            try {
-                // get class name of generic type arguments
-                String entityClassName = repoGenericTypeParams.getTypeName().split("<")[1].split(",")[0];
-                entityClass = (Class<E>) Class.forName(entityClassName);
-            } catch (ClassNotFoundException e) {
-                throw new RepositoryEntityNotFoundException(repositoryClass, e);
+            List<Class<?>> classList = genericTypes.get(Repository.class);
+            if (classList == null || classList.size() != 2) {
+                throw new RepositoryEntityNotFoundException(repositoryClass);
+            }
+            Class<E> entityClass = (Class<E>) classList.get(0);
+            Class<ID> entityIdClass = (Class<ID>) classList.get(1);
+
+            if (AsyncRepository.class.isAssignableFrom(repositoryClass)) {
+                List<Class<?>> asyncClassList = genericTypes.get(AsyncRepository.class);
+                if (asyncClassList != null && asyncClassList.size() == 2) {
+                    Class<?> asyncEntityClass = asyncClassList.get(0);
+                    if (GenericUtils.isNotTypeOf(asyncEntityClass, entityClass)) {
+                        throw new RepositoryInvalidTypeException(entityClass, asyncEntityClass, repositoryClass);
+                    }
+                    Class<?> asyncIdClass = asyncClassList.get(1);
+                    if (GenericUtils.isNotTypeOf(asyncIdClass, entityIdClass)) {
+                        throw new RepositoryInvalidTypeException(entityClass, asyncEntityClass, repositoryClass);
+                    }
+                }
             }
 
             Validator.validateCompatibility(repositoryClass, entityClass);
@@ -244,34 +243,30 @@ public class MongoManager {
             // Collect all fields recursively to ensure, we'll get the inheritance fields
             Set<Field> entityFieldSet = FieldUtils.collectFields(entityClass);
 
-            // Class type of the uniqueId of the entity.
-            Class<ID> tempEntityUniqueIdClass = null;
+            // Get the field of the uniqueId of the entity.
             Field tempEntityUniqueIdField = null;
             for (Field field : entityFieldSet) {
                 // Check for @Id annotation to find unique identifier of entity
                 if (!field.isAnnotationPresent(Id.class)) {
                     continue;
                 }
-                tempEntityUniqueIdClass = (Class<ID>) field.getType();
                 tempEntityUniqueIdField = field;
                 tempEntityUniqueIdField.setAccessible(true);
             }
             // Check if we found any unique identifier.
-            if (tempEntityUniqueIdClass == null) {
+            if (tempEntityUniqueIdField == null) {
                 throw new RepositoryIdNotFoundException(entityClass, Id.class);
             }
-            Class<ID> entityUniqueIdClass = tempEntityUniqueIdClass;
             Field entityUniqueIdField = tempEntityUniqueIdField;
 
+            // Creating the collection and the repository metaobjects.
             MongoCollection<E> entityCollection = database.getCollection(entityCollectionName, entityClass);
-
             RepositoryMeta<E, ID, R> repositoryMeta = new RepositoryMeta<>(
                     repositoryClass, entityClass,
                     entityFieldSet,
-                    entityUniqueIdClass, entityUniqueIdField,
+                    entityIdClass, entityUniqueIdField,
                     entityCollection, entityCollectionName
             );
-
 
             // Define default methods with handler into the meta registry
             repositoryMeta.registerPredefinedMethod(new MethodCountAll<>(repositoryMeta, entityCollection));

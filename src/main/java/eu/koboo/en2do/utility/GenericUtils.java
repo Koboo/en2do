@@ -7,12 +7,47 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A utility class for everything related to generic types or class types.
  */
 @UtilityClass
 public class GenericUtils {
+
+    /**
+     * This method is used to get all generic types of the extended interface of the given
+     * interface class. If no extending class was found, the map will be empty.
+     * @param interfaceClass The implementing/extending class
+     * @return The Map with every interface and its generic types as list
+     */
+    public Map<Class<?>, List<Class<?>>> getGenericTypes(Class<?> interfaceClass) {
+        Type[] repoGenericTypeArray = interfaceClass.getGenericInterfaces();
+        Map<Class<?>, List<Class<?>>> genericTypeMap = new HashMap<>();
+        for (Type type : repoGenericTypeArray) {
+            String[] split = type.getTypeName().split("<");
+            String implementedClass = split[0];
+            try {
+                Class<?> clazz = Class.forName(implementedClass);
+                List<Class<?>> genericTypeList = genericTypeMap.computeIfAbsent(clazz, k -> new ArrayList<>());
+
+                String genericTypeSplit = split[1];
+                String genericTypeString = genericTypeSplit.substring(0, genericTypeSplit.length() - 1)
+                        .replaceAll(" ", "");
+                String[] genericTypeClassNameArray = genericTypeString.split(",");
+                for (String genericTypeClassName : genericTypeClassNameArray) {
+                    Class<?> genericTypeClass = Class.forName(genericTypeClassName);
+                    genericTypeList.add(genericTypeClass);
+                }
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException("Couldn't load or find class of type " + implementedClass + ".");
+            }
+        }
+        return genericTypeMap;
+    }
 
     /**
      * Gets the generic type of the return type from the given method
