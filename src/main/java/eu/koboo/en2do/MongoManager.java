@@ -21,8 +21,8 @@ import eu.koboo.en2do.internal.methods.dynamic.MethodFilterPart;
 import eu.koboo.en2do.internal.methods.operators.FilterOperator;
 import eu.koboo.en2do.internal.methods.operators.MethodOperator;
 import eu.koboo.en2do.internal.methods.predefined.impl.*;
-import eu.koboo.en2do.repository.*;
 import eu.koboo.en2do.repository.Collection;
+import eu.koboo.en2do.repository.*;
 import eu.koboo.en2do.repository.entity.Id;
 import eu.koboo.en2do.repository.entity.NonIndex;
 import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
@@ -50,7 +50,6 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -214,26 +213,26 @@ public class MongoManager {
             }
 
             Map<Class<?>, List<Class<?>>> genericTypes = GenericUtils.getGenericTypes(repositoryClass);
-            if(genericTypes.isEmpty()) {
+            if (genericTypes.isEmpty()) {
                 throw new RepositoryNoTypeException(repositoryClass);
             }
 
             List<Class<?>> classList = genericTypes.get(Repository.class);
-            if(classList == null || classList.size() != 2) {
+            if (classList == null || classList.size() != 2) {
                 throw new RepositoryEntityNotFoundException(repositoryClass);
             }
             Class<E> entityClass = (Class<E>) classList.get(0);
             Class<ID> entityIdClass = (Class<ID>) classList.get(1);
 
-            if(AsyncRepository.class.isAssignableFrom(repositoryClass)) {
+            if (AsyncRepository.class.isAssignableFrom(repositoryClass)) {
                 List<Class<?>> asyncClassList = genericTypes.get(AsyncRepository.class);
-                if(asyncClassList != null && asyncClassList.size() == 2) {
+                if (asyncClassList != null && asyncClassList.size() == 2) {
                     Class<?> asyncEntityClass = asyncClassList.get(0);
-                    if(GenericUtils.isNotTypeOf(asyncEntityClass, entityClass)) {
+                    if (GenericUtils.isNotTypeOf(asyncEntityClass, entityClass)) {
                         throw new RepositoryInvalidTypeException(entityClass, asyncEntityClass, repositoryClass);
                     }
                     Class<?> asyncIdClass = asyncClassList.get(1);
-                    if(GenericUtils.isNotTypeOf(asyncIdClass, entityIdClass)) {
+                    if (GenericUtils.isNotTypeOf(asyncIdClass, entityIdClass)) {
                         throw new RepositoryInvalidTypeException(entityClass, asyncEntityClass, repositoryClass);
                     }
                 }

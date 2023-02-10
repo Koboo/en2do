@@ -1,7 +1,5 @@
 package eu.koboo.en2do.utility;
 
-import eu.koboo.en2do.internal.exception.repository.RepositoryNoTypeException;
-import eu.koboo.en2do.repository.Repository;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 
