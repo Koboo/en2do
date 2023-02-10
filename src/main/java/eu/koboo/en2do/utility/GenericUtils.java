@@ -18,6 +18,12 @@ import java.util.Map;
 @UtilityClass
 public class GenericUtils {
 
+    /**
+     * This method is used to get all generic types of the extended interface of the given
+     * interface class. If no extending class was found, the map will be empty.
+     * @param interfaceClass The implementing/extending class
+     * @return The Map with every interface and its generic types as list
+     */
     public Map<Class<?>, List<Class<?>>> getGenericTypes(Class<?> interfaceClass) {
         Type[] repoGenericTypeArray = interfaceClass.getGenericInterfaces();
         Map<Class<?>, List<Class<?>>> genericTypeMap = new HashMap<>();
