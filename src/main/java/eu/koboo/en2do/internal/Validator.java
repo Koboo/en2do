@@ -146,8 +146,6 @@ public class Validator {
                     throw new RepositoryInvalidGetterException(typeClass, repositoryClass, field.getName());
                 }
 
-                //TODO: Check for any generic-type
-
                 // Validate the typeClass recursively.
                 validateCompatibility(repositoryClass, field.getType());
 
