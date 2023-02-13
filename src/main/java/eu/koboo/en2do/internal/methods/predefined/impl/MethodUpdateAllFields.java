@@ -20,8 +20,12 @@ public class MethodUpdateAllFields<E, ID, R extends Repository<E, ID>> extends P
 
     @Override
     public @Nullable Object handle(@NotNull Method method, @NotNull Object[] arguments) throws Exception {
+        // Cast the first object of the array to the UpdateBatch object
         MongoCollection<E> collection = repositoryMeta.getCollection();
         UpdateBatch updateBatch = (UpdateBatch) arguments[0];
+
+        // Call the UpdateBatch on all documents with the "id" field of the entity,
+        // which could be a unique name or the "_id" field.
         UpdateResult result = collection.updateMany(repositoryMeta.createIdExistsFilter(),
                 repositoryMeta.createUpdateDocument(updateBatch),
                 new UpdateOptions().upsert(false));
