@@ -14,6 +14,7 @@ import org.bson.conversions.Bson;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -63,6 +64,12 @@ public class DynamicMethod<E, ID, R extends Repository<E, ID>> {
     private @NotNull Bson processBson(@NotNull FilterType filterType, int paramsIndexAt,
                                       @NotNull Object[] args) throws Exception {
         String fieldName = filterType.getField().getName();
+        // Check if the uniqueId field is used.
+        // This is needed if uniqueId field and "_id" of documents are the same!
+        if (fieldName.equalsIgnoreCase(repositoryMeta.getEntityUniqueIdField().getName())
+            && !repositoryMeta.isSeparateEntityId()) {
+            fieldName = "_id";
+        }
         Bson retFilter = null;
         switch (filterType.getOperator()) {
             case EQUALS:
@@ -121,9 +128,20 @@ public class DynamicMethod<E, ID, R extends Repository<E, ID>> {
             case IN:
                 // MongoDB expects an Array and not a List, but for easier usage
                 // the framework wants a list. So just convert the list to an array and pass it to the filter
-                List<Object> objectList = (List<Object>) repositoryMeta.getFilterableValue(args[paramsIndexAt]);
-                Object[] objectArray = objectList.toArray(new Object[]{});
+                Object possibleObject = args[paramsIndexAt];
+                Object[] objectArray = null;
+                if(possibleObject.getClass().isAssignableFrom(Collection.class)) {
+                    Collection<Object> collection = (Collection<Object>) possibleObject;
+                    objectArray = collection.toArray(new Object[]{});
+                }
+                if(possibleObject.getClass().isArray() && possibleObject instanceof Object[]) {
+                    objectArray = (Object[]) possibleObject;
+                }
+                if(objectArray == null) {
+                    throw new NullPointerException("Ouppsie.");
+                }
                 retFilter = Filters.in(fieldName, objectArray);
+                System.out.println(retFilter);
                 break;
             default: // This filter is not supported. Throw exception.
                 throw new MethodUnsupportedFilterException(method, repositoryMeta.getRepositoryClass());
