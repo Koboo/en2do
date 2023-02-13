@@ -393,7 +393,7 @@ public class MongoManager {
                                 }
                                 break;
                             case IN:
-                                if(paramClass.isArray()) {
+                                if (paramClass.isArray()) {
                                     Class<?> arrayType = paramClass.getComponentType();
                                     if (GenericUtils.isNotTypeOf(fieldClass, arrayType)) {
                                         throw new MethodInvalidListParameterException(method, repositoryClass, fieldClass, arrayType);

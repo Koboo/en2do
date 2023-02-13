@@ -6,7 +6,6 @@ import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 

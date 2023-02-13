@@ -130,14 +130,14 @@ public class DynamicMethod<E, ID, R extends Repository<E, ID>> {
                 // the framework wants a list. So just convert the list to an array and pass it to the filter
                 Object possibleObject = args[paramsIndexAt];
                 Object[] objectArray = null;
-                if(possibleObject.getClass().isAssignableFrom(Collection.class)) {
+                if (possibleObject.getClass().isAssignableFrom(Collection.class)) {
                     Collection<Object> collection = (Collection<Object>) possibleObject;
                     objectArray = collection.toArray(new Object[]{});
                 }
-                if(possibleObject.getClass().isArray() && possibleObject instanceof Object[]) {
+                if (possibleObject.getClass().isArray() && possibleObject instanceof Object[]) {
                     objectArray = (Object[]) possibleObject;
                 }
-                if(objectArray == null) {
+                if (objectArray == null) {
                     throw new NullPointerException("Ouppsie.");
                 }
                 retFilter = Filters.in(fieldName, objectArray);
