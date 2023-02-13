@@ -343,11 +343,14 @@ public class MongoManager {
                 // Check the returnTypes by using the predefined validator.
                 methodOperator.validate(method, returnType, entityClass, repositoryClass);
 
+                // Remove the leading methodOperator to ensure it doesn't trick the validation
                 String methodNameWithoutOperator = methodOperator.removeOperatorFrom(methodName);
                 if (methodName.contains("And") && methodName.contains("Or")) {
                     throw new MethodDuplicatedChainException(method, repositoryClass);
                 }
 
+                // Split the "parts" of the methods by "And" or "Or" keywords, because both in one query are not allowed.
+                // That's currently the only way to get every filter part.
                 boolean multipleFilter = methodNameWithoutOperator.contains("And") || methodNameWithoutOperator.contains("Or");
                 boolean andFilter = methodNameWithoutOperator.contains("And");
                 String[] methodFilterPartArray;
@@ -357,16 +360,21 @@ public class MongoManager {
                     methodFilterPartArray = methodNameWithoutOperator.split("Or");
                 }
 
-                // Count for further validation
-                int expectedParameterCount = 0;
+                // Parse, validate and handle the method name and "compile" it to en2do internal usage objects.
 
+                // Counts for further validation
+                int expectedParameterCount = 0;
                 int nextParameterIndex = 0;
                 int itemCount = 0;
                 List<MethodFilterPart> filterPartList = new LinkedList<>();
                 for (String filterOperatorString : methodFilterPartArray) {
+
+                    // Create the FilterType using the following paring method
                     FilterType filterType = createFilterType(entityClass, repositoryClass, method, filterOperatorString,
                             entityFieldSet);
                     int filterTypeParameterCount = filterType.getOperator().getExpectedParameterCount();
+
+                    // Validate the parameter count and types of the respective filter type
                     for (int i = 0; i < filterTypeParameterCount; i++) {
                         int paramIndex = nextParameterIndex + i;
                         Class<?> paramClass = method.getParameters()[paramIndex].getType();
@@ -374,23 +382,33 @@ public class MongoManager {
                             throw new MethodParameterNotFoundException(method, repositoryClass, (paramIndex + filterTypeParameterCount),
                                     method.getParameterCount());
                         }
+
                         // Special checks for some operators
                         Class<?> fieldClass = filterType.getField().getType();
                         switch (filterType.getOperator()) {
                             case REGEX:
+                                // Regex filter allows two types as parameters.
                                 if (GenericUtils.isNotTypeOf(String.class, paramClass) && GenericUtils.isNotTypeOf(Pattern.class, paramClass)) {
                                     throw new MethodInvalidRegexParameterException(method, repositoryClass, paramClass);
                                 }
                                 break;
                             case IN:
-                                if (GenericUtils.isNotTypeOf(List.class, paramClass)) {
-                                    throw new MethodMismatchingTypeException(method, repositoryClass, List.class, paramClass);
+                                if(paramClass.isArray()) {
+                                    Class<?> arrayType = paramClass.getComponentType();
+                                    if (GenericUtils.isNotTypeOf(fieldClass, arrayType)) {
+                                        throw new MethodInvalidListParameterException(method, repositoryClass, fieldClass, arrayType);
+                                    }
+                                    break;
                                 }
-                                Class<?> listType = GenericUtils.getGenericTypeOfParameter(method, paramIndex);
-                                if (GenericUtils.isNotTypeOf(fieldClass, listType)) {
-                                    throw new MethodInvalidListParameterException(method, repositoryClass, fieldClass, listType);
+                                // In filter only allows list. Maybe arrays in future releases.
+                                if (!GenericUtils.isNotTypeOf(java.util.Collection.class, paramClass)) {
+                                    Class<?> listType = GenericUtils.getGenericTypeOfParameter(method, paramIndex);
+                                    if (GenericUtils.isNotTypeOf(fieldClass, listType)) {
+                                        throw new MethodInvalidListParameterException(method, repositoryClass, fieldClass, listType);
+                                    }
+                                    break;
                                 }
-                                break;
+                                throw new MethodMismatchingTypeException(method, repositoryClass, java.util.Collection.class, paramClass);
                             default:
                                 if (GenericUtils.isNotTypeOf(fieldClass, paramClass)) {
                                     throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
