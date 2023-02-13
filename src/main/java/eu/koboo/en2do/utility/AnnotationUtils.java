@@ -12,6 +12,7 @@ import java.util.Set;
  * A utility class for everything related to annotations
  */
 @UtilityClass
+@SuppressWarnings("unused")
 public class AnnotationUtils {
 
     /**

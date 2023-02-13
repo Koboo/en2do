@@ -13,6 +13,7 @@ import java.util.Set;
  * A utility class for everything related to fields.
  */
 @UtilityClass
+@SuppressWarnings("unused")
 public class FieldUtils {
 
     /**

@@ -15,6 +15,7 @@ import java.util.List;
  * A utility class for everything related to entity properties.
  */
 @UtilityClass
+@SuppressWarnings("unused")
 public class EntityUtils {
 
     /**
