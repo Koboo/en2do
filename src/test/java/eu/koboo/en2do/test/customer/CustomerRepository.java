@@ -22,6 +22,8 @@ import java.util.concurrent.CompletableFuture;
 @AppendMethodAsComment
 public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRepository<Customer, UUID> {
 
+    Customer findFirstByFirstNameAndUniqueId(String firstName, UUID uniqueId);
+
     Customer findFirstByFirstName(String firstName);
 
     long countByFirstName(String firstName);
@@ -63,6 +65,8 @@ public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRep
     List<Customer> findManyByCustomerIdIn(List<Integer> customerIdList);
 
     List<Customer> findManyByCustomerIdNotIn(List<Integer> customerIdList);
+
+    List<Customer> findManyByHouseNumberIn(Integer... houseNumberList);
 
     @SortBy(field = "customerId")
     @SortBy(field = "balance", ascending = true)
