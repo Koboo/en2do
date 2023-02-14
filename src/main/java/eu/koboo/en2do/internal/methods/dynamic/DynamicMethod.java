@@ -130,7 +130,7 @@ public class DynamicMethod<E, ID, R extends Repository<E, ID>> {
                 // the framework wants a list. So just convert the list to an array and pass it to the filter
                 Object possibleObject = args[paramsIndexAt];
                 Object[] objectArray = null;
-                if (possibleObject.getClass().isAssignableFrom(Collection.class)) {
+                if (possibleObject instanceof Collection) {
                     Collection<Object> collection = (Collection<Object>) possibleObject;
                     objectArray = collection.toArray(new Object[]{});
                 }
@@ -138,7 +138,8 @@ public class DynamicMethod<E, ID, R extends Repository<E, ID>> {
                     objectArray = (Object[]) possibleObject;
                 }
                 if (objectArray == null) {
-                    throw new NullPointerException("Ouppsie.");
+                    throw new NullPointerException("Please report your code and other information to " +
+                                                   "github.com/Koboo/en2do to ensure others don't get this bug.");
                 }
                 retFilter = Filters.in(fieldName, objectArray);
                 System.out.println(retFilter);
