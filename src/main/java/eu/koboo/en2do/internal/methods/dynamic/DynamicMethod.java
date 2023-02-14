@@ -127,7 +127,8 @@ public class DynamicMethod<E, ID, R extends Repository<E, ID>> {
                 break;
             case IN:
                 // MongoDB expects an Array and not a List, but for easier usage
-                // the framework wants a list. So just convert the list to an array and pass it to the filter
+                // the framework wants a list or an array, so just convert the given object to an array
+                // and add it to the filter
                 Object possibleObject = args[paramsIndexAt];
                 Object[] objectArray = null;
                 if (possibleObject instanceof Collection) {
