@@ -4,7 +4,7 @@ import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.repository.Repository;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.java.Log;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.*;
 
@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Slf4j
+@Log
 @FieldDefaults(level = AccessLevel.PROTECTED)
 public abstract class RepositoryTest<E, ID, R extends Repository<E, ID>> {
 
