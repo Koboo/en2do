@@ -59,6 +59,27 @@ public class Credentials {
     }
 
     /**
+     * Checks if the given string is null of empty.
+     *
+     * @param string the string, which should be checked.
+     * @return true ich string is null or empty.
+     */
+    private static boolean isEmpty(String string) {
+        return string == null || string.trim().equalsIgnoreCase("");
+    }
+
+    /**
+     * Converts the given string to the respective environment variable key,
+     * by using upper-case and replacing dots with underscore.
+     *
+     * @param string the string, which should be converted
+     * @return the converted string.
+     */
+    private static String convertToEnvVarKey(String string) {
+        return string.toUpperCase(Locale.ROOT).replaceFirst("\\.", "_");
+    }
+
+    /**
      * Automatically reading credentials from the default resourcePath, which is
      * "{applicationJar}/credentials.properties"
      *
@@ -151,8 +172,7 @@ public class Credentials {
      * @return The new created credentials object.
      */
     public static @NotNull Credentials fromSystemEnvVars() {
-        return fromSystemEnvVars(CONNECT_KEY.toUpperCase(Locale.ROOT).replaceFirst("\\.", "_"),
-                DATABASE_KEY.toUpperCase(Locale.ROOT).replaceFirst("\\.", "_"));
+        return fromSystemEnvVars(convertToEnvVarKey(CONNECT_KEY), convertToEnvVarKey(DATABASE_KEY));
     }
 
     /**

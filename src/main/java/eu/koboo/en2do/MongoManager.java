@@ -111,10 +111,11 @@ public class MongoManager {
         if (credentials == null) {
             credentials = Credentials.fromResource();
         }
-        // If no credentials given, throw exception.
         if (credentials == null) {
-            throw new NullPointerException("No credentials given! Please make sure to provide " +
-                                           "accessible credentials.");
+            credentials = Credentials.fromSystemProperties();
+        }
+        if (credentials.getConnectString() == null || credentials.getDatabase() == null) {
+            credentials = Credentials.fromSystemEnvVars();
         }
 
         String connectString = credentials.getConnectString();
