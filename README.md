@@ -16,15 +16,15 @@ You need help or want to share a project, which uses en2do?
 
 ## Documentation
 
-- [Documentation](https://koboo.gitbook.io/en2do/)
-- [JavaDocs](https://reposilite.koboo.eu/javadoc/releases/eu/koboo/en2do)
-- [Repository](https://reposilite.koboo.eu/#/releases/eu/koboo/en2do)
-- [Jenkins](https://jenkins.koboo.eu/job/en2do/job/Build%20and%20Publish%20(main)/)
+- [If yo need help, take a look at the documentation](https://koboo.gitbook.io/en2do/)
+- [Check the javadocs of the newest release](https://github.com/Koboo/en2do/releases/latest)
+- [Find the latest artifacts in our repository](https://reposilite.koboo.eu/#/releases/eu/koboo/en2do)
+- [Artifacts are also available through our jenkins](https://jenkins.koboo.eu/job/en2do/job/Build%20and%20Publish%20(main)/)
 
 ### Other
 
-- [License](LICENSE)
-- [Discord Support](https://discord.gg/VGrxZDQu2n)
+- [See the License](LICENSE)
+- [Search for help on the Discord](https://discord.gg/VGrxZDQu2n)
 
 ### References
 
