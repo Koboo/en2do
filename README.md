@@ -2,6 +2,7 @@
 ![Discord](https://img.shields.io/discord/1021053609359708211)
 ![Release](https://img.shields.io/github/v/release/Koboo/en2do)
 ![Jenkins](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins.koboo.eu%2Fjob%2Fen2do%2Fjob%2FBuild%2520and%2520Publish%2520%28main%29%2F)
+![Maven](https://reposilite.koboo.eu/api/badge/latest/releases/eu/koboo/en2do?color=40c14a&name=maven&prefix=v)
 
 
 Entity framework for MongoDB in Java 17.
