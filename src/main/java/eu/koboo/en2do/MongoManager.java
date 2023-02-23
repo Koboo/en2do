@@ -54,6 +54,8 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
@@ -162,7 +164,6 @@ public class MongoManager {
     public MongoManager() {
         this(null, null);
     }
-
 
     public boolean close() {
         return close(true);
@@ -600,5 +601,26 @@ public class MongoManager {
             throw new MethodFieldNotFoundException(expectedFieldName, method, entityClass, repoClass);
         }
         return new FilterType(field, notFilter, filterOperator);
+    }
+
+    /**
+     * Sets the logger level of the mongodb logger to the given level.
+     *
+     * @param level The level, which should be set
+     */
+    public static void setMongoDBLogger(Level level) {
+        Logger logger = Logger.getLogger("org.mongodb.driver");
+        logger.setLevel(level);
+    }
+
+    /**
+     * Uses the method
+     *
+     * @see MongoManager#setMongoDBLogger(Level)
+     * to disable the default mongodb logger,
+     * by setting the level to OFF
+     */
+    public static void disableMongoDBLogger() {
+        setMongoDBLogger(Level.OFF);
     }
 }
