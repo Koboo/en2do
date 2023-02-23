@@ -47,7 +47,6 @@ public class CustomerPageAllTest extends CustomerRepositoryTest {
         assertEquals(5, customerList.size());
         for (Customer customer : customerList) {
             assertNotNull(customer);
-            System.out.println(customer.getCustomerId());
             assertEquals(Const.FIRST_NAME, customer.getFirstName());
             assertEquals(Const.LAST_NAME, customer.getLastName());
             assertEquals(Const.BIRTHDAY, customer.getBirthday());
