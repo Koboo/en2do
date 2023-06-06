@@ -143,7 +143,6 @@ public class DynamicMethod<E, ID, R extends Repository<E, ID>> {
                                                    "github.com/Koboo/en2do to ensure others don't get this bug.");
                 }
                 retFilter = Filters.in(fieldName, objectArray);
-                System.out.println(retFilter);
                 break;
             default: // This filter is not supported. Throw exception.
                 throw new MethodUnsupportedFilterException(method, repositoryMeta.getRepositoryClass());

@@ -54,6 +54,8 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
@@ -109,10 +111,11 @@ public class MongoManager {
         if (credentials == null) {
             credentials = Credentials.fromResource();
         }
-        // If no credentials given, throw exception.
         if (credentials == null) {
-            throw new NullPointerException("No credentials given! Please make sure to provide " +
-                                           "accessible credentials.");
+            credentials = Credentials.fromSystemProperties();
+        }
+        if (credentials.getConnectString() == null || credentials.getDatabase() == null) {
+            credentials = Credentials.fromSystemEnvVars();
         }
 
         String connectString = credentials.getConnectString();
@@ -162,7 +165,6 @@ public class MongoManager {
     public MongoManager() {
         this(null, null);
     }
-
 
     public boolean close() {
         return close(true);
@@ -600,5 +602,26 @@ public class MongoManager {
             throw new MethodFieldNotFoundException(expectedFieldName, method, entityClass, repoClass);
         }
         return new FilterType(field, notFilter, filterOperator);
+    }
+
+    /**
+     * Sets the logger level of the mongodb logger to the given level.
+     *
+     * @param level The level, which should be set
+     */
+    public static void setMongoDBLogger(Level level) {
+        Logger logger = Logger.getLogger("org.mongodb.driver");
+        logger.setLevel(level);
+    }
+
+    /**
+     * Uses the method
+     *
+     * @see MongoManager#setMongoDBLogger(Level)
+     * to disable the default mongodb logger,
+     * by setting the level to OFF
+     */
+    public static void disableMongoDBLogger() {
+        setMongoDBLogger(Level.OFF);
     }
 }

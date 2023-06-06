@@ -62,6 +62,11 @@ public class Validator {
         if (typeClass.isPrimitive()) {
             return;
         }
+        // Probably a generic type. I'm validating every "Object" type for you.
+        // Kep track of your own code.
+        if(typeClass.equals(Object.class)) {
+            return;
+        }
         // We already got a codec for the type? No validation needed for that.
         Codec<?> typeCodec = getCodec(typeClass);
         if (typeCodec != null) {
@@ -85,6 +90,7 @@ public class Validator {
         }
 
         // No fields found? That's too bad. We need something to save.
+
         Set<Field> fieldSet = FieldUtils.collectFields(typeClass);
         if (fieldSet.isEmpty()) {
             throw new RepositoryNoFieldsException(typeClass, repositoryClass);
