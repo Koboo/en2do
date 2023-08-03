@@ -63,7 +63,7 @@ public class Validator {
             return;
         }
         // Probably a generic type. I'm validating every "Object" type for you.
-        // Kep track of your own code.
+        // Keep track of your own code.
         if (typeClass.equals(Object.class)) {
             return;
         }
