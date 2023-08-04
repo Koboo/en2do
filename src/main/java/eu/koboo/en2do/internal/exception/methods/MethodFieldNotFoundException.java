@@ -6,6 +6,6 @@ public class MethodFieldNotFoundException extends Exception {
 
     public MethodFieldNotFoundException(String fieldName, Method method, Class<?> entityClass, Class<?> repoClass) {
         super("Couldn't find any field with the name \"" + fieldName + "\" in the entity " +
-              entityClass.getName() + ". Used in method \"" + method.getName() + "\" in repository " + repoClass.getName() + ".");
+                entityClass.getName() + ". Used in method \"" + method.getName() + "\" in repository " + repoClass.getName() + ".");
     }
 }

@@ -1,8 +1,5 @@
 package eu.koboo.en2do.test.generic;
 
-import eu.koboo.en2do.test.Const;
-import eu.koboo.en2do.test.customer.Customer;
-import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 

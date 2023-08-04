@@ -63,8 +63,8 @@ public class Validator {
             return;
         }
         // Probably a generic type. I'm validating every "Object" type for you.
-        // Kep track of your own code.
-        if(typeClass.equals(Object.class)) {
+        // Keep track of your own code.
+        if (typeClass.equals(Object.class)) {
             return;
         }
         // We already got a codec for the type? No validation needed for that.

@@ -67,7 +67,7 @@ public class DynamicMethod<E, ID, R extends Repository<E, ID>> {
         // Check if the uniqueId field is used.
         // This is needed if uniqueId field and "_id" of documents are the same!
         if (fieldName.equalsIgnoreCase(repositoryMeta.getEntityUniqueIdField().getName())
-            && !repositoryMeta.isSeparateEntityId()) {
+                && !repositoryMeta.isSeparateEntityId()) {
             fieldName = "_id";
         }
         Bson retFilter = null;
@@ -140,7 +140,7 @@ public class DynamicMethod<E, ID, R extends Repository<E, ID>> {
                 }
                 if (objectArray == null) {
                     throw new NullPointerException("Please report your code and other information to " +
-                                                   "github.com/Koboo/en2do to ensure others don't get this bug.");
+                            "github.com/Koboo/en2do to ensure others don't get this bug.");
                 }
                 retFilter = Filters.in(fieldName, objectArray);
                 break;

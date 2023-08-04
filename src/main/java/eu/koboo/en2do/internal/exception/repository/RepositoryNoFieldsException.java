@@ -4,6 +4,6 @@ public class RepositoryNoFieldsException extends Exception {
 
     public RepositoryNoFieldsException(Class<?> typeClass, Class<?> repoClass) {
         super("Couldn't find any fields in class of type " + typeClass.getName() + " " +
-              "used in repository " + repoClass.getName() + "!");
+                "used in repository " + repoClass.getName() + "!");
     }
 }

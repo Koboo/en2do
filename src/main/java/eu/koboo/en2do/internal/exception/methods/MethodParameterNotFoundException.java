@@ -6,6 +6,6 @@ public class MethodParameterNotFoundException extends Exception {
 
     public MethodParameterNotFoundException(Method method, Class<?> repoClass, int index, int totalParams) {
         super("Couldn't find parameter in \"" + method.getName() + "\" of " + repoClass.getName() + " at index=" + index + "," +
-              "because length=" + totalParams + "!");
+                "because length=" + totalParams + "!");
     }
 }
