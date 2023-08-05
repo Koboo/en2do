@@ -6,6 +6,6 @@ public class MethodParameterCountException extends Exception {
 
     public MethodParameterCountException(Method method, Class<?> repoClass, int expected, int length) {
         super("Mismatching count of parameters in \"" + method.getName() + "\" of " + repoClass.getName() + "! " +
-                "(expected=" + expected + ", actual=" + length + ")");
+            "(expected=" + expected + ", actual=" + length + ")");
     }
 }

@@ -31,7 +31,7 @@ public class InternalPropertyCodecProvider implements PropertyCodecProvider {
         }
         if (Map.class.isAssignableFrom(type.getType()) && type.getTypeParameters().size() == 2) {
             return new GenericMapCodec(type.getType(), registry.get(type.getTypeParameters().get(0)),
-                    registry.get(type.getTypeParameters().get(1)));
+                registry.get(type.getTypeParameters().get(1)));
         }
         return null;
     }

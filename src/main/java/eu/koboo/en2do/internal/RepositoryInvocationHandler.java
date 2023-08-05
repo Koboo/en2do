@@ -116,7 +116,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             case UPDATE_FIELD:
                 UpdateBatch updateBatch = (UpdateBatch) arguments[arguments.length - 1];
                 UpdateResult result = collection.updateMany(filter, repositoryMeta.createUpdateDocument(updateBatch),
-                        new UpdateOptions().upsert(false));
+                    new UpdateOptions().upsert(false));
                 return result.wasAcknowledged();
             default:
                 // Couldn't find any match method operator, but that shouldn't happen

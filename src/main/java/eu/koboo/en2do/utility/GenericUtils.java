@@ -35,7 +35,7 @@ public class GenericUtils {
 
                 String genericTypeSplit = split[1];
                 String genericTypeString = genericTypeSplit.substring(0, genericTypeSplit.length() - 1)
-                        .replaceAll(" ", "");
+                    .replaceAll(" ", "");
                 String[] genericTypeClassNameArray = genericTypeString.split(",");
                 for (String genericTypeClassName : genericTypeClassNameArray) {
                     Class<?> genericTypeClass = Class.forName(genericTypeClassName);

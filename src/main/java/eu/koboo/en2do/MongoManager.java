@@ -49,6 +49,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -75,7 +76,7 @@ public class MongoManager {
     // These methods are ignored by our method processing proxy / invocation handler.
     @NotNull
     private static final List<String> IGNORED_DEFAULT_METHODS = Arrays.asList(
-            "notify", "notifyAll", "wait", "finalize", "clone"
+        "notify", "notifyAll", "wait", "finalize", "clone"
     );
 
     @NotNull
@@ -122,37 +123,37 @@ public class MongoManager {
         // If credentials connectString is null, throw exception
         if (connectString == null) {
             throw new NullPointerException("No connectString given! Please make sure to provide a " +
-                    "accessible connectString.");
+                "accessible connectString.");
         }
         // If credentials databaseString is null, throw exception
         String databaseString = credentials.getDatabase();
         if (databaseString == null) {
             throw new NullPointerException("No databaseString given! Please make sure to provide a " +
-                    "accessible databaseString.");
+                "accessible databaseString.");
         }
 
         ConnectionString connection = new ConnectionString(connectString);
 
         codecRegistry = fromRegistries(
-                MongoClientSettings.getDefaultCodecRegistry(),
-                fromProviders(PojoCodecProvider.builder()
-                        .register(new InternalPropertyCodecProvider())
-                        .automatic(true)
-                        .conventions(List.of(
-                                new AnnotationConvention(repositoryMetaRegistry),
-                                Conventions.ANNOTATION_CONVENTION,
-                                Conventions.SET_PRIVATE_FIELDS_CONVENTION,
-                                Conventions.USE_GETTERS_FOR_SETTERS
-                        ))
-                        .build())
+            MongoClientSettings.getDefaultCodecRegistry(),
+            fromProviders(PojoCodecProvider.builder()
+                .register(new InternalPropertyCodecProvider())
+                .automatic(true)
+                .conventions(List.of(
+                    new AnnotationConvention(repositoryMetaRegistry),
+                    Conventions.ANNOTATION_CONVENTION,
+                    Conventions.SET_PRIVATE_FIELDS_CONVENTION,
+                    Conventions.USE_GETTERS_FOR_SETTERS
+                ))
+                .build())
         );
 
         MongoClientSettings clientSettings = MongoClientSettings.builder()
-                .applicationName("en2do-client")
-                .applyConnectionString(connection)
-                .uuidRepresentation(UuidRepresentation.STANDARD)
-                .codecRegistry(codecRegistry)
-                .build();
+            .applicationName("en2do-client")
+            .applyConnectionString(connection)
+            .uuidRepresentation(UuidRepresentation.STANDARD)
+            .codecRegistry(codecRegistry)
+            .build();
 
         client = MongoClients.create(clientSettings);
         database = client.getDatabase(databaseString);
@@ -264,10 +265,10 @@ public class MongoManager {
             // Creating the collection and the repository metaobjects.
             MongoCollection<E> entityCollection = database.getCollection(entityCollectionName, entityClass);
             RepositoryMeta<E, ID, R> repositoryMeta = new RepositoryMeta<>(
-                    repositoryClass, entityClass,
-                    entityFieldSet,
-                    entityIdClass, entityUniqueIdField,
-                    entityCollection, entityCollectionName
+                repositoryClass, entityClass,
+                entityFieldSet,
+                entityIdClass, entityUniqueIdField,
+                entityCollection, entityCollectionName
             );
 
             // Define default methods with handler into the meta registry
@@ -373,7 +374,7 @@ public class MongoManager {
 
                     // Create the FilterType using the following paring method
                     FilterType filterType = createFilterType(entityClass, repositoryClass, method, filterOperatorString,
-                            entityFieldSet);
+                        entityFieldSet);
                     int filterTypeParameterCount = filterType.getOperator().getExpectedParameterCount();
 
                     // Validate the parameter count and types of the respective filter type
@@ -382,11 +383,12 @@ public class MongoManager {
                         Class<?> paramClass = method.getParameters()[paramIndex].getType();
                         if (paramClass == null) {
                             throw new MethodParameterNotFoundException(method, repositoryClass, (paramIndex + filterTypeParameterCount),
-                                    method.getParameterCount());
+                                method.getParameterCount());
                         }
 
                         // Special checks for some operators
-                        Class<?> fieldClass = filterType.getField().getType();
+                        Field field = filterType.getField();
+                        Class<?> fieldClass = field.getType();
                         switch (filterType.getOperator()) {
                             case REGEX:
                                 // Regex filter allows two types as parameters.
@@ -411,6 +413,15 @@ public class MongoManager {
                                     break;
                                 }
                                 throw new MethodMismatchingTypeException(method, repositoryClass, java.util.Collection.class, paramClass);
+                            case HAS_KEY:
+                                if (GenericUtils.isNotTypeOf(Map.class, fieldClass)) {
+                                    throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
+                                }
+                                Class<?> keyClass = (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+                                if (GenericUtils.isNotTypeOf(keyClass, paramClass)) {
+                                    throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
+                                }
+                                break;
                             default:
                                 if (GenericUtils.isNotTypeOf(fieldClass, paramClass)) {
                                     throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
@@ -483,9 +494,9 @@ public class MongoManager {
                     // Check if both Sort types are used.
                     // This is not allowed, even if it is possible internally.
                     boolean hasAnySortAnnotation = method.isAnnotationPresent(Limit.class)
-                            || method.isAnnotationPresent(Skip.class)
-                            || method.isAnnotationPresent(SortBy.class)
-                            || method.isAnnotationPresent(SortByArray.class);
+                        || method.isAnnotationPresent(Skip.class)
+                        || method.isAnnotationPresent(SortBy.class)
+                        || method.isAnnotationPresent(SortByArray.class);
                     if (hasAnySortAnnotation && lastMethodParameter.isAssignableFrom(Sort.class)) {
                         throw new MethodMixedSortException(method, repositoryClass, Sort.class, SortBy.class);
                     }
@@ -494,7 +505,7 @@ public class MongoManager {
                 }
 
                 DynamicMethod<E, ID, R> dynamicMethod = new DynamicMethod<>(method, repositoryMeta, methodOperator,
-                        multipleFilter, andFilter, filterPartList);
+                    multipleFilter, andFilter, filterPartList);
                 repositoryMeta.registerDynamicMethod(methodName, dynamicMethod);
             }
 
@@ -516,7 +527,7 @@ public class MongoManager {
             // Creating an index on the uniqueIdentifier field of the entity to speed up queries,
             // but only if wanted. Users can disable that with the annotation.
             if (repositoryMeta.isSeparateEntityId()
-                    && !entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
+                && !entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
                 entityCollection.createIndex(Indexes.ascending(entityUniqueIdField.getName()), new IndexOptions().unique(true));
             }
             Set<CompoundIndex> compoundIndexSet = AnnotationUtils.collectAnnotations(entityClass, CompoundIndex.class);
@@ -541,7 +552,7 @@ public class MongoManager {
                     indexBsonList.add(bsonIndex);
                 }
                 IndexOptions indexOptions = new IndexOptions()
-                        .unique(compoundIndex.uniqueIndex());
+                    .unique(compoundIndex.uniqueIndex());
                 entityCollection.createIndex(Indexes.compoundIndex(indexBsonList), indexOptions);
             }
 
@@ -564,7 +575,7 @@ public class MongoManager {
                     throw new RepositoryTTLFieldNotFoundException(repositoryClass, ttlField);
                 }
                 IndexOptions indexOptions = new IndexOptions()
-                        .expireAfter(ttlIndex.ttl(), ttlIndex.time());
+                    .expireAfter(ttlIndex.ttl(), ttlIndex.time());
                 entityCollection.createIndex(Indexes.ascending(ttlField), indexOptions);
             }
 
@@ -578,7 +589,7 @@ public class MongoManager {
             ClassLoader repoClassLoader = repositoryClass.getClassLoader();
             Class<?>[] interfaces = new Class[]{repositoryClass};
             Repository<E, ID> repository = (Repository<E, ID>) Proxy.newProxyInstance(repoClassLoader, interfaces,
-                    new RepositoryInvocationHandler<>(repositoryMeta, executorService));
+                new RepositoryInvocationHandler<>(repositoryMeta, executorService));
             repositoryRegistry.put(repositoryClass, repository);
             repositoryMetaRegistry.put(repositoryClass, repositoryMeta);
             return (R) repository;

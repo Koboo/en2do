@@ -49,7 +49,7 @@ public class CustomerUpdateFieldByFirstNameRenameTest extends CustomerRepository
     @Order(4)
     public void setFieldValue() {
         assertTrue(repository.updateFieldsByFirstName("Rainer",
-                UpdateBatch.of(FieldUpdate.rename("balance", "balanceRenamed"))
+            UpdateBatch.of(FieldUpdate.rename("balance", "balanceRenamed"))
         ));
     }
 

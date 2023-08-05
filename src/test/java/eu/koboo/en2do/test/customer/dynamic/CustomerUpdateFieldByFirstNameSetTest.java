@@ -49,7 +49,7 @@ public class CustomerUpdateFieldByFirstNameSetTest extends CustomerRepositoryTes
     @Order(4)
     public void setFieldValue() {
         assertTrue(repository.updateFieldsByFirstName("Rainer",
-                UpdateBatch.of(FieldUpdate.set("postalCode", 987654321))
+            UpdateBatch.of(FieldUpdate.set("postalCode", 987654321))
         ));
     }
 

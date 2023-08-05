@@ -54,7 +54,7 @@ public class Validator {
      * @throws Exception if type class is not valid.
      */
     public <E, ID, R extends Repository<E, ID>> void validateCompatibility(
-            @NotNull Class<R> repositoryClass, @Nullable Class<?> typeClass) throws Exception {
+        @NotNull Class<R> repositoryClass, @Nullable Class<?> typeClass) throws Exception {
         if (typeClass == null) {
             throw new RuntimeException("Class for validation is null! Please open an issue on github!");
         }
@@ -111,9 +111,9 @@ public class Validator {
 
                 // Search for the field by the descriptor name.
                 Field field = fieldSet.stream()
-                        .filter(f -> f.getName().equals(descriptor.getName()))
-                        .findFirst()
-                        .orElse(null);
+                    .filter(f -> f.getName().equals(descriptor.getName()))
+                    .findFirst()
+                    .orElse(null);
                 if (field == null) {
                     continue;
                 }

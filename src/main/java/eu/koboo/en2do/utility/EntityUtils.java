@@ -35,7 +35,7 @@ public class EntityUtils {
 
             PropertyDescriptor[] toPropDecArray = toBean.getPropertyDescriptors();
             List<PropertyDescriptor> fromPropDescList = Arrays.asList(fromBean
-                    .getPropertyDescriptors());
+                .getPropertyDescriptors());
 
             for (PropertyDescriptor toPropDesc : toPropDecArray) {
                 int fromPropDescIndex = fromPropDescList.indexOf(toPropDesc);

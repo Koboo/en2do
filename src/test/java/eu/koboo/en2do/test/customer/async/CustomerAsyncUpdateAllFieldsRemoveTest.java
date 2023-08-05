@@ -47,7 +47,7 @@ public class CustomerAsyncUpdateAllFieldsRemoveTest extends CustomerRepositoryTe
     @Order(4)
     public void setFieldValue() {
         repository.asyncUpdateAllFields(UpdateBatch.of(FieldUpdate.remove("postalCode")))
-                .thenAccept(Assertions::assertTrue);
+            .thenAccept(Assertions::assertTrue);
     }
 
     @Test

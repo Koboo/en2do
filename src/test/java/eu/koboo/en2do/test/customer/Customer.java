@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Getter // lombok
@@ -36,4 +37,5 @@ public class Customer {
     CustomerType customerType; // enum type
     Date createTime; // 1. ttl object
     Date expireTime; // 2. ttl object
+    Map<Integer, String> description;
 }

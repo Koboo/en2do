@@ -47,7 +47,7 @@ public class CustomerAsyncUpdateAllFieldsSetTest extends CustomerRepositoryTest 
     @Order(4)
     public void setFieldValue() {
         repository.asyncUpdateAllFields(UpdateBatch.of(FieldUpdate.set("postalCode", 987654321)))
-                .thenAccept(Assertions::assertTrue);
+            .thenAccept(Assertions::assertTrue);
     }
 
     @Test

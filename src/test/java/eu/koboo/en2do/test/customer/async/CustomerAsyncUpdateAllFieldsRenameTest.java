@@ -47,7 +47,7 @@ public class CustomerAsyncUpdateAllFieldsRenameTest extends CustomerRepositoryTe
     @Order(4)
     public void setFieldValue() {
         repository.asyncUpdateAllFields(UpdateBatch.of(FieldUpdate.rename("balance", "balanceRenamed")))
-                .thenAccept(Assertions::assertTrue);
+            .thenAccept(Assertions::assertTrue);
     }
 
     @Test

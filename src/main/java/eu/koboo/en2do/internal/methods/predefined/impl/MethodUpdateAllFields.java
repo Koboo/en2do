@@ -27,8 +27,8 @@ public class MethodUpdateAllFields<E, ID, R extends Repository<E, ID>> extends P
         // Call the UpdateBatch on all documents with the "id" field of the entity,
         // which could be a unique name or the "_id" field.
         UpdateResult result = collection.updateMany(repositoryMeta.createIdExistsFilter(),
-                repositoryMeta.createUpdateDocument(updateBatch),
-                new UpdateOptions().upsert(false));
+            repositoryMeta.createUpdateDocument(updateBatch),
+            new UpdateOptions().upsert(false));
         return result.wasAcknowledged();
     }
 }

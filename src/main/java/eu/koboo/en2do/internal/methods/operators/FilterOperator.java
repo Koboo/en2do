@@ -90,7 +90,13 @@ public enum FilterOperator {
      *
      * @see com.mongodb.client.model.Filters#in(String, Object[])
      */
-    IN("In", 1);
+    IN("In", 1),
+    /**
+     * Represents Filters.exists(..)
+     *
+     * @see com.mongodb.client.model.Filters#exists(String)
+     */
+    HAS_KEY("HasKey", 1);
 
     public static final FilterOperator[] VALUES = FilterOperator.values();
 

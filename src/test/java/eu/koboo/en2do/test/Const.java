@@ -26,11 +26,16 @@ public class Const {
     public static final long PHONE_NUMBER = 4915122334455L;
     public static final double BALANCE = 543.21;
     public static final List<Order> ORDERS = Arrays.asList(
-            new Order("First", 1.0, Arrays.asList(1, 2, 3, 4)),
-            new Order("Second", 2.0, Arrays.asList(1, 2, 3, 4)),
-            new Order("Third", 3.0, Arrays.asList(1, 2, 3, 4))
+        new Order("First", 1.0, Arrays.asList(1, 2, 3, 4)),
+        new Order("Second", 2.0, Arrays.asList(1, 2, 3, 4)),
+        new Order("Third", 3.0, Arrays.asList(1, 2, 3, 4))
     );
     public static final CustomerType TYPE = CustomerType.DEFAULT;
+    public static final Map<Integer, String> DESCRIPTION = Map.of(
+        1, "Test1",
+        2, "Test2",
+        3, "Test3"
+    );
 
     public static @NotNull Customer createNewCustomer() {
         Customer customer = new Customer();
@@ -47,6 +52,7 @@ public class Const {
         customer.setBalance(BALANCE);
         customer.setOrders(ORDERS);
         customer.setCustomerType(TYPE);
+        customer.setDescription(DESCRIPTION);
         return customer;
     }
 
