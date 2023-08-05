@@ -33,8 +33,8 @@ public class CustomerExtendedFindFirstByFirstNameExistsTest extends CustomerExte
         customerExtended.setLockStatus("Not Locked");
         assertNotNull(customerExtended);
         repository.asyncSave(customerExtended)
-                .thenAccept(Assertions::assertTrue)
-                .thenAccept(v -> repository.asyncExists(customerExtended).thenAccept(Assertions::assertTrue));
+            .thenAccept(Assertions::assertTrue)
+            .thenAccept(v -> repository.asyncExists(customerExtended).thenAccept(Assertions::assertTrue));
     }
 
     @Test

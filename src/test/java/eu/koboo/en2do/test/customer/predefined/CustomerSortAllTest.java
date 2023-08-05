@@ -39,9 +39,9 @@ public class CustomerSortAllTest extends CustomerRepositoryTest {
     @Order(3)
     public void findCustomer() {
         List<Customer> customerList = repository.sortAll(Sort.of()
-                .order("customerId", true)
-                .limit(10)
-                .skip(5)
+            .order("customerId", true)
+            .limit(10)
+            .skip(5)
         );
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());

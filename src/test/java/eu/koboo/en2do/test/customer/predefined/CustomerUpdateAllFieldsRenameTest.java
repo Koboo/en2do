@@ -49,7 +49,7 @@ public class CustomerUpdateAllFieldsRenameTest extends CustomerRepositoryTest {
     @Order(4)
     public void setFieldValue() {
         assertTrue(repository.updateAllFields(
-                UpdateBatch.of(FieldUpdate.rename("balance", "balanceRenamed"))
+            UpdateBatch.of(FieldUpdate.rename("balance", "balanceRenamed"))
         ));
     }
 

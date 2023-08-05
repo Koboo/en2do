@@ -55,7 +55,7 @@ task javadocJar(type: Jar) {
 }
 
 publishing {
-   repositories {
+    repositories {
         maven {
             url('https://reposilite.koboo.eu/releases')
             credentials {

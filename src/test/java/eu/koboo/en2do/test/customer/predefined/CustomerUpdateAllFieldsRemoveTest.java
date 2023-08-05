@@ -49,7 +49,7 @@ public class CustomerUpdateAllFieldsRemoveTest extends CustomerRepositoryTest {
     @Order(4)
     public void setFieldValue() {
         assertTrue(repository.updateAllFields(
-                UpdateBatch.of(FieldUpdate.remove("postalCode"))
+            UpdateBatch.of(FieldUpdate.remove("postalCode"))
         ));
     }
 

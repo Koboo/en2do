@@ -39,8 +39,8 @@ public class CustomerPageAllTest extends CustomerRepositoryTest {
     @Order(3)
     public void findCustomer() {
         List<Customer> customerList = repository.pageAll(
-                Pagination.of(5)
-                        .page(2)
+            Pagination.of(5)
+                .page(2)
         );
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());

@@ -49,7 +49,7 @@ public class CustomerUpdateAllFieldsSetTest extends CustomerRepositoryTest {
     @Order(4)
     public void setFieldValue() {
         assertTrue(repository.updateAllFields(
-                UpdateBatch.of(FieldUpdate.set("postalCode", 987654321))
+            UpdateBatch.of(FieldUpdate.set("postalCode", 987654321))
         ));
     }
 
