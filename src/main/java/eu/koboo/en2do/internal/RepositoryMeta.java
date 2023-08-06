@@ -278,8 +278,17 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     }
 
     public @NotNull Object getFilterableValue(@NotNull Object object) {
+        return getFilterableValue(object, false);
+    }
+
+    public @NotNull Object getFilterableValue(@NotNull Object object, boolean isMapKey) {
         if (object instanceof Enum<?>) {
             return ((Enum<?>) object).name();
+        }
+        if(isMapKey) {
+            if(object instanceof UUID) {
+                return object.toString();
+            }
         }
         return object;
     }

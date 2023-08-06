@@ -145,7 +145,7 @@ public class DynamicMethod<E, ID, R extends Repository<E, ID>> {
                 retFilter = Filters.in(fieldName, objectArray);
                 break;
             case HAS_KEY:
-                Object keyObject = repositoryMeta.getFilterableValue(args[paramsIndexAt]);
+                Object keyObject = repositoryMeta.getFilterableValue(args[paramsIndexAt], true);
                 retFilter = Filters.exists(fieldName + "." + keyObject);
                 break;
             default: // This filter is not supported. Throw exception.
