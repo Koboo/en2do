@@ -26,12 +26,12 @@ public class InternalPropertyCodecProvider implements PropertyCodecProvider {
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
     public <T> Codec<T> get(TypeWithTypeParameters<T> type, PropertyCodecRegistry registry) {
-        if (Class.class.isAssignableFrom(type.getType())) {
-            return (Codec<T>) new ClassCodec();
-        }
         if (Map.class.isAssignableFrom(type.getType()) && type.getTypeParameters().size() == 2) {
             return new GenericMapCodec(type.getType(), registry.get(type.getTypeParameters().get(0)),
                 registry.get(type.getTypeParameters().get(1)));
+        }
+        if (Class.class.isAssignableFrom(type.getType())) {
+            return (Codec<T>) new ClassCodec();
         }
         return null;
     }

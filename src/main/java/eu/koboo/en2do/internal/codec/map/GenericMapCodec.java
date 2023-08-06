@@ -63,7 +63,14 @@ public class GenericMapCodec<K, T> implements Codec<Map<K, T>> {
                     String documentId = UUID.randomUUID().toString();
                     documentWriter.writeName(documentId);
                     keyCodec.encode(documentWriter, entry.getKey(), encoderContext);
-                    writer.writeName(documentWriter.getDocument().asDocument().get(documentId).asString().getValue());
+                    String value;
+                    BsonValue bsonValue = documentWriter.getDocument().asDocument().get(documentId);
+                    if(UUID.class.isAssignableFrom(keyCodec.getEncoderClass()) && bsonValue.isBinary()) {
+                        value = UUID.nameUUIDFromBytes(bsonValue.asBinary().getData()).toString();
+                    } else {
+                        value = bsonValue.asString().getValue();
+                    }
+                    writer.writeName(value);
                 }
 
                 valueCodec.encode(writer, entry.getValue(), encoderContext);
