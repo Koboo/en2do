@@ -41,5 +41,7 @@ public class CustomerFindFirstByDescriptionHasKeyTest extends CustomerRepository
         assertEquals(Const.PHONE_NUMBER, customer.getPhoneNumber());
         assertEquals(Const.ORDERS.size(), customer.getOrders().size());
         assertEquals(Const.DESCRIPTION.size(), customer.getDescription().size());
+        assertEquals(3, customer.getDescription().size());
+        assertEquals(Const.DESCRIPTION.get(1), customer.getDescription().get(1));
     }
 }
