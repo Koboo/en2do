@@ -37,5 +37,5 @@ public class Customer {
     CustomerType customerType; // enum type
     Date createTime; // 1. ttl object
     Date expireTime; // 2. ttl object
-    Map<Integer, String> description;
+    Map<UUID, String> description;
 }

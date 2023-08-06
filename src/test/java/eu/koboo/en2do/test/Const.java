@@ -31,10 +31,10 @@ public class Const {
         new Order("Third", 3.0, Arrays.asList(1, 2, 3, 4))
     );
     public static final CustomerType TYPE = CustomerType.DEFAULT;
-    public static final Map<Integer, String> DESCRIPTION = Map.of(
-        1, "Test1",
-        2, "Test2",
-        3, "Test3"
+    public static final Map<UUID, String> DESCRIPTION = Map.of(
+        UUID.randomUUID(), "Test1",
+        UUID.randomUUID(), "Test2",
+        UUID.randomUUID(), "Test3"
     );
 
     public static @NotNull Customer createNewCustomer() {

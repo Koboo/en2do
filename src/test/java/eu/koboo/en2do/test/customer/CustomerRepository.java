@@ -68,7 +68,7 @@ public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRep
 
     List<Customer> findManyByHouseNumberIn(Integer... houseNumberList);
 
-    Customer findFirstByDescriptionHasKey(Integer version);
+    Customer findFirstByDescriptionHasKey(UUID version);
 
     @SortBy(field = "customerId")
     @SortBy(field = "balance", ascending = true)

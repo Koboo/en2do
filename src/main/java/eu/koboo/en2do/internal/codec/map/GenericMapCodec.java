@@ -13,6 +13,8 @@ import org.bson.json.JsonReader;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -63,14 +65,15 @@ public class GenericMapCodec<K, T> implements Codec<Map<K, T>> {
                     String documentId = UUID.randomUUID().toString();
                     documentWriter.writeName(documentId);
                     keyCodec.encode(documentWriter, entry.getKey(), encoderContext);
-                    String value;
+                    String keyString;
                     BsonValue bsonValue = documentWriter.getDocument().asDocument().get(documentId);
                     if(UUID.class.isAssignableFrom(keyCodec.getEncoderClass()) && bsonValue.isBinary()) {
-                        value = UUID.nameUUIDFromBytes(bsonValue.asBinary().getData()).toString();
+                        ByteBuffer buffer = ByteBuffer.wrap(bsonValue.asBinary().getData());
+                        keyString = new UUID(buffer.getLong(), buffer.getLong()).toString();
                     } else {
-                        value = bsonValue.asString().getValue();
+                        keyString = bsonValue.asString().getValue();
                     }
-                    writer.writeName(value);
+                    writer.writeName(keyString);
                 }
 
                 valueCodec.encode(writer, entry.getValue(), encoderContext);
@@ -97,13 +100,20 @@ public class GenericMapCodec<K, T> implements Codec<Map<K, T>> {
         while (!BsonType.END_OF_DOCUMENT.equals(reader.readBsonType())) {
             K key;
             PropertyEditor editor = PropertyEditorManager.findEditor(keyCodec.getEncoderClass());
+            String keyName = reader.readName();
             if (editor != null) {
                 log.fine("Found PropertyEditor for class: " + keyCodec.getEncoderClass().getName());
-                editor.setAsText(reader.readName());
+                editor.setAsText(keyName);
                 key = (K) editor.getValue();
             } else {
-                JsonReader jsonReader = new JsonReader(String.format("\"key\": \"%s\"", reader.readName()));
-                key = keyCodec.decode(jsonReader, context);
+                JsonReader jsonReader = new JsonReader(String.format("\"key\": \"%s\"", keyName));
+                BsonType bsonType = reader.getCurrentBsonType();
+                boolean isUUID = UUID.class.isAssignableFrom(keyCodec.getEncoderClass());
+                if(isUUID && bsonType == BsonType.STRING) {
+                    key = (K) UUID.fromString(keyName);
+                } else {
+                    key = keyCodec.decode(jsonReader, context);
+                }
             }
 
             T value = null;

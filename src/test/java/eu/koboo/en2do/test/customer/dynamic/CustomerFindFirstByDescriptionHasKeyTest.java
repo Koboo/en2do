@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,7 +33,12 @@ public class CustomerFindFirstByDescriptionHasKeyTest extends CustomerRepository
     @Test
     @Order(3)
     public void operationTest() {
-        Customer customer = repository.findFirstByDescriptionHasKey(1);
+        UUID uuid = null;
+        for (UUID id : Const.DESCRIPTION.keySet()) {
+            uuid = id;
+            break;
+        }
+        Customer customer = repository.findFirstByDescriptionHasKey(uuid);
         assertNotNull(customer);
         assertEquals(Const.CUSTOMER_ID, customer.getCustomerId());
         assertEquals(Const.FIRST_NAME, customer.getFirstName());
@@ -42,6 +48,8 @@ public class CustomerFindFirstByDescriptionHasKeyTest extends CustomerRepository
         assertEquals(Const.ORDERS.size(), customer.getOrders().size());
         assertEquals(Const.DESCRIPTION.size(), customer.getDescription().size());
         assertEquals(3, customer.getDescription().size());
-        assertEquals(Const.DESCRIPTION.get(1), customer.getDescription().get(1));
+        for (UUID id : Const.DESCRIPTION.keySet()) {
+            assertTrue(customer.getDescription().containsKey(id));
+        }
     }
 }
