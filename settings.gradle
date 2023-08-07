@@ -1,1 +1,5 @@
 rootProject.name = 'en2do'
+include 'en2do-api'
+include 'en2do-mongodb'
+include 'en2do-caching'
+
