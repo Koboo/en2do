@@ -10,8 +10,6 @@ import eu.koboo.en2do.mongodb.exception.methods.MethodUnsupportedFilterException
 import eu.koboo.en2do.internal.operators.MethodOperator;
 import eu.koboo.en2do.repository.Repository;
 import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.bson.conversions.Bson;
 
@@ -146,7 +144,8 @@ public class DynamicMethod<E, ID, R extends Repository<E, ID>> extends AbstractD
                 retFilter = Filters.exists(fieldName + "." + keyObject);
                 break;
             case HAS:
-
+                Object hasObject = repositoryMeta.getFilterableValue(args[paramsIndexAt]);
+                retFilter = Filters.in(fieldName, hasObject);
                 break;
             default: // This filter is not supported. Throw exception.
                 throw new MethodUnsupportedFilterException(method, repositoryMeta.getRepositoryClass());

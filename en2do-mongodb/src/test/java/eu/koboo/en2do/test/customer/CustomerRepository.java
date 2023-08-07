@@ -19,9 +19,6 @@ import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
 @Collection("customer_repository")
-@DropIndexesOnStart
-@DropEntitiesOnStart
-//@SeparateEntityId
 @AppendMethodAsComment
 public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRepository<Customer, UUID> {
 

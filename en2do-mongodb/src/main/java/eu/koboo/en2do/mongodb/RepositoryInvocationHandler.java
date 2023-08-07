@@ -74,7 +74,6 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             handleCaching(method, cacheList, arguments, result);
             return result;
         }
-        // No static handler found.
 
         // Check for predefined method with async prefix.
         boolean isAsyncMethod = method.isAnnotationPresent(Async.class);
@@ -92,6 +91,8 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 return future;
             }
         }
+
+        // No predefined handler found, checking for dynamic methods
 
         // Get and check if any dynamic method matches the methodName
         DynamicMethod<E, ID, R> dynamicMethod = repositoryMeta.lookupDynamicMethod(methodName);
@@ -154,6 +155,11 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
     private Object executeMethod(DynamicMethod<E, ID, R> dynamicMethod, Object[] arguments, Method method, String methodName) throws Exception {
         // Generate bson filter by dynamic Method object.
         Bson filter = dynamicMethod.createFilter(arguments);
+
+        if(filter == null) {
+            throw new NullPointerException("The created filter for " + dynamicMethod.getMethod().getName() + " is null!");
+        }
+
         // Switch-case the method operator to use the correct mongo query.
         final MongoCollection<E> collection = repositoryMeta.getCollection();
 
