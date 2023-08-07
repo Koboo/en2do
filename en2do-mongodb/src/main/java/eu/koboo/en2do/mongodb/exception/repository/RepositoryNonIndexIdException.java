@@ -1,7 +1,7 @@
 package eu.koboo.en2do.mongodb.exception.repository;
 
-import eu.koboo.en2do.repository.options.SeparateEntityId;
 import eu.koboo.en2do.repository.entity.NonIndex;
+import eu.koboo.en2do.repository.options.SeparateEntityId;
 
 public class RepositoryNonIndexIdException extends Exception {
 

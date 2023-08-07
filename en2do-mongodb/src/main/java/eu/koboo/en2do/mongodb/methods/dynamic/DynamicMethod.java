@@ -4,10 +4,10 @@ import com.mongodb.client.model.Filters;
 import eu.koboo.en2do.internal.dynamicmethods.AbstractDynamicMethod;
 import eu.koboo.en2do.internal.dynamicmethods.FilterType;
 import eu.koboo.en2do.internal.dynamicmethods.MethodFilterPart;
+import eu.koboo.en2do.internal.operators.MethodOperator;
 import eu.koboo.en2do.mongodb.RepositoryMeta;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidRegexParameterException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodUnsupportedFilterException;
-import eu.koboo.en2do.internal.operators.MethodOperator;
 import eu.koboo.en2do.repository.Repository;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -57,7 +57,7 @@ public class DynamicMethod<E, ID, R extends Repository<E, ID>> extends AbstractD
 
     @SuppressWarnings("unchecked")
     private Bson processBson(FilterType filterType, int paramsIndexAt,
-                                      Object[] args) throws Exception {
+                             Object[] args) throws Exception {
         String fieldName = filterType.getField().getName();
         // Check if the uniqueId field is used.
         // This is needed if uniqueId field and "_id" of documents are the same!

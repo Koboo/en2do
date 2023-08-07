@@ -9,6 +9,10 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import eu.koboo.en2do.cache.Cache;
+import eu.koboo.en2do.internal.dynamicmethods.FilterType;
+import eu.koboo.en2do.internal.dynamicmethods.MethodFilterPart;
+import eu.koboo.en2do.internal.operators.FilterOperator;
+import eu.koboo.en2do.internal.operators.MethodOperator;
 import eu.koboo.en2do.mongodb.RepositoryInvocationHandler;
 import eu.koboo.en2do.mongodb.RepositoryMeta;
 import eu.koboo.en2do.mongodb.Validator;
@@ -17,13 +21,10 @@ import eu.koboo.en2do.mongodb.convention.AnnotationConvention;
 import eu.koboo.en2do.mongodb.exception.methods.*;
 import eu.koboo.en2do.mongodb.exception.repository.*;
 import eu.koboo.en2do.mongodb.methods.dynamic.DynamicMethod;
-import eu.koboo.en2do.internal.dynamicmethods.FilterType;
-import eu.koboo.en2do.internal.dynamicmethods.MethodFilterPart;
-import eu.koboo.en2do.internal.operators.FilterOperator;
-import eu.koboo.en2do.internal.operators.MethodOperator;
 import eu.koboo.en2do.mongodb.methods.predefined.impl.*;
+import eu.koboo.en2do.repository.AsyncRepository;
 import eu.koboo.en2do.repository.Collection;
-import eu.koboo.en2do.repository.*;
+import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.entity.Id;
 import eu.koboo.en2do.repository.entity.NonIndex;
 import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
@@ -405,9 +406,9 @@ public class MongoManager extends DatabaseManager {
                                 }
                                 break;
                             case HAS:
-                                if(!GenericUtils.isNotTypeOf(java.util.Collection.class, fieldClass)) {
+                                if (!GenericUtils.isNotTypeOf(java.util.Collection.class, fieldClass)) {
                                     Class<?> listType = GenericUtils.getGenericTypeOfField(field, 0);
-                                    if(GenericUtils.isNotTypeOf(paramClass, listType)) {
+                                    if (GenericUtils.isNotTypeOf(paramClass, listType)) {
                                         throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
                                     }
                                 }
@@ -600,8 +601,8 @@ public class MongoManager extends DatabaseManager {
     }
 
     private <E> FilterType createFilterType(Class<E> entityClass, Class<?> repoClass,
-                                                     Method method, String filterOperatorString,
-                                                     Set<Field> fieldSet) throws Exception {
+                                            Method method, String filterOperatorString,
+                                            Set<Field> fieldSet) throws Exception {
         FilterOperator filterOperator = FilterOperator.parseFilterEndsWith(filterOperatorString);
         String expectedFieldName = filterOperator.removeOperatorFrom(filterOperatorString);
         boolean notFilter = false;

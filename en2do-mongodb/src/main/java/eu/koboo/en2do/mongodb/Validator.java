@@ -33,7 +33,7 @@ public class Validator {
      * @param typeClass The type class to search a codec for.
      * @return The codec if found, otherwise null.
      */
-    private Codec<?> getCodec( Class<?> typeClass) {
+    private Codec<?> getCodec(Class<?> typeClass) {
         try {
             return MongoClientSettings.getDefaultCodecRegistry().get(typeClass);
         } catch (Exception ignored) {

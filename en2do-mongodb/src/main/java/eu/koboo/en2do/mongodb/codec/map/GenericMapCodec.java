@@ -66,7 +66,7 @@ public class GenericMapCodec<K, T> implements Codec<Map<K, T>> {
                     keyCodec.encode(documentWriter, entry.getKey(), encoderContext);
                     String keyString;
                     BsonValue bsonValue = documentWriter.getDocument().asDocument().get(documentId);
-                    if(UUID.class.isAssignableFrom(keyCodec.getEncoderClass()) && bsonValue.isBinary()) {
+                    if (UUID.class.isAssignableFrom(keyCodec.getEncoderClass()) && bsonValue.isBinary()) {
                         ByteBuffer buffer = ByteBuffer.wrap(bsonValue.asBinary().getData());
                         keyString = new UUID(buffer.getLong(), buffer.getLong()).toString();
                     } else {
@@ -108,7 +108,7 @@ public class GenericMapCodec<K, T> implements Codec<Map<K, T>> {
                 JsonReader jsonReader = new JsonReader(String.format("\"key\": \"%s\"", keyName));
                 BsonType bsonType = reader.getCurrentBsonType();
                 boolean isUUID = UUID.class.isAssignableFrom(keyCodec.getEncoderClass());
-                if(isUUID && bsonType == BsonType.STRING) {
+                if (isUUID && bsonType == BsonType.STRING) {
                     key = (K) UUID.fromString(keyName);
                 } else {
                     key = keyCodec.decode(jsonReader, context);

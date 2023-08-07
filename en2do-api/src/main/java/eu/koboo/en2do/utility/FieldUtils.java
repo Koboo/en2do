@@ -42,7 +42,7 @@ public class FieldUtils {
      * @param fieldSet  The Set, which should be iterated through
      * @return The field, if found. If not found, it returns "null"
      */
-    public  Field findFieldByName(String fieldName, Set<Field> fieldSet) {
+    public Field findFieldByName(String fieldName, Set<Field> fieldSet) {
         for (Field field : fieldSet) {
             if (!field.getName().equalsIgnoreCase(fieldName)) {
                 continue;

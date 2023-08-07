@@ -117,7 +117,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
 
     private void handleCaching(Method method, List<Cache> cacheList, Object[] arguments, Object result) {
         CacheRemove cacheRemove = method.getAnnotation(CacheRemove.class);
-        if(cacheRemove != null) {
+        if (cacheRemove != null) {
             if (arguments == null || arguments.length == 0 || cacheList == null || cacheList.isEmpty()) {
                 return;
             }
@@ -156,7 +156,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         // Generate bson filter by dynamic Method object.
         Bson filter = dynamicMethod.createFilter(arguments);
 
-        if(filter == null) {
+        if (filter == null) {
             throw new NullPointerException("The created filter for " + dynamicMethod.getMethod().getName() + " is null!");
         }
 

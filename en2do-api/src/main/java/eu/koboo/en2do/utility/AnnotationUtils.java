@@ -25,7 +25,7 @@ public class AnnotationUtils {
      * @return The Set with all found annotations of type A
      */
     public <E, A extends Annotation> Set<A> collectAnnotations(Class<E> entityClass,
-                                                                        Class<A> annotationClass) {
+                                                               Class<A> annotationClass) {
         Set<A> annotationSet = new HashSet<>();
         Class<?> clazz = entityClass;
         while (clazz != Object.class) {

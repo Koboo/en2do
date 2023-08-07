@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
-import java.util.regex.Pattern;
-
 /**
  * Represents a segment of the whole method filters.
  */

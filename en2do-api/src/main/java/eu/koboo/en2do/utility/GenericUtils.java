@@ -74,7 +74,7 @@ public class GenericUtils {
     }
 
     public Class<?> getGenericTypeOfField(Field field, int paramIndex) {
-        return ((Class<?>)((ParameterizedType)field.getGenericType()).getActualTypeArguments()[paramIndex]);
+        return ((Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[paramIndex]);
     }
 
     /**

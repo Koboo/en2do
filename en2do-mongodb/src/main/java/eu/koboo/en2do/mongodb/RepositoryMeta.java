@@ -9,9 +9,7 @@ import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidSortLimitException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidSortSkipException;
 import eu.koboo.en2do.mongodb.methods.dynamic.DynamicMethod;
 import eu.koboo.en2do.mongodb.methods.predefined.PredefinedMethod;
-import eu.koboo.en2do.repository.options.AppendMethodAsComment;
 import eu.koboo.en2do.repository.Repository;
-import eu.koboo.en2do.repository.options.SeparateEntityId;
 import eu.koboo.en2do.repository.methods.fields.FieldUpdate;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.fields.UpdateType;
@@ -20,6 +18,8 @@ import eu.koboo.en2do.repository.methods.sort.Limit;
 import eu.koboo.en2do.repository.methods.sort.Skip;
 import eu.koboo.en2do.repository.methods.sort.Sort;
 import eu.koboo.en2do.repository.methods.sort.SortBy;
+import eu.koboo.en2do.repository.options.AppendMethodAsComment;
+import eu.koboo.en2do.repository.options.SeparateEntityId;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
@@ -171,8 +171,8 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     }
 
     public FindIterable<E> applySortObject(Method method,
-                                                    FindIterable<E> findIterable,
-                                                    Object[] args) throws Exception {
+                                           FindIterable<E> findIterable,
+                                           Object[] args) throws Exception {
         int parameterCount = method.getParameterCount();
         if (parameterCount <= 0) {
             return findIterable;
@@ -238,7 +238,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     }
 
     public FindIterable<E> applyPageObject(Method method,
-                                                    FindIterable<E> findIterable, Object[] args) throws Exception {
+                                           FindIterable<E> findIterable, Object[] args) throws Exception {
         Pagination pagination = (Pagination) args[args.length - 1];
         if (pagination.getPage() <= 0) {
             throw new MethodInvalidPageException(method, repositoryClass);
@@ -267,8 +267,8 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         if (object instanceof Enum<?>) {
             return ((Enum<?>) object).name();
         }
-        if(isMapKey) {
-            if(object instanceof UUID) {
+        if (isMapKey) {
+            if (object instanceof UUID) {
                 return object.toString();
             }
         }
