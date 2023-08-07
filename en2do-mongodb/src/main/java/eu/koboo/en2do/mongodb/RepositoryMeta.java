@@ -19,7 +19,6 @@ import eu.koboo.en2do.repository.methods.sort.Skip;
 import eu.koboo.en2do.repository.methods.sort.Sort;
 import eu.koboo.en2do.repository.methods.sort.SortBy;
 import eu.koboo.en2do.repository.options.AppendMethodAsComment;
-import eu.koboo.en2do.repository.options.SeparateEntityId;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
@@ -44,7 +43,6 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
     @Getter(AccessLevel.NONE)
     boolean appendMethodAsComment;
-    boolean separateEntityId;
 
     @Getter(AccessLevel.NONE)
     Map<String, PredefinedMethod<E, ID, R>> methodRegistry;
@@ -68,7 +66,6 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         this.entityUniqueIdField = entityUniqueIdField;
 
         this.appendMethodAsComment = repositoryClass.isAnnotationPresent(AppendMethodAsComment.class);
-        this.separateEntityId = repositoryClass.isAnnotationPresent(SeparateEntityId.class);
 
         this.methodRegistry = new HashMap<>();
         this.dynamicMethodRegistry = new HashMap<>();
@@ -142,19 +139,11 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     }
 
     public Bson createIdFilter(ID uniqueId) {
-        if (!separateEntityId) {
-            return Filters.eq("_id", uniqueId);
-        } else {
-            return Filters.eq(entityUniqueIdField.getName(), uniqueId);
-        }
+        return Filters.eq("_id", uniqueId);
     }
 
     public Bson createIdExistsFilter() {
-        if (!separateEntityId) {
-            return Filters.exists("_id");
-        } else {
-            return Filters.exists(entityUniqueIdField.getName());
-        }
+        return Filters.exists("_id");
     }
 
     public FindIterable<E> createIterable(Bson filter, String methodName) {

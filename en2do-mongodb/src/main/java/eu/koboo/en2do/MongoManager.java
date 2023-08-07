@@ -510,17 +510,6 @@ public class MongoManager extends DatabaseManager {
                 entityCollection.dropIndexes();
             }
 
-            // Check for invalid index configuration
-            if (!repositoryMeta.isSeparateEntityId() && entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
-                throw new RepositoryNonIndexIdException(repositoryClass);
-            }
-
-            // Creating an index on the uniqueIdentifier field of the entity to speed up queries,
-            // but only if wanted. Users can disable that with the annotation.
-            if (repositoryMeta.isSeparateEntityId()
-                && !entityUniqueIdField.isAnnotationPresent(NonIndex.class)) {
-                entityCollection.createIndex(Indexes.ascending(entityUniqueIdField.getName()), new IndexOptions().unique(true));
-            }
             Set<CompoundIndex> compoundIndexSet = AnnotationUtils.collectAnnotations(entityClass, CompoundIndex.class);
             for (CompoundIndex compoundIndex : compoundIndexSet) {
                 // Checking if the field in the annotation exists in the entity class.

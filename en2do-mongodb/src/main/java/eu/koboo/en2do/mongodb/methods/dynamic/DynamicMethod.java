@@ -61,8 +61,7 @@ public class DynamicMethod<E, ID, R extends Repository<E, ID>> extends AbstractD
         String fieldName = filterType.getField().getName();
         // Check if the uniqueId field is used.
         // This is needed if uniqueId field and "_id" of documents are the same!
-        if (fieldName.equalsIgnoreCase(repositoryMeta.getEntityUniqueIdField().getName())
-            && !repositoryMeta.isSeparateEntityId()) {
+        if (fieldName.equalsIgnoreCase(repositoryMeta.getEntityUniqueIdField().getName())) {
             fieldName = "_id";
         }
         Bson retFilter = null;
