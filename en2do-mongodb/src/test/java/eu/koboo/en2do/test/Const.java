@@ -35,6 +35,11 @@ public class Const {
         UUID.randomUUID(), "Test2",
         UUID.randomUUID(), "Test3"
     );
+    public static final List<UUID> ID_LIST = List.of(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        UUID.randomUUID()
+    );
 
     public static Customer createNewCustomer() {
         Customer customer = new Customer();
@@ -52,6 +57,7 @@ public class Const {
         customer.setOrders(ORDERS);
         customer.setCustomerType(TYPE);
         customer.setDescription(DESCRIPTION);
+        customer.setIdList(ID_LIST);
         return customer;
     }
 

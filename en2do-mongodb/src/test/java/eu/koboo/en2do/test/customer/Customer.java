@@ -34,6 +34,7 @@ public class Customer {
     double balance;
     double balanceRenamed;
     List<Order> orders; // Embedded object list
+    List<UUID> idList;
     CustomerType customerType; // enum type
     Date createTime; // 1. ttl object
     Date expireTime; // 2. ttl object

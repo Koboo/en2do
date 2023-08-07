@@ -73,6 +73,8 @@ public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRep
 
     Customer findFirstByDescriptionHasKey(UUID version);
 
+    Customer findFirstByIdListHas(UUID id);
+
     @SortBy(field = "customerId")
     @SortBy(field = "balance", ascending = true)
     @Limit(10)
