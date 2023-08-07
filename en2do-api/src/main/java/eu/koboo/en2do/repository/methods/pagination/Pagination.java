@@ -69,7 +69,7 @@ public class Pagination {
      * @param page The requested page
      * @return The used Pagination object
      */
-    public Pagination page(long page) {
+    public Pagination setPage(long page) {
         this.page = page;
         return this;
     }

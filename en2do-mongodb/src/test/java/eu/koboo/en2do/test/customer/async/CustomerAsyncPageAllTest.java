@@ -39,7 +39,7 @@ public class CustomerAsyncPageAllTest extends CustomerRepositoryTest {
     @Test
     @Order(3)
     public void findCustomer() {
-        repository.asyncPageAll(Pagination.of(5).page(2)).thenAccept(customerList -> {
+        repository.asyncPageAll(Pagination.of(5).setPage(2)).thenAccept(customerList -> {
             assertNotNull(customerList);
             assertFalse(customerList.isEmpty());
             assertEquals(5, customerList.size());
