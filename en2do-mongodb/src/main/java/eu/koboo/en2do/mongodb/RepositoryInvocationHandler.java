@@ -115,17 +115,6 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
     }
 
     private void handleCaching(Method method, List<Cache> cacheList, Object[] arguments, Object result) {
-        CachePut cachePut = method.getAnnotation(CachePut.class);
-        if (cachePut != null) {
-            if (arguments == null || arguments.length == 0 || cacheList == null || cacheList.isEmpty()) {
-                return;
-            }
-            if (method.isAnnotationPresent(Async.class)) {
-                addToCache(cachePut, cacheList, arguments, result);
-            } else {
-                executorService.execute(() -> addToCache(cachePut, cacheList, arguments, result));
-            }
-        }
         CacheRemove cacheRemove = method.getAnnotation(CacheRemove.class);
         if(cacheRemove != null) {
             if (arguments == null || arguments.length == 0 || cacheList == null || cacheList.isEmpty()) {
@@ -135,6 +124,17 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 removeFromCache(cacheRemove, cacheList, arguments);
             } else {
                 executorService.execute(() -> removeFromCache(cacheRemove, cacheList, arguments));
+            }
+        }
+        CachePut cachePut = method.getAnnotation(CachePut.class);
+        if (cachePut != null) {
+            if (arguments == null || arguments.length == 0 || cacheList == null || cacheList.isEmpty()) {
+                return;
+            }
+            if (method.isAnnotationPresent(Async.class)) {
+                addToCache(cachePut, cacheList, arguments, result);
+            } else {
+                executorService.execute(() -> addToCache(cachePut, cacheList, arguments, result));
             }
         }
     }
