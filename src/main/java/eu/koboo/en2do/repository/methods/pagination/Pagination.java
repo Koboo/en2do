@@ -68,7 +68,7 @@ public class Pagination {
      * @param page The requested page
      * @return The used Pagination object
      */
-    public @NotNull Pagination page(long page) {
+    public @NotNull Pagination setPage(long page) {
         this.page = page;
         return this;
     }
