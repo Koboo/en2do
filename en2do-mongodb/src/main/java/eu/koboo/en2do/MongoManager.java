@@ -8,7 +8,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import eu.koboo.en2do.cache.Cache;
 import eu.koboo.en2do.internal.dynamicmethods.FilterType;
 import eu.koboo.en2do.internal.dynamicmethods.MethodFilterPart;
 import eu.koboo.en2do.internal.operators.FilterOperator;
@@ -26,7 +25,6 @@ import eu.koboo.en2do.repository.AsyncRepository;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.entity.Id;
-import eu.koboo.en2do.repository.entity.NonIndex;
 import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
 import eu.koboo.en2do.repository.entity.compound.Index;
 import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
@@ -70,7 +68,6 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 public class MongoManager extends DatabaseManager {
 
     Map<Class<?>, RepositoryMeta<?, ?, ?>> repositoryMetaRegistry;
-    Map<Class<?>, List<Cache>> cacheRegistry;
     ExecutorService executorService;
 
     @Getter
@@ -80,7 +77,6 @@ public class MongoManager extends DatabaseManager {
 
     public MongoManager(Credentials credentials, ExecutorService executorService) {
         this.repositoryMetaRegistry = new ConcurrentHashMap<>();
-        this.cacheRegistry = new ConcurrentHashMap<>();
         this.executorService = executorService;
 
         // If no credentials given, try loading them from default file.
@@ -576,17 +572,6 @@ public class MongoManager extends DatabaseManager {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public void registerCache(Class<?> repositoryClass, Cache cache) {
-        List<Cache> cacheList = cacheRegistry.computeIfAbsent(repositoryClass, k -> new LinkedList<>());
-        cacheList.add(cache);
-    }
-
-    @Override
-    public List<Cache> getAllCaches(Class<?> repositoryClass) {
-        return cacheRegistry.get(repositoryClass);
     }
 
     private <E> FilterType createFilterType(Class<E> entityClass, Class<?> repoClass,
