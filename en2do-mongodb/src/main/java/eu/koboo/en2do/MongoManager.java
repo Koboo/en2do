@@ -19,7 +19,7 @@ import eu.koboo.en2do.mongodb.codec.InternalPropertyCodecProvider;
 import eu.koboo.en2do.mongodb.convention.AnnotationConvention;
 import eu.koboo.en2do.mongodb.exception.methods.*;
 import eu.koboo.en2do.mongodb.exception.repository.*;
-import eu.koboo.en2do.mongodb.methods.dynamic.DynamicMethod;
+import eu.koboo.en2do.mongodb.methods.dynamic.MongoDynamicMethod;
 import eu.koboo.en2do.mongodb.methods.predefined.impl.*;
 import eu.koboo.en2do.repository.AsyncRepository;
 import eu.koboo.en2do.repository.Collection;
@@ -493,7 +493,7 @@ public class MongoManager extends DatabaseManager {
                     // while runtime
                 }
 
-                DynamicMethod<E, ID, R> dynamicMethod = new DynamicMethod<>(method, methodOperator,
+                MongoDynamicMethod<E, ID, R> dynamicMethod = new MongoDynamicMethod<>(method, methodOperator,
                     multipleFilter, andFilter, filterPartList, repositoryMeta);
                 repositoryMeta.registerDynamicMethod(methodName, dynamicMethod);
             }

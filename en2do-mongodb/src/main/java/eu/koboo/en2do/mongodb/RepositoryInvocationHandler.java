@@ -6,7 +6,7 @@ import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.UpdateResult;
 import eu.koboo.en2do.mongodb.exception.methods.MethodUnsupportedException;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryInvalidCallException;
-import eu.koboo.en2do.mongodb.methods.dynamic.DynamicMethod;
+import eu.koboo.en2do.mongodb.methods.dynamic.MongoDynamicMethod;
 import eu.koboo.en2do.mongodb.methods.predefined.PredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.methods.async.Async;
@@ -65,7 +65,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         // No predefined handler found, checking for dynamic methods
 
         // Get and check if any dynamic method matches the methodName
-        DynamicMethod<E, ID, R> dynamicMethod = repositoryMeta.lookupDynamicMethod(methodName);
+        MongoDynamicMethod<E, ID, R> dynamicMethod = repositoryMeta.lookupDynamicMethod(methodName);
         if (dynamicMethod == null) {
             // No handling found for method with this name.
             throw new MethodUnsupportedException(method, repositoryMeta.getRepositoryClass());
@@ -81,7 +81,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         }
     }
 
-    private Object executeMethod(DynamicMethod<E, ID, R> dynamicMethod, Object[] arguments, Method method, String methodName) throws Exception {
+    private Object executeMethod(MongoDynamicMethod<E, ID, R> dynamicMethod, Object[] arguments, Method method, String methodName) throws Exception {
         // Generate bson filter by dynamic Method object.
         Bson filter = dynamicMethod.createFilter(arguments);
 

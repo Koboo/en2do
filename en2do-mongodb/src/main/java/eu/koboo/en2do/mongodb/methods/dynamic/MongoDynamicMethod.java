@@ -20,14 +20,14 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class DynamicMethod<E, ID, R extends Repository<E, ID>> extends AbstractDynamicMethod<E, ID, R> {
+public class MongoDynamicMethod<E, ID, R extends Repository<E, ID>> extends AbstractDynamicMethod<E, ID, R> {
 
     RepositoryMeta<E, ID, R> repositoryMeta;
 
-    public DynamicMethod(Method method, MethodOperator methodOperator,
-                         boolean multipleFilter, boolean andFilter,
-                         List<MethodFilterPart> filterPartList,
-                         RepositoryMeta<E, ID, R> repositoryMeta) {
+    public MongoDynamicMethod(Method method, MethodOperator methodOperator,
+                              boolean multipleFilter, boolean andFilter,
+                              List<MethodFilterPart> filterPartList,
+                              RepositoryMeta<E, ID, R> repositoryMeta) {
         super(method, methodOperator, multipleFilter, andFilter, filterPartList);
         this.repositoryMeta = repositoryMeta;
     }

@@ -7,7 +7,7 @@ import com.mongodb.client.model.Filters;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidPageException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidSortLimitException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidSortSkipException;
-import eu.koboo.en2do.mongodb.methods.dynamic.DynamicMethod;
+import eu.koboo.en2do.mongodb.methods.dynamic.MongoDynamicMethod;
 import eu.koboo.en2do.mongodb.methods.predefined.PredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.methods.fields.FieldUpdate;
@@ -48,7 +48,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     Map<String, PredefinedMethod<E, ID, R>> methodRegistry;
 
     @Getter(AccessLevel.NONE)
-    Map<String, DynamicMethod<E, ID, R>> dynamicMethodRegistry;
+    Map<String, MongoDynamicMethod<E, ID, R>> dynamicMethodRegistry;
 
     public RepositoryMeta(Class<R> repositoryClass, Class<E> entityClass,
                           Set<Field> entityFieldSet,
@@ -92,7 +92,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         return methodRegistry.get(methodName);
     }
 
-    public void registerDynamicMethod(String methodName, DynamicMethod<E, ID, R> dynamicMethod) {
+    public void registerDynamicMethod(String methodName, MongoDynamicMethod<E, ID, R> dynamicMethod) {
         if (dynamicMethodRegistry.containsKey(methodName)) {
             // Removed regex condition, because the hashmap couldn't handle methods with the same name.
             throw new RuntimeException("Already registered dynamicMethod with name \"" + methodName + "\".");
@@ -100,7 +100,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         dynamicMethodRegistry.put(methodName, dynamicMethod);
     }
 
-    public DynamicMethod<E, ID, R> lookupDynamicMethod(String methodName) {
+    public MongoDynamicMethod<E, ID, R> lookupDynamicMethod(String methodName) {
         return dynamicMethodRegistry.get(methodName);
     }
 
