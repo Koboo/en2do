@@ -4,7 +4,6 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.UpdateResult;
-import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.mongodb.exception.methods.MethodUnsupportedException;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryInvalidCallException;
 import eu.koboo.en2do.mongodb.methods.dynamic.DynamicMethod;
@@ -21,7 +20,6 @@ import org.bson.conversions.Bson;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
@@ -29,7 +27,6 @@ import java.util.concurrent.ExecutorService;
 @AllArgsConstructor
 public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> implements InvocationHandler {
 
-    MongoManager mongoManager;
     RepositoryMeta<E, ID, R> repositoryMeta;
     ExecutorService executorService;
 

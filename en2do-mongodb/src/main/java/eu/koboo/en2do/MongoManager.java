@@ -162,7 +162,9 @@ public class MongoManager extends DatabaseManager {
                 meta.destroy();
             }
             repositoryMetaRegistry.clear();
-            client.close();
+            if(client != null) {
+                client.close();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -565,7 +567,7 @@ public class MongoManager extends DatabaseManager {
             ClassLoader repoClassLoader = repositoryClass.getClassLoader();
             Class<?>[] interfaces = new Class[]{repositoryClass};
             Repository<E, ID> repository = (Repository<E, ID>) Proxy.newProxyInstance(repoClassLoader, interfaces,
-                new RepositoryInvocationHandler<>(this, repositoryMeta, executorService));
+                new RepositoryInvocationHandler<>(repositoryMeta, executorService));
             repositoryRegistry.put(repositoryClass, repository);
             repositoryMetaRegistry.put(repositoryClass, repositoryMeta);
             return (R) repository;
