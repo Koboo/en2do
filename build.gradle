@@ -10,7 +10,7 @@ subprojects {
     apply plugin: 'com.github.johnrengelman.shadow'
 
     group 'eu.koboo.en2do'
-    version '3.0.0'
+    version '3.0.1'
 
     repositories {
         mavenCentral()
