@@ -148,7 +148,7 @@ public class MongoManager extends DatabaseManager {
 
     @Override
     public void start() {
-        if(MongoSettings.hasSetting(MongoSettings.DISABLE_LOGGER)) {
+        if (MongoSettings.hasSetting(MongoSettings.DISABLE_LOGGER)) {
             Logger.getLogger("org.mongodb.driver").setLevel(Level.OFF);
         }
     }
@@ -168,7 +168,7 @@ public class MongoManager extends DatabaseManager {
                 meta.destroy();
             }
             repositoryMetaRegistry.clear();
-            if(client != null) {
+            if (client != null) {
                 client.close();
             }
         } catch (Exception e) {

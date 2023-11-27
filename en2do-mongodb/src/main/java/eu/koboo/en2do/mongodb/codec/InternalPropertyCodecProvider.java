@@ -52,7 +52,7 @@ public class InternalPropertyCodecProvider implements PropertyCodecProvider {
             return (Codec<T>) new ClassCodec();
         }
         Codec<?> codec = customCodecRegistry.get(typeClass);
-        if(codec != null) {
+        if (codec != null) {
             return (Codec<T>) codec;
         }
         return null;
