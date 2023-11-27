@@ -43,6 +43,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import org.bson.UuidRepresentation;
+import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.Conventions;
 import org.bson.codecs.pojo.PojoCodecProvider;
@@ -70,6 +71,7 @@ public class MongoManager extends DatabaseManager {
     Map<Class<?>, RepositoryMeta<?, ?, ?>> repositoryMetaRegistry;
     ExecutorService executorService;
 
+    InternalPropertyCodecProvider internalPropertyCodecProvider;
     @Getter
     CodecRegistry codecRegistry;
     MongoClient client;
@@ -109,10 +111,12 @@ public class MongoManager extends DatabaseManager {
 
         ConnectionString connection = new ConnectionString(connectString);
 
+        internalPropertyCodecProvider = new InternalPropertyCodecProvider();
+
         codecRegistry = fromRegistries(
             MongoClientSettings.getDefaultCodecRegistry(),
             fromProviders(PojoCodecProvider.builder()
-                .register(new InternalPropertyCodecProvider())
+                .register(internalPropertyCodecProvider)
                 .automatic(true)
                 .conventions(List.of(
                     new AnnotationConvention(repositoryMetaRegistry),
@@ -591,6 +595,11 @@ public class MongoManager extends DatabaseManager {
             throw new MethodFieldNotFoundException(expectedFieldName, method, entityClass, repoClass);
         }
         return new FilterType(field, notFilter, filterOperator);
+    }
+
+    public <T> MongoManager registerCodec(Class<T> typeClass, Codec<T> typeCodec) {
+        internalPropertyCodecProvider.registerCodec(typeClass, typeCodec);
+        return this;
     }
 
     /**
