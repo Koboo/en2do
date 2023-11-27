@@ -18,7 +18,7 @@ public abstract class DatabaseManager {
 
     public abstract <E, ID, R extends Repository<E, ID>> R create(Class<R> repositoryClass);
 
-    public abstract void connect();
+    public abstract void start();
 
     public abstract void close(boolean shutdownExecutorService);
 }

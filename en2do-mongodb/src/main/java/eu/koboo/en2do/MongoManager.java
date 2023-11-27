@@ -147,8 +147,10 @@ public class MongoManager extends DatabaseManager {
     }
 
     @Override
-    public void connect() {
-
+    public void start() {
+        if(MongoSettings.hasSetting(MongoSettings.DISABLE_LOGGER)) {
+            Logger.getLogger("org.mongodb.driver").setLevel(Level.OFF);
+        }
     }
 
     public void close() {
@@ -600,26 +602,5 @@ public class MongoManager extends DatabaseManager {
     public <T> MongoManager registerCodec(Class<T> typeClass, Codec<T> typeCodec) {
         internalPropertyCodecProvider.registerCodec(typeClass, typeCodec);
         return this;
-    }
-
-    /**
-     * Sets the logger level of the mongodb logger to the given level.
-     *
-     * @param level The level, which should be set
-     */
-    public static void setMongoDBLogger(Level level) {
-        Logger logger = Logger.getLogger("org.mongodb.driver");
-        logger.setLevel(level);
-    }
-
-    /**
-     * Uses the method
-     *
-     * @see MongoManager#setMongoDBLogger(Level)
-     * to disable the default mongodb logger,
-     * by setting the level to OFF
-     */
-    public static void disableMongoDBLogger() {
-        setMongoDBLogger(Level.OFF);
     }
 }
