@@ -1,6 +1,7 @@
 package eu.koboo.en2do.test.keytest;
 
 import eu.koboo.en2do.MongoManager;
+import eu.koboo.en2do.MongoSettings;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -12,6 +13,8 @@ public class MapKeyTest {
 
     @Test
     public void testCreate() {
+        MongoSettings.applySetting(MongoSettings.DISALLOW_UUID_MAP_KEYS);
+
         MapKeyRepository mapKeyRepository = mongoManager.create(MapKeyRepository.class);
         MapKey mapKey = new MapKey();
         UUID uniqueId = UUID.randomUUID();

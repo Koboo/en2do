@@ -6,7 +6,7 @@ import java.util.Set;
 public enum MongoSettings {
 
     DISABLE_LOGGER,
-    ALLOW_UUID_MAP_KEYS,
+    DISALLOW_UUID_MAP_KEYS,
     ;
 
     private static final Set<MongoSettings> MONGO_SETTINGS_SET = new LinkedHashSet<>();

@@ -69,7 +69,7 @@ public class GenericMapCodec<K, T> implements Codec<Map<K, T>> {
                     BsonValue bsonValue = documentWriter.getDocument().asDocument().get(documentId);
                     if (UUID.class.isAssignableFrom(keyCodec.getEncoderClass())
                         && bsonValue.isBinary()
-                        && MongoSettings.hasSetting(MongoSettings.ALLOW_UUID_MAP_KEYS)) {
+                        && !MongoSettings.hasSetting(MongoSettings.DISALLOW_UUID_MAP_KEYS)) {
                         ByteBuffer buffer = ByteBuffer.wrap(bsonValue.asBinary().getData());
                         keyString = new UUID(buffer.getLong(), buffer.getLong()).toString();
                     } else {
