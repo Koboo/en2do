@@ -11,7 +11,6 @@ import eu.koboo.en2do.repository.methods.sort.Skip;
 import eu.koboo.en2do.repository.methods.sort.Sort;
 import eu.koboo.en2do.repository.methods.sort.SortBy;
 import eu.koboo.en2do.repository.methods.transform.Transform;
-import eu.koboo.en2do.repository.options.AppendMethodAsComment;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,7 +18,6 @@ import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
 @Collection("customer_repository")
-@AppendMethodAsComment
 public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRepository<Customer, UUID> {
 
     Customer findFirstByFirstNameAndUniqueId(String firstName, UUID uniqueId);
