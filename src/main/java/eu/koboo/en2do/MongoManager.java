@@ -211,6 +211,17 @@ public class MongoManager {
             if (entityCollectionName.trim().equalsIgnoreCase("")) {
                 throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
             }
+
+            String collectionPrefix = builder.getCollectionPrefix();
+            if(collectionPrefix != null) {
+                entityCollectionName = collectionPrefix + entityCollectionName;
+            }
+
+            String collectionSuffix = builder.getCollectionSuffix();
+            if(collectionSuffix != null) {
+                entityCollectionName = entityCollectionName + collectionSuffix;
+            }
+
             for (RepositoryMeta<?, ?, ?> meta : repositoryMetaRegistry.values()) {
                 if (meta.getCollectionName().equalsIgnoreCase(entityCollectionName)) {
                     throw new RepositoryNameDuplicateException(repositoryClass, Collection.class);
