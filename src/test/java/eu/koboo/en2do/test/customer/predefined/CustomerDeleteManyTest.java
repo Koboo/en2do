@@ -1,9 +1,8 @@
-package eu.koboo.en2do.test.customer.async;
+package eu.koboo.en2do.test.customer.predefined;
 
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
@@ -13,17 +12,16 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CustomerAsyncDeleteAllTest extends CustomerRepositoryTest {
+public class CustomerDeleteManyTest extends CustomerRepositoryTest {
 
     static List<Customer> customerList;
 
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        repository.asyncFindAll().thenAccept(customerList -> {
-            assertNotNull(customerList);
-            assertTrue(customerList.isEmpty());
-        });
+        List<Customer> customerList = repository.findAll();
+        assertNotNull(customerList);
+        assertTrue(customerList.isEmpty());
     }
 
     @Test
@@ -35,8 +33,8 @@ public class CustomerAsyncDeleteAllTest extends CustomerRepositoryTest {
             assertNotNull(customer);
             customer.setUniqueId(UUID.randomUUID());
             customer.setCustomerId(i);
-            repository.asyncSave(customer).thenAccept(Assertions::assertTrue);
-            repository.asyncExists(customer).thenAccept(Assertions::assertTrue);
+            assertTrue(repository.save(customer));
+            assertTrue(repository.exists(customer));
             customerList.add(customer);
         }
     }
@@ -44,8 +42,8 @@ public class CustomerAsyncDeleteAllTest extends CustomerRepositoryTest {
     @Test
     @Order(3)
     public void deleteAndCountCustomer() {
-        repository.asyncCountAll().thenAccept(count -> assertEquals(15, count));
-        repository.asyncDeleteAll(customerList).thenAccept(Assertions::assertTrue);
-        repository.asyncCountAll().thenAccept(count -> assertEquals(0, count));
+        assertEquals(15, repository.countAll());
+        assertTrue(repository.deleteMany(customerList));
+        assertEquals(0, repository.countAll());
     }
 }

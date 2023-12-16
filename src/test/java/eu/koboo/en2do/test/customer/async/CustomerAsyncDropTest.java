@@ -45,7 +45,7 @@ public class CustomerAsyncDropTest extends CustomerRepositoryTest {
     @Order(3)
     public void deleteAndCountCustomer() {
         repository.asyncCountAll().thenAccept(count -> assertEquals(15, count));
-        repository.asyncDeleteAll(customerList).thenAccept(Assertions::assertTrue);
+        repository.asyncDeleteMany(customerList).thenAccept(Assertions::assertTrue);
         repository.asyncCountAll().thenAccept(count -> assertEquals(0, count));
     }
 }

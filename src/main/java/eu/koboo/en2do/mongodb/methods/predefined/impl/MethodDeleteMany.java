@@ -11,15 +11,14 @@ import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 
-public class MethodDeleteAll<E, ID, R extends Repository<E, ID>> extends PredefinedMethod<E, ID, R> {
+public class MethodDeleteMany<E, ID, R extends Repository<E, ID>> extends PredefinedMethod<E, ID, R> {
 
-    public MethodDeleteAll(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
-        super("deleteAll", meta, entityCollection);
+    public MethodDeleteMany(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
+        super("deleteMany", meta, entityCollection);
     }
 
     @Override
     public Object handle(Method method, Object[] arguments) throws Exception {
-        // TODO: Check for Id in check instead of deleting every single entity itself.
         List<E> entityList = repositoryMeta.checkEntityList(method, arguments[0]);
         if(entityList.isEmpty()) {
             return true;

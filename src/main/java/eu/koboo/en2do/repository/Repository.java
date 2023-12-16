@@ -38,7 +38,7 @@ public interface Repository<E, ID> {
      * @param entityList The List with the entities, which should be deleted.
      * @return true, if all entities were deleted successfully.
      */
-    boolean deleteAll(List<E> entityList);
+    boolean deleteMany(List<E> entityList);
 
     /**
      * This method deletes the entity with the given identifier, filtering like the "#delete(E entity)" method.

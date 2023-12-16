@@ -42,7 +42,7 @@ public class CustomerAsyncFindAllTest extends CustomerRepositoryTest {
             assertNotNull(customerList);
             assertFalse(customerList.isEmpty());
             assertEquals(15, customerList.size());
-            repository.asyncDeleteAll(customerList).thenAccept(Assertions::assertTrue);
+            repository.asyncDeleteMany(customerList).thenAccept(Assertions::assertTrue);
         });
         repository.asyncCountAll().thenAccept(count -> assertEquals(0, count));
     }

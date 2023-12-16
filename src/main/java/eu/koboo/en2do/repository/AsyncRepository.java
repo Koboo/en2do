@@ -43,10 +43,10 @@ public interface AsyncRepository<E, ID> {
      *
      * @param entityList The List with entities, which should be deleted
      * @return Future, with a boolean of success
-     * @see Repository#deleteAll(List)
+     * @see Repository#deleteMany(List)
      */
     @Async
-    CompletableFuture<Boolean> asyncDeleteAll(List<E> entityList);
+    CompletableFuture<Boolean> asyncDeleteMany(List<E> entityList);
 
     /**
      * Async representation

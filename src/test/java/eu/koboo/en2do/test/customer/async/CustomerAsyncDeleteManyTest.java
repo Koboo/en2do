@@ -1,8 +1,9 @@
-package eu.koboo.en2do.test.customer.predefined;
+package eu.koboo.en2do.test.customer.async;
 
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
@@ -12,16 +13,17 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CustomerDeleteAllTest extends CustomerRepositoryTest {
+public class CustomerAsyncDeleteManyTest extends CustomerRepositoryTest {
 
     static List<Customer> customerList;
 
     @Test
     @Order(1)
     public void cleanUpRepository() {
-        List<Customer> customerList = repository.findAll();
-        assertNotNull(customerList);
-        assertTrue(customerList.isEmpty());
+        repository.asyncFindAll().thenAccept(customerList -> {
+            assertNotNull(customerList);
+            assertTrue(customerList.isEmpty());
+        });
     }
 
     @Test
@@ -33,8 +35,8 @@ public class CustomerDeleteAllTest extends CustomerRepositoryTest {
             assertNotNull(customer);
             customer.setUniqueId(UUID.randomUUID());
             customer.setCustomerId(i);
-            assertTrue(repository.save(customer));
-            assertTrue(repository.exists(customer));
+            repository.asyncSave(customer).thenAccept(Assertions::assertTrue);
+            repository.asyncExists(customer).thenAccept(Assertions::assertTrue);
             customerList.add(customer);
         }
     }
@@ -42,8 +44,8 @@ public class CustomerDeleteAllTest extends CustomerRepositoryTest {
     @Test
     @Order(3)
     public void deleteAndCountCustomer() {
-        assertEquals(15, repository.countAll());
-        assertTrue(repository.deleteAll(customerList));
-        assertEquals(0, repository.countAll());
+        repository.asyncCountAll().thenAccept(count -> assertEquals(15, count));
+        repository.asyncDeleteMany(customerList).thenAccept(Assertions::assertTrue);
+        repository.asyncCountAll().thenAccept(count -> assertEquals(0, count));
     }
 }

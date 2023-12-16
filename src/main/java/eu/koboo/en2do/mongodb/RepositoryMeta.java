@@ -41,6 +41,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     Class<ID> entityUniqueIdClass;
     Field entityUniqueIdField;
 
+    //TODO: Do this as setting
     @Getter(AccessLevel.NONE)
     boolean appendMethodAsComment;
 

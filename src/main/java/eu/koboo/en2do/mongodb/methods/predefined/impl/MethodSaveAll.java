@@ -25,6 +25,7 @@ public class MethodSaveAll<E, ID, R extends Repository<E, ID>> extends Predefine
 
     @Override
     public Object handle(Method method, Object[] arguments) throws Exception {
+        //TODO: Change to Collection
         List<E> entityList = repositoryMeta.checkEntityList(method, arguments[0]);
         if (entityList.isEmpty()) {
             return true;
