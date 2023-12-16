@@ -68,6 +68,8 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 @SuppressWarnings("unused")
 public class MongoManager {
 
+    SettingsBuilder builder;
+
     Map<Class<?>, RepositoryMeta<?, ?, ?>> repositoryMetaRegistry;
     Map<Class<?>, Repository<?, ?>> repositoryRegistry;
     ExecutorService executorService;
@@ -78,7 +80,11 @@ public class MongoManager {
     MongoClient client;
     MongoDatabase database;
 
-    public MongoManager(Credentials credentials, ExecutorService executorService) {
+    public MongoManager(Credentials credentials, ExecutorService executorService, SettingsBuilder builder) {
+        if(builder == null) {
+            builder = new SettingsBuilder();
+        }
+        this.builder = builder;
         this.repositoryMetaRegistry = new ConcurrentHashMap<>();
         this.repositoryRegistry = new ConcurrentHashMap<>();
         this.executorService = executorService;
@@ -140,12 +146,16 @@ public class MongoManager {
         database = client.getDatabase(databaseString);
     }
 
+    public MongoManager(Credentials credentials, SettingsBuilder builder) {
+        this(credentials, null, builder);
+    }
+
     public MongoManager(Credentials credentials) {
-        this(credentials, null);
+        this(credentials, null, null);
     }
 
     public MongoManager() {
-        this(null, null);
+        this(null, null, null);
     }
 
     public void start() {
