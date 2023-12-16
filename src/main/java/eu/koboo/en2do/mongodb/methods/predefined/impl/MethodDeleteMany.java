@@ -21,7 +21,7 @@ public class MethodDeleteMany<E, ID, R extends Repository<E, ID>> extends Predef
     @Override
     public Object handle(Method method, Object[] arguments) throws Exception {
         Collection<E> entityList = repositoryMeta.checkEntityList(method, arguments[0]);
-        if(entityList.isEmpty()) {
+        if (entityList.isEmpty()) {
             return true;
         }
         List<ID> idList = new LinkedList<>();

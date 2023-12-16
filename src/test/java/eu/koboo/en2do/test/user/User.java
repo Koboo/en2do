@@ -12,7 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor // lombok
 @FieldDefaults(level = AccessLevel.PRIVATE) // lombok
 @ToString // lombok
-public abstract class User {
+public class User {
 
     @Id // en2do
     UUID uniqueId;
