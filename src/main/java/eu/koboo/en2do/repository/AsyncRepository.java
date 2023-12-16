@@ -47,7 +47,7 @@ public interface AsyncRepository<E, ID> {
      * @see Repository#deleteMany(List)
      */
     @Async
-    CompletableFuture<Boolean> asyncDeleteMany(List<E> entityList);
+    CompletableFuture<Boolean> asyncDeleteMany(Collection<E> entityList);
 
     /**
      * Async representation
@@ -95,7 +95,7 @@ public interface AsyncRepository<E, ID> {
      * @see Repository#findAll()
      */
     @Async
-    CompletableFuture<List<E>> asyncFindAll();
+    CompletableFuture<Collection<E>> asyncFindAll();
 
     /**
      * Async representation
@@ -115,7 +115,7 @@ public interface AsyncRepository<E, ID> {
      * @see Repository#pageAll(Pagination)
      */
     @Async
-    CompletableFuture<List<E>> asyncPageAll(Pagination pagination);
+    CompletableFuture<Collection<E>> asyncPageAll(Pagination pagination);
 
     /**
      * Async representation
@@ -145,7 +145,7 @@ public interface AsyncRepository<E, ID> {
      * @see Repository#sortAll(Sort)
      */
     @Async
-    CompletableFuture<List<E>> asyncSortAll(Sort sort);
+    CompletableFuture<Collection<E>> asyncSortAll(Sort sort);
 
     /**
      * Async representation

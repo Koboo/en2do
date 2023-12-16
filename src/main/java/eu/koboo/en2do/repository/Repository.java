@@ -39,7 +39,7 @@ public interface Repository<E, ID> {
      * @param entityList The List with the entities, which should be deleted.
      * @return true, if all entities were deleted successfully.
      */
-    boolean deleteMany(List<E> entityList);
+    boolean deleteMany(Collection<E> entityList);
 
     /**
      * This method deletes the entity with the given identifier, filtering like the "#delete(E entity)" method.
@@ -78,7 +78,7 @@ public interface Repository<E, ID> {
      *
      * @return A List with all entities of the repository.
      */
-    List<E> findAll();
+    Collection<E> findAll();
 
     /**
      * Find the first entity with the given unique identifier.
@@ -121,7 +121,7 @@ public interface Repository<E, ID> {
      * @param pagination The pagination, which is used to page the entities.
      * @return A List with the paged entities.
      */
-    List<E> pageAll(Pagination pagination);
+    Collection<E> pageAll(Pagination pagination);
 
     /**
      * Saves the given entity to the database.
@@ -147,7 +147,7 @@ public interface Repository<E, ID> {
      * @param sort The Sort object, which should be used to sort all entities.
      * @return A List with the sorted entities.
      */
-    List<E> sortAll(Sort sort);
+    Collection<E> sortAll(Sort sort);
 
     /**
      * This method uses the UpdateBatch object to update the fields of all documents.

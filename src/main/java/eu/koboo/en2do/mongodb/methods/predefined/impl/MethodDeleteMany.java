@@ -8,6 +8,7 @@ import eu.koboo.en2do.repository.Repository;
 import org.bson.conversions.Bson;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class MethodDeleteMany<E, ID, R extends Repository<E, ID>> extends Predef
 
     @Override
     public Object handle(Method method, Object[] arguments) throws Exception {
-        List<E> entityList = repositoryMeta.checkEntityList(method, arguments[0]);
+        Collection<E> entityList = repositoryMeta.checkEntityList(method, arguments[0]);
         if(entityList.isEmpty()) {
             return true;
         }
