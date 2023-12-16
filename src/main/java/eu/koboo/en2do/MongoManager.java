@@ -392,14 +392,14 @@ public class MongoManager {
                                     break;
                                 }
                                 // In filter only allows list. Maybe arrays in future releases.
-                                if (!GenericUtils.isNotTypeOf(Collection.class, paramClass)) {
+                                if (!GenericUtils.isNotTypeOf(java.util.Collection.class, paramClass)) {
                                     Class<?> listType = GenericUtils.getGenericTypeOfParameter(method, paramIndex);
                                     if (GenericUtils.isNotTypeOf(fieldClass, listType)) {
                                         throw new MethodInvalidListParameterException(method, repositoryClass, fieldClass, listType);
                                     }
                                     break;
                                 }
-                                throw new MethodMismatchingTypeException(method, repositoryClass, Collection.class, paramClass);
+                                throw new MethodMismatchingTypeException(method, repositoryClass, java.util.Collection.class, paramClass);
                             case HAS_KEY:
                                 if (GenericUtils.isNotTypeOf(Map.class, fieldClass)) {
                                     throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
