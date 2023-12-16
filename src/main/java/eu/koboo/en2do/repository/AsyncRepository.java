@@ -44,7 +44,7 @@ public interface AsyncRepository<E, ID> {
      *
      * @param entityList The List with entities, which should be deleted
      * @return Future, with a boolean of success
-     * @see Repository#deleteMany(List)
+     * @see Repository#deleteMany(Collection)
      */
     @Async
     CompletableFuture<Boolean> asyncDeleteMany(Collection<E> entityList);
@@ -95,7 +95,7 @@ public interface AsyncRepository<E, ID> {
      * @see Repository#findAll()
      */
     @Async
-    CompletableFuture<Collection<E>> asyncFindAll();
+    CompletableFuture<List<E>> asyncFindAll();
 
     /**
      * Async representation
@@ -115,7 +115,7 @@ public interface AsyncRepository<E, ID> {
      * @see Repository#pageAll(Pagination)
      */
     @Async
-    CompletableFuture<Collection<E>> asyncPageAll(Pagination pagination);
+    CompletableFuture<List<E>> asyncPageAll(Pagination pagination);
 
     /**
      * Async representation
@@ -145,7 +145,7 @@ public interface AsyncRepository<E, ID> {
      * @see Repository#sortAll(Sort)
      */
     @Async
-    CompletableFuture<Collection<E>> asyncSortAll(Sort sort);
+    CompletableFuture<List<E>> asyncSortAll(Sort sort);
 
     /**
      * Async representation

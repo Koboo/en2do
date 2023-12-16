@@ -78,7 +78,7 @@ public interface Repository<E, ID> {
      *
      * @return A List with all entities of the repository.
      */
-    Collection<E> findAll();
+    List<E> findAll();
 
     /**
      * Find the first entity with the given unique identifier.
@@ -121,7 +121,7 @@ public interface Repository<E, ID> {
      * @param pagination The pagination, which is used to page the entities.
      * @return A List with the paged entities.
      */
-    Collection<E> pageAll(Pagination pagination);
+    List<E> pageAll(Pagination pagination);
 
     /**
      * Saves the given entity to the database.
@@ -147,7 +147,7 @@ public interface Repository<E, ID> {
      * @param sort The Sort object, which should be used to sort all entities.
      * @return A List with the sorted entities.
      */
-    Collection<E> sortAll(Sort sort);
+    List<E> sortAll(Sort sort);
 
     /**
      * This method uses the UpdateBatch object to update the fields of all documents.
