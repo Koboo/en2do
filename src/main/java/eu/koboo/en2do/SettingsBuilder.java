@@ -10,6 +10,7 @@ public class SettingsBuilder {
 
     boolean disallowUUIDKeys;
     boolean disableLogger;
+    boolean appendMethodAsComment;
     String collectionPrefix;
     String collectionSuffix;
 
@@ -20,6 +21,11 @@ public class SettingsBuilder {
 
     public SettingsBuilder disableLogger() {
         this.disableLogger = true;
+        return this;
+    }
+
+    public SettingsBuilder appendMethodAsComment() {
+        this.appendMethodAsComment = true;
         return this;
     }
 

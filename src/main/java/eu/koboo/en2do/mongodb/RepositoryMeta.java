@@ -4,6 +4,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidPageException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidSortLimitException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidSortSkipException;
@@ -18,7 +19,6 @@ import eu.koboo.en2do.repository.methods.sort.Limit;
 import eu.koboo.en2do.repository.methods.sort.Skip;
 import eu.koboo.en2do.repository.methods.sort.Sort;
 import eu.koboo.en2do.repository.methods.sort.SortBy;
-import eu.koboo.en2do.repository.options.AppendMethodAsComment;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
@@ -33,6 +33,7 @@ import java.util.*;
 @Getter
 public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
+    MongoManager manager;
     String collectionName;
     MongoCollection<E> collection;
     Class<R> repositoryClass;
@@ -41,20 +42,17 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     Class<ID> entityUniqueIdClass;
     Field entityUniqueIdField;
 
-    //TODO: Do this as setting
-    @Getter(AccessLevel.NONE)
-    boolean appendMethodAsComment;
-
     @Getter(AccessLevel.NONE)
     Map<String, PredefinedMethod<E, ID, R>> methodRegistry;
 
     @Getter(AccessLevel.NONE)
     Map<String, MongoDynamicMethod<E, ID, R>> dynamicMethodRegistry;
 
-    public RepositoryMeta(Class<R> repositoryClass, Class<E> entityClass,
+    public RepositoryMeta(MongoManager manager, Class<R> repositoryClass, Class<E> entityClass,
                           Set<Field> entityFieldSet,
                           Class<ID> entityUniqueIdClass, Field entityUniqueIdField,
                           MongoCollection<E> collection, String collectionName) {
+        this.manager = manager;
         this.collectionName = collectionName;
         this.collection = collection;
 
@@ -65,8 +63,6 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
         this.entityUniqueIdClass = entityUniqueIdClass;
         this.entityUniqueIdField = entityUniqueIdField;
-
-        this.appendMethodAsComment = repositoryClass.isAnnotationPresent(AppendMethodAsComment.class);
 
         this.methodRegistry = new HashMap<>();
         this.dynamicMethodRegistry = new HashMap<>();
@@ -154,7 +150,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         } else {
             findIterable = collection.find();
         }
-        if (appendMethodAsComment) {
+        if (manager.getBuilder().isAppendMethodAsComment()) {
             findIterable.comment("en2do \"" + methodName + "\"");
         }
         return findIterable;

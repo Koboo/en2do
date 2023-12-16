@@ -277,7 +277,7 @@ public class MongoManager {
 
             // Creating the collection and the repository metaobjects.
             MongoCollection<E> entityCollection = database.getCollection(entityCollectionName, entityClass);
-            RepositoryMeta<E, ID, R> repositoryMeta = new RepositoryMeta<>(
+            RepositoryMeta<E, ID, R> repositoryMeta = new RepositoryMeta<>(this,
                 repositoryClass, entityClass,
                 entityFieldSet,
                 entityIdClass, entityUniqueIdField,
