@@ -69,6 +69,7 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 @SuppressWarnings("unused")
 public class MongoManager {
 
+    @Getter
     SettingsBuilder builder;
 
     Map<Class<?>, RepositoryMeta<?, ?, ?>> repositoryMetaRegistry;
@@ -123,7 +124,7 @@ public class MongoManager {
 
         ConnectionString connection = new ConnectionString(connectString);
 
-        internalPropertyCodecProvider = new InternalPropertyCodecProvider();
+        internalPropertyCodecProvider = new InternalPropertyCodecProvider(this);
 
         codecRegistry = fromRegistries(
             MongoClientSettings.getDefaultCodecRegistry(),
@@ -163,7 +164,7 @@ public class MongoManager {
     }
 
     public void start() {
-        if (MongoSettings.hasSetting(MongoSettings.DISABLE_LOGGER)) {
+        if (builder.isDisableLogger()) {
             Logger.getLogger("org.mongodb.driver").setLevel(Level.OFF);
         }
     }

@@ -1,6 +1,6 @@
 package eu.koboo.en2do.mongodb.codec.map;
 
-import eu.koboo.en2do.MongoSettings;
+import eu.koboo.en2do.MongoManager;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
@@ -31,12 +31,14 @@ import java.util.logging.Level;
 @Log
 public class GenericMapCodec<K, T> implements Codec<Map<K, T>> {
 
+    MongoManager manager;
     @Getter
     Class<Map<K, T>> encoderClass;
     Codec<K> keyCodec;
     Codec<T> valueCodec;
 
-    public GenericMapCodec(Class<Map<K, T>> encoderClass, Codec<K> keyCodec, Codec<T> valueCodec) {
+    public GenericMapCodec(MongoManager manager, Class<Map<K, T>> encoderClass, Codec<K> keyCodec, Codec<T> valueCodec) {
+        this.manager = manager;
         this.encoderClass = encoderClass;
         this.keyCodec = keyCodec;
         this.valueCodec = valueCodec;
@@ -69,7 +71,7 @@ public class GenericMapCodec<K, T> implements Codec<Map<K, T>> {
                     BsonValue bsonValue = documentWriter.getDocument().asDocument().get(documentId);
                     if (UUID.class.isAssignableFrom(keyCodec.getEncoderClass())
                         && bsonValue.isBinary()
-                        && !MongoSettings.hasSetting(MongoSettings.DISALLOW_UUID_MAP_KEYS)) {
+                        && !manager.getBuilder().isDisallowUUIDKeys()) {
                         ByteBuffer buffer = ByteBuffer.wrap(bsonValue.asBinary().getData());
                         keyString = new UUID(buffer.getLong(), buffer.getLong()).toString();
                     } else {

@@ -9,11 +9,17 @@ import lombok.experimental.FieldDefaults;
 public class SettingsBuilder {
 
     boolean disallowUUIDKeys;
+    boolean disableLogger;
     String collectionPrefix;
     String collectionSuffix;
 
     public SettingsBuilder disallowUUIDKeys() {
         this.disallowUUIDKeys = true;
+        return this;
+    }
+
+    public SettingsBuilder disableLogger() {
+        this.disableLogger = true;
         return this;
     }
 
