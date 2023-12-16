@@ -57,6 +57,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -87,6 +88,9 @@ public class MongoManager {
         this.builder = builder;
         this.repositoryMetaRegistry = new ConcurrentHashMap<>();
         this.repositoryRegistry = new ConcurrentHashMap<>();
+        if(executorService == null) {
+            executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
+        }
         this.executorService = executorService;
 
         // If no credentials given, try loading them from default file.
