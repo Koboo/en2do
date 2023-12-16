@@ -4,6 +4,7 @@ import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Sort;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -138,7 +139,7 @@ public interface Repository<E, ID> {
      * @param entityList A List of the entities, which should be saved
      * @return true, if the entities were successfully saved.
      */
-    boolean saveAll(List<E> entityList);
+    boolean saveAll(Collection<E> entityList);
 
     /**
      * This method applies the Sort object of all entities of the repository.

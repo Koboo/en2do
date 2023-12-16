@@ -5,6 +5,7 @@ import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Sort;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -131,10 +132,10 @@ public interface AsyncRepository<E, ID> {
      *
      * @param entityList The List of entities, which should be saved
      * @return Future, with a boolean of success
-     * @see Repository#saveAll(List)
+     * @see Repository#saveAll(Collection)
      */
     @Async
-    CompletableFuture<Boolean> asyncSaveAll(List<E> entityList);
+    CompletableFuture<Boolean> asyncSaveAll(Collection<E> entityList);
 
     /**
      * Async representation
