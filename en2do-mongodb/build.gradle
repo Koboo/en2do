@@ -1,7 +1,0 @@
-dependencies {
-    implementation "org.mongodb:mongodb-driver-sync:$mongoDriverVersion"
-    testImplementation "org.mongodb:mongodb-driver-sync:$mongoDriverVersion"
-
-    implementation project(':en2do-api')
-    testImplementation project(':en2do-api')
-}
