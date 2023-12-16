@@ -13,8 +13,6 @@ public class MapKeyTest {
 
     @Test
     public void testCreate() {
-        MongoSettings.applySetting(MongoSettings.DISALLOW_UUID_MAP_KEYS);
-
         MapKeyRepository mapKeyRepository = mongoManager.create(MapKeyRepository.class);
         MapKey mapKey = new MapKey();
         UUID uniqueId = UUID.randomUUID();
