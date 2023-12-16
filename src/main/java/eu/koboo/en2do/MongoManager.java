@@ -83,13 +83,13 @@ public class MongoManager {
     MongoDatabase database;
 
     public MongoManager(Credentials credentials, ExecutorService executorService, SettingsBuilder builder) {
-        if(builder == null) {
+        if (builder == null) {
             builder = new SettingsBuilder();
         }
         this.builder = builder;
         this.repositoryMetaRegistry = new ConcurrentHashMap<>();
         this.repositoryRegistry = new ConcurrentHashMap<>();
-        if(executorService == null) {
+        if (executorService == null) {
             executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
         }
         this.executorService = executorService;
@@ -213,12 +213,12 @@ public class MongoManager {
             }
 
             String collectionPrefix = builder.getCollectionPrefix();
-            if(collectionPrefix != null) {
+            if (collectionPrefix != null) {
                 entityCollectionName = collectionPrefix + entityCollectionName;
             }
 
             String collectionSuffix = builder.getCollectionSuffix();
-            if(collectionSuffix != null) {
+            if (collectionSuffix != null) {
                 entityCollectionName = entityCollectionName + collectionSuffix;
             }
 

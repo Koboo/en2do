@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 public class CustomerAsyncDropTest extends CustomerRepositoryTest {
 
     static List<Customer> customerList;
