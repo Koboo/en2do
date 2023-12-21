@@ -155,6 +155,10 @@ public class MongoManager {
         this(credentials, null, builder);
     }
 
+    public MongoManager(SettingsBuilder builder) {
+        this(null, null, builder);
+    }
+
     public MongoManager(Credentials credentials) {
         this(credentials, null, null);
     }
