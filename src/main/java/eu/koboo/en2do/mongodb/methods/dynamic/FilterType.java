@@ -1,4 +1,4 @@
-package eu.koboo.en2do.internal.dynamicmethods;
+package eu.koboo.en2do.mongodb.methods.dynamic;
 
 import eu.koboo.en2do.internal.operators.FilterOperator;
 import lombok.AccessLevel;

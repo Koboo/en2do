@@ -1,6 +1,7 @@
 package eu.koboo.en2do.test.customer;
 
 import eu.koboo.en2do.repository.entity.Id;
+import eu.koboo.en2do.repository.entity.TransformField;
 import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -39,5 +40,7 @@ public class Customer {
     Date createTime; // 1. ttl object
     Date expireTime; // 2. ttl object
     Map<UUID, String> description;
+    @TransformField("status")
+    String transformedFieldName;
     Order order;
 }

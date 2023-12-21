@@ -1,5 +1,6 @@
-package eu.koboo.en2do.internal.dynamicmethods;
+package eu.koboo.en2do.mongodb.methods.dynamic;
 
+import eu.koboo.en2do.mongodb.methods.dynamic.FilterType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class MethodFilterPart {
      * The type of the filter
      */
     FilterType filterType;
+
     /**
      * The parameter index
      */

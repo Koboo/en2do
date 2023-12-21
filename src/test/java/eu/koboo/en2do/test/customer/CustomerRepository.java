@@ -10,6 +10,7 @@ import eu.koboo.en2do.repository.methods.sort.Limit;
 import eu.koboo.en2do.repository.methods.sort.Skip;
 import eu.koboo.en2do.repository.methods.sort.Sort;
 import eu.koboo.en2do.repository.methods.sort.SortBy;
+import eu.koboo.en2do.repository.methods.transform.NestedKey;
 import eu.koboo.en2do.repository.methods.transform.Transform;
 
 import java.util.List;
@@ -87,4 +88,9 @@ public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRep
     List<Customer> pageByCustomerIdNot(int customerId, Pagination sorter);
 
     boolean updateFieldsByFirstName(String firstName, UpdateBatch updateBatch);
+
+    Customer findFirstByStatus(String status);
+
+    @NestedKey(key = "OrderText", query = "order.orderText")
+    Customer findFirstByIdAndOrderText(UUID customerId, String orderText);
 }

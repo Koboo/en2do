@@ -1,5 +1,6 @@
 package eu.koboo.en2do.utility;
 
+import eu.koboo.en2do.repository.entity.TransformField;
 import lombok.experimental.UtilityClass;
 
 import java.lang.reflect.Field;
@@ -44,6 +45,13 @@ public class FieldUtils {
      */
     public Field findFieldByName(String fieldName, Set<Field> fieldSet) {
         for (Field field : fieldSet) {
+            TransformField transformField = field.getAnnotation(TransformField.class);
+            if(transformField != null && !transformField.value().trim().equalsIgnoreCase("")) {
+                if(transformField.value().equalsIgnoreCase(fieldName)) {
+                    return field;
+                }
+                continue;
+            }
             if (!field.getName().equalsIgnoreCase(fieldName)) {
                 continue;
             }
