@@ -61,7 +61,7 @@ public class Validator {
         if (typeClass.isPrimitive()) {
             return;
         }
-        // Probably a generic type. I'm validating every "Object" type for you.
+        // Probably a generic type. I'm NOT validating every "Object" type for you.
         // Keep track of your own code.
         if (typeClass.equals(Object.class)) {
             return;
@@ -90,17 +90,17 @@ public class Validator {
         }
 
         // No fields found? That's too bad. We need something to save.
-
         Set<Field> fieldSet = FieldUtils.collectFields(typeClass);
         if (fieldSet.isEmpty()) {
             throw new RepositoryNoFieldsException(typeClass, repositoryClass);
         }
 
         try {
-            // Getting beanInfo of type class
+            // Getting beanInfo of the type class
             BeanInfo beanInfo = Introspector.getBeanInfo(typeClass);
             Set<String> fieldNameSet = new HashSet<>();
             Set<String> bsonNameSet = new HashSet<>();
+
             // PropertyDescriptors represent all fields of the entity, even the extended fields.
             for (PropertyDescriptor descriptor : beanInfo.getPropertyDescriptors()) {
 
@@ -118,7 +118,8 @@ public class Validator {
                     continue;
                 }
 
-                // Ignore all fields annotated with transient, because pojo doesn't touch that.
+                // Ignore all fields annotated with transient,
+                // because we don't want to save that anyway.
                 if (field.isAnnotationPresent(Transient.class)) {
                     continue;
                 }
@@ -128,7 +129,8 @@ public class Validator {
                     throw new RepositoryFinalFieldException(field, repositoryClass);
                 }
 
-                // Check the declaration of the setter method. It needs to be public and have exactly 1 parameter.
+                // Check the declaration of the setter method.
+                // It needs to be public and have exactly 1 parameter.
                 Method writeMethod = descriptor.getWriteMethod();
                 if (writeMethod == null) {
                     throw new RepositorySetterNotFoundException(typeClass, repositoryClass, field.getName());
@@ -140,7 +142,8 @@ public class Validator {
                     throw new RepositoryInvalidSetterException(typeClass, repositoryClass, field.getName());
                 }
 
-                // Check the declaration of the getter method. It needs to be public and have exactly 0 parameter.
+                // Check the declaration of the getter method.
+                // It needs to be public and have exactly 0 parameters.
                 Method readMethod = descriptor.getReadMethod();
                 if (readMethod == null) {
                     throw new RepositoryGetterNotFoundException(typeClass, repositoryClass, field.getName());
@@ -162,16 +165,21 @@ public class Validator {
                 }
                 fieldNameSet.add(lowerCaseName);
 
+                // Check if the field has a valid TransformField annotation
                 TransformField transformField = field.getAnnotation(TransformField.class);
                 if (transformField != null && transformField.value().trim().equalsIgnoreCase("")) {
                     throw new RepositoryInvalidFieldNameException(typeClass, repositoryClass, field.getName());
                 }
+
+                // Define the bson document field name by checking for the transform field annotation.
                 String bsonName;
                 if (transformField != null) {
                     bsonName = transformField.value();
                 } else {
                     bsonName = field.getName();
                 }
+
+                // Check for duplicated field names, again.
                 if (bsonNameSet.contains(bsonName.toLowerCase(Locale.ROOT))) {
                     throw new RepositoryDuplicatedFieldException(field, repositoryClass);
                 }
