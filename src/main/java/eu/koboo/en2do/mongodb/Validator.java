@@ -7,7 +7,9 @@ import eu.koboo.en2do.repository.entity.TransformField;
 import eu.koboo.en2do.repository.entity.Transient;
 import eu.koboo.en2do.utility.FieldUtils;
 import lombok.experimental.UtilityClass;
+import org.bson.BsonReader;
 import org.bson.codecs.Codec;
+import org.bson.codecs.configuration.CodecRegistry;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -33,9 +35,9 @@ public class Validator {
      * @param typeClass The type class to search a codec for.
      * @return The codec if found, otherwise null.
      */
-    private Codec<?> getCodec(Class<?> typeClass) {
+    private Codec<?> getCodec(CodecRegistry codecRegistry, Class<?> typeClass) {
         try {
-            return MongoClientSettings.getDefaultCodecRegistry().get(typeClass);
+            return codecRegistry.get(typeClass);
         } catch (Exception ignored) {
             return null;
         }
@@ -44,6 +46,7 @@ public class Validator {
     /**
      * Validates the compatibility of the given type class
      *
+     * @param codecRegistry   The codecRegistry to look for a codec
      * @param repositoryClass The class of the repository
      * @param typeClass       The type class, which should be validated
      * @param <E>             The generic type of the entity
@@ -52,7 +55,7 @@ public class Validator {
      * @throws Exception if type class is not valid.
      */
     public <E, ID, R extends Repository<E, ID>> void validateCompatibility(
-        Class<R> repositoryClass, Class<?> typeClass) throws Exception {
+        CodecRegistry codecRegistry, Class<R> repositoryClass, Class<?> typeClass) throws Exception {
         if (typeClass == null) {
             throw new RuntimeException("Class for validation is null! Please open an issue on github!");
         }
@@ -66,7 +69,7 @@ public class Validator {
             return;
         }
         // We already got a codec for the type? No validation needed for that.
-        Codec<?> typeCodec = getCodec(typeClass);
+        Codec<?> typeCodec = getCodec(codecRegistry, typeClass);
         if (typeCodec != null) {
             return;
         }
@@ -82,6 +85,7 @@ public class Validator {
                 continue;
             }
             hasValidConstructor = true;
+            break;
         }
         if (!hasValidConstructor) {
             throw new RepositoryConstructorException(typeClass, repositoryClass);
@@ -151,7 +155,7 @@ public class Validator {
                 }
 
                 // Validate the typeClass recursively.
-                validateCompatibility(repositoryClass, field.getType());
+                validateCompatibility(codecRegistry, repositoryClass, field.getType());
 
                 // Check for duplicated field names.
                 String lowerCaseName = field.getName().toLowerCase(Locale.ROOT);
