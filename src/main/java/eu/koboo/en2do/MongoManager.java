@@ -254,7 +254,7 @@ public class MongoManager {
                 }
             }
 
-            Validator.validateCompatibility(repositoryClass, entityClass);
+            Validator.validateCompatibility(codecRegistry, repositoryClass, entityClass);
 
             // Collect all fields recursively to ensure, we'll get the inheritance fields
             Set<Field> entityFieldSet = FieldUtils.collectFields(entityClass);
