@@ -14,17 +14,17 @@ public class SettingsBuilder {
     String collectionPrefix;
     String collectionSuffix;
 
-    public SettingsBuilder disallowUUIDKeys() {
+    public SettingsBuilder disallowUUIDMapKeys() {
         this.disallowUUIDKeys = true;
         return this;
     }
 
-    public SettingsBuilder disableLogger() {
+    public SettingsBuilder disableMongoDBLogger() {
         this.disableLogger = true;
         return this;
     }
 
-    public SettingsBuilder appendMethodAsComment() {
+    public SettingsBuilder appendMethodNameAsQueryComment() {
         this.appendMethodAsComment = true;
         return this;
     }
