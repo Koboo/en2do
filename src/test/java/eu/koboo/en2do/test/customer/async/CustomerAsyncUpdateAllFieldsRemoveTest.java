@@ -28,7 +28,7 @@ public class CustomerAsyncUpdateAllFieldsRemoveTest extends CustomerRepositoryTe
     @Order(2)
     public void saveCustomer() {
         for (int i = 0; i < 15; i++) {
-            Customer customer = Const.createNewCustomer();
+            Customer customer = Const.createCustomer();
             assertNotNull(customer);
             customer.setUniqueId(UUID.randomUUID());
             customer.setCustomerId(i);

@@ -39,4 +39,5 @@ public class Customer {
     Date createTime; // 1. ttl object
     Date expireTime; // 2. ttl object
     Map<UUID, String> description;
+    Order order;
 }

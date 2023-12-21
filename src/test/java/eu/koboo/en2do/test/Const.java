@@ -41,7 +41,7 @@ public class Const {
         UUID.randomUUID()
     );
 
-    public static Customer createNewCustomer() {
+    public static Customer createCustomer() {
         Customer customer = new Customer();
         customer.setUniqueId(UNIQUE_ID);
         customer.setCustomerId(CUSTOMER_ID);
@@ -61,12 +61,19 @@ public class Const {
         return customer;
     }
 
-    public static Alien createNewAlien() {
+    public static Alien createAlien() {
         Alien alien = new Alien();
         alien.setUniqueId(UNIQUE_ID);
         alien.setUfoIdList(Map.of(10L, "Millenium Falcon", 20L, "X-WING", 30L, "Death-Star"));
         alien.setPlanetTimeMap(Map.of(Planet.NEPTUNE, 100L, Planet.EARTH, 0L, Planet.MARS, 3000L));
         alien.setTranslationPlanetMap(Map.of("Neptun", Planet.NEPTUNE, "Erde", Planet.EARTH, "Mars", Planet.MARS));
         return alien;
+    }
+
+    public static Order createOrder() {
+        Order order = new Order();
+        order.setOrderText("My awesome order");
+        order.setOrderPrice(20.0);
+        return order;
     }
 }

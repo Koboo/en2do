@@ -23,7 +23,7 @@ public class CustomerExistsByIdTest extends CustomerRepositoryTest {
     @Test
     @Order(2)
     public void saveCustomer() {
-        Customer customer = Const.createNewCustomer();
+        Customer customer = Const.createCustomer();
         assertNotNull(customer);
         assertFalse(repository.existsById(customer.getUniqueId()));
         assertTrue(repository.save(customer));

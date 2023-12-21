@@ -25,7 +25,7 @@ public class CustomerAsyncDeleteTest extends CustomerRepositoryTest {
     @Test
     @Order(2)
     public void saveCustomer() {
-        customer = Const.createNewCustomer();
+        customer = Const.createCustomer();
         assertNotNull(customer);
         repository.asyncSave(customer).thenAccept(Assertions::assertTrue);
         repository.asyncExists(customer).thenAccept(Assertions::assertTrue);

@@ -25,7 +25,7 @@ public class CustomerExistsByLastNameTest extends CustomerRepositoryTest {
     @Test
     @Order(2)
     public void saveCustomer() {
-        Customer customer = Const.createNewCustomer();
+        Customer customer = Const.createCustomer();
         assertNotNull(customer);
         customer.setUniqueId(UUID.randomUUID());
         assertTrue(repository.save(customer));

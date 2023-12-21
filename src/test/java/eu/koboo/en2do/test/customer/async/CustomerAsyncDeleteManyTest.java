@@ -31,7 +31,7 @@ public class CustomerAsyncDeleteManyTest extends CustomerRepositoryTest {
     public void saveCustomer() {
         customerList = new ArrayList<>();
         for (int i = 0; i < 15; i++) {
-            Customer customer = Const.createNewCustomer();
+            Customer customer = Const.createCustomer();
             assertNotNull(customer);
             customer.setUniqueId(UUID.randomUUID());
             customer.setCustomerId(i);

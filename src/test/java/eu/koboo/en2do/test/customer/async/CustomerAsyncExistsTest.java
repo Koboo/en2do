@@ -26,7 +26,7 @@ public class CustomerAsyncExistsTest extends CustomerRepositoryTest {
     @Test
     @Order(2)
     public void saveCustomer() {
-        customer = Const.createNewCustomer();
+        customer = Const.createCustomer();
         assertNotNull(customer);
         repository.asyncExists(customer).thenAccept(Assertions::assertFalse);
         repository.asyncSave(customer).thenAccept(Assertions::assertTrue);

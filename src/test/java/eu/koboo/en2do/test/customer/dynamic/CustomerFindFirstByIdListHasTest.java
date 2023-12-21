@@ -23,7 +23,7 @@ public class CustomerFindFirstByIdListHasTest extends CustomerRepositoryTest {
     @Test
     @Order(2)
     public void saveCustomer() {
-        Customer customer = Const.createNewCustomer();
+        Customer customer = Const.createCustomer();
         assertNotNull(customer);
         repository.save(customer);
     }

@@ -26,7 +26,7 @@ public class CustomerExtendedFindFirstByFirstNameExistsTest extends CustomerExte
     @Test
     @Order(2)
     public void saveCustomer() {
-        Customer customer = Const.createNewCustomer();
+        Customer customer = Const.createCustomer();
         CustomerExtended customerExtended = new CustomerExtended();
         EntityUtils.copyProperties(customer, customerExtended);
         customerExtended.setOrderStatus("Ordered");

@@ -23,7 +23,7 @@ public class AlienSaveAndFindTest extends AlienRepositoryTest {
     @Test
     @Order(2)
     public void saveCustomer() {
-        Alien alien = Const.createNewAlien();
+        Alien alien = Const.createAlien();
         assertNotNull(alien);
         assertFalse(repository.exists(alien));
         assertTrue(repository.save(alien));

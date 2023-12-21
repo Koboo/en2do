@@ -25,7 +25,7 @@ public class CustomerDeleteTest extends CustomerRepositoryTest {
     @Test
     @Order(2)
     public void saveCustomer() {
-        customer = Const.createNewCustomer();
+        customer = Const.createCustomer();
         assertNotNull(customer);
         assertTrue(repository.save(customer));
         assertTrue(repository.exists(customer));
