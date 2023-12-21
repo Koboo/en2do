@@ -1,13 +1,11 @@
 package eu.koboo.en2do.mongodb;
 
-import com.mongodb.MongoClientSettings;
 import eu.koboo.en2do.mongodb.exception.repository.*;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.entity.TransformField;
 import eu.koboo.en2do.repository.entity.Transient;
 import eu.koboo.en2do.utility.FieldUtils;
 import lombok.experimental.UtilityClass;
-import org.bson.BsonReader;
 import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecRegistry;
 
