@@ -27,8 +27,7 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-engine:$jupiterVersion"
 
     // SLF4j logger for test-suite
-    testImplementation "org.slf4j:slf4j-simple:$slf4jVersion"
-    testImplementation "org.slf4j:jul-to-slf4j:$slf4jVersion"
+    testImplementation "org.slf4j:slf4j-jdk14:$slf4jVersion"
 }
 
 test {
