@@ -629,8 +629,8 @@ public class MongoManager {
         return new FilterType(field, notFilter, filterOperator);
     }
 
-    public <T> MongoManager registerCodec(Class<T> typeClass, Codec<T> typeCodec) {
-        internalPropertyCodecProvider.registerCodec(typeClass, typeCodec);
+    public <T> MongoManager registerCodec(Codec<T> typeCodec) {
+        internalPropertyCodecProvider.registerCodec(typeCodec.getEncoderClass(), typeCodec);
         return this;
     }
 }
