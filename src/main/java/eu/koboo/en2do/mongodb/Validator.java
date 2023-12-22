@@ -1,10 +1,17 @@
 package eu.koboo.en2do.mongodb;
 
+import eu.koboo.en2do.internal.operators.FilterOperator;
+import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidListParameterException;
+import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidRegexParameterException;
+import eu.koboo.en2do.mongodb.exception.methods.MethodMismatchingTypeException;
+import eu.koboo.en2do.mongodb.exception.methods.MethodParameterNotFoundException;
 import eu.koboo.en2do.mongodb.exception.repository.*;
+import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.entity.TransformField;
 import eu.koboo.en2do.repository.entity.Transient;
 import eu.koboo.en2do.utility.FieldUtils;
+import eu.koboo.en2do.utility.GenericUtils;
 import lombok.experimental.UtilityClass;
 import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -13,13 +20,12 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Represents the validation of a class. This can be an entity or an embedded class inside the entity.
@@ -190,6 +196,70 @@ public class Validator {
             bsonNameSet.clear();
         } catch (IntrospectionException e) {
             throw new RepositoryBeanInfoNotFoundException(typeClass, repositoryClass, e);
+        }
+    }
+
+    public void validateTypes(Class<?> repositoryClass, Method method, Field field, FilterOperator filterOperator,
+                              int currentParameterIndex) throws Exception {
+        int operatorParameterCount = filterOperator.getExpectedParameterCount();
+        Class<?> fieldClass = field.getType();
+        for (int i = 0; i < filterOperator.getExpectedParameterCount(); i++) {
+            int paramIndex = currentParameterIndex + i;
+            Class<?> paramClass = method.getParameters()[paramIndex].getType();
+            if (paramClass == null) {
+                throw new MethodParameterNotFoundException(method, repositoryClass,
+                    (paramIndex + operatorParameterCount),
+                    method.getParameterCount());
+            }
+
+            // Special checks for some operators
+            switch (filterOperator) {
+                case REGEX:
+                    // Regex filter allows two types as parameters.
+                    if (GenericUtils.isNotTypeOf(String.class, paramClass) && GenericUtils.isNotTypeOf(Pattern.class, paramClass)) {
+                        throw new MethodInvalidRegexParameterException(method, repositoryClass, paramClass);
+                    }
+                    break;
+                case IN:
+                    if (paramClass.isArray()) {
+                        Class<?> arrayType = paramClass.getComponentType();
+                        if (GenericUtils.isNotTypeOf(fieldClass, arrayType)) {
+                            throw new MethodInvalidListParameterException(method, repositoryClass, fieldClass, arrayType);
+                        }
+                        break;
+                    }
+                    // In filter only allows list. Maybe arrays in future releases.
+                    if (!GenericUtils.isNotTypeOf(java.util.Collection.class, paramClass)) {
+                        Class<?> listType = GenericUtils.getGenericTypeOfParameter(method, paramIndex);
+                        if (GenericUtils.isNotTypeOf(fieldClass, listType)) {
+                            throw new MethodInvalidListParameterException(method, repositoryClass, fieldClass, listType);
+                        }
+                        break;
+                    }
+                    throw new MethodMismatchingTypeException(method, repositoryClass, java.util.Collection.class, paramClass);
+                case HAS_KEY:
+                    if (GenericUtils.isNotTypeOf(Map.class, fieldClass)) {
+                        throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
+                    }
+                    Class<?> keyClass = (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+                    if (GenericUtils.isNotTypeOf(keyClass, paramClass)) {
+                        throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
+                    }
+                    break;
+                case HAS:
+                    if (!GenericUtils.isNotTypeOf(Collection.class, fieldClass)) {
+                        Class<?> listType = GenericUtils.getGenericTypeOfField(field, 0);
+                        if (GenericUtils.isNotTypeOf(paramClass, listType)) {
+                            throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
+                        }
+                    }
+                    break;
+                default:
+                    if (GenericUtils.isNotTypeOf(fieldClass, paramClass)) {
+                        throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
+                    }
+                    break;
+            }
         }
     }
 }
