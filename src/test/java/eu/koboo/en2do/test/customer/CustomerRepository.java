@@ -10,7 +10,7 @@ import eu.koboo.en2do.repository.methods.sort.Limit;
 import eu.koboo.en2do.repository.methods.sort.Skip;
 import eu.koboo.en2do.repository.methods.sort.Sort;
 import eu.koboo.en2do.repository.methods.sort.SortBy;
-import eu.koboo.en2do.repository.methods.transform.NestedKey;
+import eu.koboo.en2do.repository.methods.transform.NestedField;
 import eu.koboo.en2do.repository.methods.transform.Transform;
 
 import java.util.List;
@@ -91,6 +91,6 @@ public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRep
 
     Customer findFirstByStatus(String status);
 
-    @NestedKey(key = "OrderText", query = "order.orderText")
-    Customer findFirstByIdAndOrderText(UUID customerId, String orderText);
+    @NestedField(key = "OrderText", query = "order.orderText")
+    Customer findFirstByUniqueIdAndOrderText(UUID uniqueId, String orderText);
 }
