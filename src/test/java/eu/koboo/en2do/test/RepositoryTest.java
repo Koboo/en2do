@@ -1,6 +1,7 @@
 package eu.koboo.en2do.test;
 
 import eu.koboo.en2do.MongoManager;
+import eu.koboo.en2do.SettingsBuilder;
 import eu.koboo.en2do.repository.Repository;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -21,7 +22,9 @@ public abstract class RepositoryTest<E, ID, R extends Repository<E, ID>> {
     @BeforeAll
     public void setup() {
         log.info("Starting Unit-Test [" + getClass().getName() + "]");
-        manager = new MongoManager();
+        SettingsBuilder settingsBuilder = new SettingsBuilder();
+
+        manager = new MongoManager(settingsBuilder);
         assertNotNull(manager);
         repository = manager.create(repositoryClass());
         assertNotNull(repository);
