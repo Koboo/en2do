@@ -45,18 +45,20 @@ public class FieldUtils {
      */
     public Field findFieldByName(String fieldName, Set<Field> fieldSet) {
         for (Field field : fieldSet) {
-            TransformField transformField = field.getAnnotation(TransformField.class);
-            if(transformField != null && !transformField.value().trim().equalsIgnoreCase("")) {
-                if(transformField.value().equalsIgnoreCase(fieldName)) {
-                    return field;
-                }
-                continue;
-            }
-            if (!field.getName().equalsIgnoreCase(fieldName)) {
+            String bsonName = parseBsonName(field);
+            if (!bsonName.equalsIgnoreCase(fieldName)) {
                 continue;
             }
             return field;
         }
         return null;
+    }
+
+    public String parseBsonName(Field field) {
+        TransformField transformField = field.getAnnotation(TransformField.class);
+        if(transformField != null && !transformField.value().trim().equalsIgnoreCase("")) {
+            return transformField.value();
+        }
+        return field.getName();
     }
 }
