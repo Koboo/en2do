@@ -1,5 +1,6 @@
 package eu.koboo.en2do.mongodb.methods.dynamic;
 
+import eu.koboo.en2do.internal.operators.Chain;
 import eu.koboo.en2do.internal.operators.FilterOperator;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -14,18 +15,10 @@ import java.lang.reflect.Field;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Getter
-public class FilterType {
+public class IndexedFilter {
 
-    /**
-     * The field, which should be filtered
-     */
-    Field field;
-    /**
-     * is true if the filter is negotiated
-     */
+    String bsonName;
     boolean notFilter;
-    /**
-     * The operator of the filter
-     */
     FilterOperator operator;
+    int nextParameterIndex;
 }

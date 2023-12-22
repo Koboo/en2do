@@ -8,8 +8,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import eu.koboo.en2do.mongodb.methods.dynamic.FilterType;
-import eu.koboo.en2do.mongodb.methods.dynamic.MethodFilterPart;
+import eu.koboo.en2do.internal.operators.Chain;
 import eu.koboo.en2do.internal.operators.FilterOperator;
 import eu.koboo.en2do.internal.operators.MethodOperator;
 import eu.koboo.en2do.mongodb.RepositoryInvocationHandler;
@@ -19,7 +18,8 @@ import eu.koboo.en2do.mongodb.codec.InternalPropertyCodecProvider;
 import eu.koboo.en2do.mongodb.convention.AnnotationConvention;
 import eu.koboo.en2do.mongodb.exception.methods.*;
 import eu.koboo.en2do.mongodb.exception.repository.*;
-import eu.koboo.en2do.mongodb.methods.dynamic.MongoDynamicMethod;
+import eu.koboo.en2do.mongodb.methods.dynamic.IndexedFilter;
+import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
 import eu.koboo.en2do.mongodb.methods.predefined.impl.*;
 import eu.koboo.en2do.repository.AsyncRepository;
 import eu.koboo.en2do.repository.Collection;
@@ -32,6 +32,7 @@ import eu.koboo.en2do.repository.methods.async.Async;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.*;
+import eu.koboo.en2do.repository.methods.transform.NestedField;
 import eu.koboo.en2do.repository.methods.transform.Transform;
 import eu.koboo.en2do.repository.options.DropEntitiesOnStart;
 import eu.koboo.en2do.repository.options.DropIndexesOnStart;
@@ -51,7 +52,6 @@ import org.bson.conversions.Bson;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -60,7 +60,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
@@ -85,6 +84,11 @@ public class MongoManager {
     public MongoManager(Credentials credentials, ExecutorService executorService, SettingsBuilder builder) {
         if (builder == null) {
             builder = new SettingsBuilder();
+        }
+        Level loggerLevel = builder.getMongoLoggerLevel();
+        if (loggerLevel != null) {
+            Logger.getLogger("org.mongodb").setLevel(loggerLevel);
+            Logger.getLogger("com.mongodb").setLevel(loggerLevel);
         }
         this.builder = builder;
         this.repositoryMetaRegistry = new ConcurrentHashMap<>();
@@ -168,9 +172,6 @@ public class MongoManager {
     }
 
     public void start() {
-        if (builder.isDisableLogger()) {
-            Logger.getLogger("org.mongodb.driver").setLevel(Level.OFF);
-        }
     }
 
     public void close() {
@@ -364,102 +365,96 @@ public class MongoManager {
                 methodOperator.validate(method, returnType, entityClass, repositoryClass);
 
                 // Remove the leading methodOperator to ensure it doesn't trick the validation
-                String methodNameWithoutOperator = methodOperator.removeOperatorFrom(methodName);
-                if (methodName.contains("And") && methodName.contains("Or")) {
-                    throw new MethodDuplicatedChainException(method, repositoryClass);
-                }
-
-                // Split the "parts" of the methods by "And" or "Or" keywords, because both in one query are not allowed.
-                // That's currently the only way to get every filter part.
-                boolean multipleFilter = methodNameWithoutOperator.contains("And") || methodNameWithoutOperator.contains("Or");
-                boolean andFilter = methodNameWithoutOperator.contains("And");
-                String[] methodFilterPartArray;
-                if (andFilter) {
-                    methodFilterPartArray = methodNameWithoutOperator.split("And");
-                } else {
-                    methodFilterPartArray = methodNameWithoutOperator.split("Or");
-                }
+                String strippedMethodName = methodOperator.removeOperatorFrom(methodName);
 
                 // Parse, validate and handle the method name and "compile" it to en2do internal usage objects.
+                Set<NestedField> nestedFieldSet = AnnotationUtils.getNestedKeySet(method);
 
                 // Counts for further validation
                 int expectedParameterCount = 0;
                 int nextParameterIndex = 0;
                 int itemCount = 0;
-                List<MethodFilterPart> filterPartList = new LinkedList<>();
-                for (String filterOperatorString : methodFilterPartArray) {
+                List<IndexedFilter> indexedFilterList = new LinkedList<>();
+                String loweredStrip = strippedMethodName.toLowerCase(Locale.ROOT);
+                Chain chain = null;
+                while (!loweredStrip.equalsIgnoreCase("")) {
 
-                    // Create the FilterType using the following paring method
-                    FilterType filterType = createFilterType(entityClass, repositoryClass, method, filterOperatorString,
-                        entityFieldSet);
-                    int filterTypeParameterCount = filterType.getOperator().getExpectedParameterCount();
-
-                    // Validate the parameter count and types of the respective filter type
-                    for (int i = 0; i < filterTypeParameterCount; i++) {
-                        int paramIndex = nextParameterIndex + i;
-                        Class<?> paramClass = method.getParameters()[paramIndex].getType();
-                        if (paramClass == null) {
-                            throw new MethodParameterNotFoundException(method, repositoryClass, (paramIndex + filterTypeParameterCount),
-                                method.getParameterCount());
+                    String bsonName = null;
+                    for (NestedField nestedField : nestedFieldSet) {
+                        bsonName = nestedField.query();
+                        String loweredKey = nestedField.key().toLowerCase(Locale.ROOT);
+                        if (!loweredStrip.startsWith(loweredKey)) {
+                            continue;
                         }
-
-                        // Special checks for some operators
-                        Field field = filterType.getField();
-                        Class<?> fieldClass = field.getType();
-                        switch (filterType.getOperator()) {
-                            case REGEX:
-                                // Regex filter allows two types as parameters.
-                                if (GenericUtils.isNotTypeOf(String.class, paramClass) && GenericUtils.isNotTypeOf(Pattern.class, paramClass)) {
-                                    throw new MethodInvalidRegexParameterException(method, repositoryClass, paramClass);
-                                }
-                                break;
-                            case IN:
-                                if (paramClass.isArray()) {
-                                    Class<?> arrayType = paramClass.getComponentType();
-                                    if (GenericUtils.isNotTypeOf(fieldClass, arrayType)) {
-                                        throw new MethodInvalidListParameterException(method, repositoryClass, fieldClass, arrayType);
-                                    }
-                                    break;
-                                }
-                                // In filter only allows list. Maybe arrays in future releases.
-                                if (!GenericUtils.isNotTypeOf(java.util.Collection.class, paramClass)) {
-                                    Class<?> listType = GenericUtils.getGenericTypeOfParameter(method, paramIndex);
-                                    if (GenericUtils.isNotTypeOf(fieldClass, listType)) {
-                                        throw new MethodInvalidListParameterException(method, repositoryClass, fieldClass, listType);
-                                    }
-                                    break;
-                                }
-                                throw new MethodMismatchingTypeException(method, repositoryClass, java.util.Collection.class, paramClass);
-                            case HAS_KEY:
-                                if (GenericUtils.isNotTypeOf(Map.class, fieldClass)) {
-                                    throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
-                                }
-                                Class<?> keyClass = (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
-                                if (GenericUtils.isNotTypeOf(keyClass, paramClass)) {
-                                    throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
-                                }
-                                break;
-                            case HAS:
-                                if (!GenericUtils.isNotTypeOf(Collection.class, fieldClass)) {
-                                    Class<?> listType = GenericUtils.getGenericTypeOfField(field, 0);
-                                    if (GenericUtils.isNotTypeOf(paramClass, listType)) {
-                                        throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
-                                    }
-                                }
-                                break;
-                            default:
-                                if (GenericUtils.isNotTypeOf(fieldClass, paramClass)) {
-                                    throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
-                                }
-                                break;
-                        }
+                        loweredStrip = loweredStrip.replaceFirst(loweredKey, "");
+                        break;
                     }
-                    MethodFilterPart filterPart = new MethodFilterPart(filterType, nextParameterIndex);
-                    filterPartList.add(filterPart);
-                    // Further validation
-                    expectedParameterCount += filterTypeParameterCount;
-                    nextParameterIndex = itemCount + filterTypeParameterCount;
+                    Field entityField = null;
+                    for (Field field : entityFieldSet) {
+                        bsonName = FieldUtils.parseBsonName(field);
+                        String loweredBsonName = bsonName.toLowerCase(Locale.ROOT);
+                        if (!loweredStrip.startsWith(loweredBsonName)) {
+                            continue;
+                        }
+                        loweredStrip = loweredStrip.replaceFirst(loweredBsonName, "");
+                        entityField = field;
+                        break;
+                    }
+                    if (bsonName == null) {
+                        throw new MethodFieldNotFoundException(strippedMethodName, method, entityClass, repositoryClass);
+                    }
+
+                    boolean notFilter = false;
+                    if (loweredStrip.startsWith("not")) {
+                        notFilter = true;
+                        loweredStrip = loweredStrip.replaceFirst("not", "");
+                    }
+
+                    FilterOperator filterOperator = FilterOperator.EQUALS;
+                    for (FilterOperator value : FilterOperator.VALUES) {
+                        if (loweredStrip.startsWith("and") || loweredStrip.startsWith("or")) {
+                            break;
+                        }
+                        if (value == FilterOperator.EQUALS) {
+                            continue;
+                        }
+                        String loweredKeyword = value.getKeyword().toLowerCase(Locale.ROOT);
+                        boolean startsWith = loweredStrip.startsWith(loweredKeyword);
+                        if (!startsWith) {
+                            continue;
+                        }
+                        loweredStrip = loweredStrip.replaceFirst(loweredKeyword, "");
+                        filterOperator = value;
+                        break;
+                    }
+
+                    if (loweredStrip.startsWith("and")) {
+                        loweredStrip = loweredStrip.replaceFirst("and", "");
+                        if(chain != null && chain != Chain.AND) {
+                            throw new MethodDuplicatedChainException(method, repositoryClass);
+                        }
+                        chain = Chain.AND;
+                    } else if (loweredStrip.startsWith("or")) {
+                        loweredStrip = loweredStrip.replaceFirst("or", "");
+                        if(chain != null && chain != Chain.OR) {
+                            throw new MethodDuplicatedChainException(method, repositoryClass);
+                        }
+                        chain = Chain.OR;
+                    }
+
+                    if (entityField != null) {
+                        Validator.validateTypes(repositoryClass, method, entityField, filterOperator, nextParameterIndex);
+                    }
+
+                    IndexedFilter indexedFilter = new IndexedFilter(bsonName, notFilter, filterOperator, nextParameterIndex);
+                    indexedFilterList.add(indexedFilter);
+                    int operatorParameterCount = filterOperator.getExpectedParameterCount();
+                    expectedParameterCount += operatorParameterCount;
+                    nextParameterIndex = itemCount + operatorParameterCount;
                     itemCount += 1;
+                }
+                if(chain == null) {
+                    chain = Chain.NONE;
                 }
 
                 int methodParameterCount = method.getParameterCount();
@@ -529,8 +524,8 @@ public class MongoManager {
                     // while runtime
                 }
 
-                MongoDynamicMethod<E, ID, R> dynamicMethod = new MongoDynamicMethod<>(method, methodOperator,
-                    multipleFilter, andFilter, filterPartList, repositoryMeta);
+                IndexedMethod<E, ID, R> dynamicMethod = new IndexedMethod<>(method, methodOperator,
+                    chain, indexedFilterList, repositoryMeta);
                 repositoryMeta.registerDynamicMethod(methodName, dynamicMethod);
             }
 
@@ -610,23 +605,6 @@ public class MongoManager {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private <E> FilterType createFilterType(Class<E> entityClass, Class<?> repoClass,
-                                            Method method, String filterOperatorString,
-                                            Set<Field> fieldSet) throws Exception {
-        FilterOperator filterOperator = FilterOperator.parseFilterEndsWith(filterOperatorString);
-        String expectedFieldName = filterOperator.removeOperatorFrom(filterOperatorString);
-        boolean notFilter = false;
-        if (expectedFieldName.endsWith("Not")) {
-            expectedFieldName = expectedFieldName.replaceFirst("Not", "");
-            notFilter = true;
-        }
-        Field field = FieldUtils.findFieldByName(expectedFieldName, fieldSet);
-        if (field == null) {
-            throw new MethodFieldNotFoundException(expectedFieldName, method, entityClass, repoClass);
-        }
-        return new FilterType(field, notFilter, filterOperator);
     }
 
     public <T> MongoManager registerCodec(Codec<T> typeCodec) {

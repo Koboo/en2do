@@ -1,80 +1,71 @@
 package eu.koboo.en2do.mongodb.methods.dynamic;
 
 import com.mongodb.client.model.Filters;
+import eu.koboo.en2do.internal.operators.Chain;
 import eu.koboo.en2do.internal.operators.MethodOperator;
 import eu.koboo.en2do.mongodb.RepositoryMeta;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidRegexParameterException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodUnsupportedFilterException;
 import eu.koboo.en2do.repository.Repository;
-import eu.koboo.en2do.repository.entity.TransformField;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.bson.conversions.Bson;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class MongoDynamicMethod<E, ID, R extends Repository<E, ID>> {
+public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
 
     @Getter
     Method method;
     @Getter
     MethodOperator methodOperator;
+    Chain chain;
 
-    boolean multipleFilter;
-    boolean andFilter;
-
-    List<MethodFilterPart> filterPartList;
+    List<IndexedFilter> indexedFilterList;
 
     RepositoryMeta<E, ID, R> repositoryMeta;
-
 
     @SuppressWarnings("unchecked")
     public <F> F createFilter(Object[] arguments) throws Exception {
         Bson filter;
-        List<Bson> filterList = new LinkedList<>();
-        for (MethodFilterPart filterPart : filterPartList) {
-            FilterType filterType = filterPart.getFilterType();
-            int paramStartIndex = filterPart.getNextParameterIndex();
-            Bson processedBsonFilter = processBson(filterType, paramStartIndex, arguments);
-            filterList.add(processedBsonFilter);
+        Set<Bson> bsonFilterSet = new LinkedHashSet<>();
+        for (IndexedFilter indexedFilter : indexedFilterList) {
+            int paramStartIndex = indexedFilter.getNextParameterIndex();
+            Bson processedBsonFilter = processBson(indexedFilter, paramStartIndex, arguments);
+            bsonFilterSet.add(processedBsonFilter);
         }
-        if (multipleFilter) {
-            if (andFilter) {
-                filter = Filters.and(filterList);
-            } else {
-                filter = Filters.or(filterList);
-            }
-        } else {
-            filter = filterList.get(0);
+        switch (chain) {
+            case OR:
+                filter = Filters.or(bsonFilterSet);
+                break;
+            case AND:
+                filter = Filters.and(bsonFilterSet);
+                break;
+            default:
+            case NONE:
+                filter = bsonFilterSet.stream().findFirst().orElse(null);
+                break;
         }
         return (F) filter;
     }
 
     @SuppressWarnings("unchecked")
-    private Bson processBson(FilterType filterType, int paramsIndexAt,
+    private Bson processBson(IndexedFilter filter, int paramsIndexAt,
                              Object[] args) throws Exception {
-        Field field = filterType.getField();
-        String queryFieldName = field.getName();
-        TransformField transformField = field.getAnnotation(TransformField.class);
-        if(transformField != null && !transformField.value().trim().equalsIgnoreCase("")) {
-            queryFieldName = transformField.value();
-        }
+        String queryFieldName = filter.getBsonName();
         // Check if the uniqueId field is used.
         // This is needed if uniqueId field and "_id" of documents are the same!
         if (queryFieldName.equalsIgnoreCase(repositoryMeta.getEntityUniqueIdField().getName())) {
             queryFieldName = "_id";
         }
         Bson retFilter = null;
-        switch (filterType.getOperator()) {
+        switch (filter.getOperator()) {
             case EQUALS:
                 retFilter = Filters.eq(queryFieldName, repositoryMeta.getFilterableValue(args[paramsIndexAt]));
                 break;
@@ -159,7 +150,7 @@ public class MongoDynamicMethod<E, ID, R extends Repository<E, ID>> {
                 throw new MethodUnsupportedFilterException(method, repositoryMeta.getRepositoryClass());
         }
         // Applying negotiating of the filter, if needed
-        if (filterType.isNotFilter()) {
+        if (filter.isNotFilter()) {
             return Filters.not(retFilter);
         }
         return retFilter;
