@@ -1,10 +1,13 @@
 package eu.koboo.en2do.utility;
 
+import eu.koboo.en2do.repository.methods.transform.NestedField;
 import lombok.experimental.UtilityClass;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -37,5 +40,10 @@ public class AnnotationUtils {
             annotationSet.addAll(Arrays.asList(indexArray));
         }
         return annotationSet;
+    }
+
+    public Set<NestedField> getNestedKeySet(Method method) {
+        NestedField[] annotationsByType = method.getAnnotationsByType(NestedField.class);
+        return new LinkedHashSet<>(Arrays.asList(annotationsByType));
     }
 }
