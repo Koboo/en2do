@@ -56,7 +56,7 @@ public class FieldUtils {
 
     public String parseBsonName(Field field) {
         TransformField transformField = field.getAnnotation(TransformField.class);
-        if(transformField != null && !transformField.value().trim().equalsIgnoreCase("")) {
+        if (transformField != null && !transformField.value().trim().equalsIgnoreCase("")) {
             return transformField.value();
         }
         return field.getName();

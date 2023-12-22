@@ -1,8 +1,6 @@
 package eu.koboo.en2do.test.keytest;
 
-import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.test.RepositoryTest;
-import org.bson.assertions.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;

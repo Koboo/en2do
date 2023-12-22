@@ -430,13 +430,13 @@ public class MongoManager {
 
                     if (loweredStrip.startsWith("and")) {
                         loweredStrip = loweredStrip.replaceFirst("and", "");
-                        if(chain != null && chain != Chain.AND) {
+                        if (chain != null && chain != Chain.AND) {
                             throw new MethodDuplicatedChainException(method, repositoryClass);
                         }
                         chain = Chain.AND;
                     } else if (loweredStrip.startsWith("or")) {
                         loweredStrip = loweredStrip.replaceFirst("or", "");
-                        if(chain != null && chain != Chain.OR) {
+                        if (chain != null && chain != Chain.OR) {
                             throw new MethodDuplicatedChainException(method, repositoryClass);
                         }
                         chain = Chain.OR;
@@ -453,7 +453,7 @@ public class MongoManager {
                     nextParameterIndex = itemCount + operatorParameterCount;
                     itemCount += 1;
                 }
-                if(chain == null) {
+                if (chain == null) {
                     chain = Chain.NONE;
                 }
 
