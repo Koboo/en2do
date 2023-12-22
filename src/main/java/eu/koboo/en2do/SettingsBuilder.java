@@ -8,19 +8,25 @@ import lombok.experimental.FieldDefaults;
 @Getter
 public class SettingsBuilder {
 
-    boolean disallowUUIDKeys;
     boolean disableLogger;
+    boolean disallowUUIDKeys;
+    boolean disallowDiskUsage;
     boolean appendMethodAsComment;
     String collectionPrefix;
     String collectionSuffix;
+
+    public SettingsBuilder disableMongoDBLogger() {
+        this.disableLogger = true;
+        return this;
+    }
 
     public SettingsBuilder disallowUUIDMapKeys() {
         this.disallowUUIDKeys = true;
         return this;
     }
 
-    public SettingsBuilder disableMongoDBLogger() {
-        this.disableLogger = true;
+    public SettingsBuilder disallowDiskUsageOnPagination() {
+        this.disallowDiskUsage = true;
         return this;
     }
 
