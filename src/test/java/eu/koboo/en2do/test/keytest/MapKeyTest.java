@@ -1,18 +1,24 @@
 package eu.koboo.en2do.test.keytest;
 
 import eu.koboo.en2do.MongoManager;
+import eu.koboo.en2do.test.RepositoryTest;
+import org.bson.assertions.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.UUID;
 
-public class MapKeyTest {
+import static org.bson.assertions.Assertions.assertNotNull;
 
-    static MongoManager mongoManager = new MongoManager();
+public class MapKeyTest extends RepositoryTest<MapKey, UUID, MapKeyRepository> {
+
+    @Override
+    public Class<MapKeyRepository> repositoryClass() {
+        return MapKeyRepository.class;
+    }
 
     @Test
     public void testCreate() {
-        MapKeyRepository mapKeyRepository = mongoManager.create(MapKeyRepository.class);
         MapKey mapKey = new MapKey();
         UUID uniqueId = UUID.randomUUID();
         mapKey.setUniqueId(uniqueId);
@@ -21,9 +27,15 @@ public class MapKeyTest {
         mapKey.setDoubleMap(Map.of(1.234, "Test"));
         mapKey.setUuidMap(Map.of(UUID.randomUUID(), "Test"));
         mapKey.setEnumMap(Map.of(SomeEnum.ONE, "Test"));
-        mapKeyRepository.save(mapKey);
+        repository.save(mapKey);
 
-        mapKey = mapKeyRepository.findFirstById(uniqueId);
-        System.out.println(mapKey);
+        mapKey = repository.findFirstById(uniqueId);
+        assertNotNull(mapKey);
+        assertNotNull(mapKey.getStringMap());
+        assertNotNull(mapKey.getBooleanMap());
+        assertNotNull(mapKey.getDoubleMap());
+        assertNotNull(mapKey.getUuidMap());
+        assertNotNull(mapKey.getEnumMap());
+        repository.drop();
     }
 }
