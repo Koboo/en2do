@@ -4,20 +4,27 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
+import java.util.logging.Level;
+
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
 public class SettingsBuilder {
 
-    boolean disableLogger;
+    Level mongoLoggerLevel;
     boolean disallowUUIDKeys;
     boolean disallowDiskUsage;
     boolean appendMethodAsComment;
     String collectionPrefix;
     String collectionSuffix;
 
-    public SettingsBuilder disableMongoDBLogger() {
-        this.disableLogger = true;
+
+    public SettingsBuilder setMongoDBLoggerLevel(Level level) {
+        this.mongoLoggerLevel = level;
         return this;
+    }
+
+    public SettingsBuilder disableMongoDBLogger() {
+        return setMongoDBLoggerLevel(Level.OFF);
     }
 
     public SettingsBuilder disallowUUIDMapKeys() {
