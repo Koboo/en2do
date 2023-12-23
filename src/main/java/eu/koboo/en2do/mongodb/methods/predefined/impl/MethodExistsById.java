@@ -1,23 +1,23 @@
 package eu.koboo.en2do.mongodb.methods.predefined.impl;
 
-import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.mongodb.RepositoryMeta;
-import eu.koboo.en2do.mongodb.methods.predefined.PredefinedMethod;
+import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
 import org.bson.conversions.Bson;
 
 import java.lang.reflect.Method;
 
-public class MethodExistsById<E, ID, R extends Repository<E, ID>> extends PredefinedMethod<E, ID, R> {
+public class MethodExistsById extends GlobalPredefinedMethod {
 
-    public MethodExistsById(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
-        super("existsById", meta, entityCollection);
+    public MethodExistsById() {
+        super("existsById");
     }
 
     @Override
-    public Object handle(Method method, Object[] arguments) throws Exception {
+    public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryMeta<E, ID, R> repositoryMeta,
+                                                              Method method, Object[] arguments) throws Exception {
         ID uniqueId = repositoryMeta.checkUniqueId(method, arguments[0]);
         Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
-        return entityCollection.countDocuments(idFilter) > 0;
+        return repositoryMeta.getCollection().countDocuments(idFilter) > 0;
     }
 }

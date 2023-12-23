@@ -3,7 +3,7 @@ package eu.koboo.en2do.mongodb.methods.predefined.impl;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.ReplaceOptions;
 import eu.koboo.en2do.mongodb.RepositoryMeta;
-import eu.koboo.en2do.mongodb.methods.predefined.PredefinedMethod;
+import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -15,17 +15,19 @@ import java.util.Collection;
 import java.util.List;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class MethodSaveAll<E, ID, R extends Repository<E, ID>> extends PredefinedMethod<E, ID, R> {
+public class MethodSaveAll extends GlobalPredefinedMethod {
 
     ReplaceOptions replaceOptions;
 
-    public MethodSaveAll(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
-        super("saveAll", meta, entityCollection);
+    public MethodSaveAll() {
+        super("saveAll");
         this.replaceOptions = new ReplaceOptions().upsert(true);
     }
 
     @Override
-    public Object handle(Method method, Object[] arguments) throws Exception {
+    public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryMeta<E, ID, R> repositoryMeta,
+                                                              Method method, Object[] arguments) throws Exception {
+        MongoCollection<E> entityCollection = repositoryMeta.getCollection();
         Collection<E> entityList = repositoryMeta.checkEntityList(method, arguments[0]);
         if (entityList.isEmpty()) {
             return true;

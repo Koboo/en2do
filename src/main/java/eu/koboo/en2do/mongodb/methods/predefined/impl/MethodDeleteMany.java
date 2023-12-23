@@ -1,9 +1,8 @@
 package eu.koboo.en2do.mongodb.methods.predefined.impl;
 
-import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import eu.koboo.en2do.mongodb.RepositoryMeta;
-import eu.koboo.en2do.mongodb.methods.predefined.PredefinedMethod;
+import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
 import org.bson.conversions.Bson;
 
@@ -12,14 +11,15 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-public class MethodDeleteMany<E, ID, R extends Repository<E, ID>> extends PredefinedMethod<E, ID, R> {
+public class MethodDeleteMany extends GlobalPredefinedMethod {
 
-    public MethodDeleteMany(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
-        super("deleteMany", meta, entityCollection);
+    public MethodDeleteMany() {
+        super("deleteMany");
     }
 
     @Override
-    public Object handle(Method method, Object[] arguments) throws Exception {
+    public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryMeta<E, ID, R> repositoryMeta,
+                                                              Method method, Object[] arguments) throws Exception {
         Collection<E> entityList = repositoryMeta.checkEntityList(method, arguments[0]);
         if (entityList.isEmpty()) {
             return true;
@@ -30,7 +30,7 @@ public class MethodDeleteMany<E, ID, R extends Repository<E, ID>> extends Predef
             idList.add(uniqueId);
         }
         Bson idFilter = Filters.in("_id", idList);
-        entityCollection.deleteMany(idFilter);
+        repositoryMeta.getCollection().deleteMany(idFilter);
         return true;
     }
 }

@@ -9,7 +9,6 @@ import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidPageException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidSortLimitException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidSortSkipException;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
-import eu.koboo.en2do.mongodb.methods.predefined.PredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.methods.fields.FieldUpdate;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
@@ -43,9 +42,6 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     Field entityUniqueIdField;
 
     @Getter(AccessLevel.NONE)
-    Map<String, PredefinedMethod<E, ID, R>> methodRegistry;
-
-    @Getter(AccessLevel.NONE)
     Map<String, IndexedMethod<E, ID, R>> dynamicMethodRegistry;
 
     public RepositoryMeta(MongoManager manager, Class<R> repositoryClass, Class<E> entityClass,
@@ -64,29 +60,11 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         this.entityUniqueIdClass = entityUniqueIdClass;
         this.entityUniqueIdField = entityUniqueIdField;
 
-        this.methodRegistry = new HashMap<>();
         this.dynamicMethodRegistry = new HashMap<>();
     }
 
     public void destroy() {
-        methodRegistry.clear();
         dynamicMethodRegistry.clear();
-    }
-
-    public boolean isRepositoryMethod(String methodName) {
-        return methodRegistry.containsKey(methodName);
-    }
-
-    public void registerPredefinedMethod(PredefinedMethod<E, ID, R> methodHandler) {
-        String methodName = methodHandler.getMethodName();
-        if (methodRegistry.containsKey(methodName)) {
-            throw new RuntimeException("Already registered method with name \"" + methodName + "\".");
-        }
-        methodRegistry.put(methodName, methodHandler);
-    }
-
-    public PredefinedMethod<E, ID, R> lookupPredefinedMethod(String methodName) {
-        return methodRegistry.get(methodName);
     }
 
     public void registerDynamicMethod(String methodName, IndexedMethod<E, ID, R> dynamicMethod) {
@@ -240,7 +218,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         return findIterable;
     }
 
-    public String getPredefinedNameByAsyncName(String asyncName) {
+    public String stripAsyncName(String asyncName) {
         String predefinedName = asyncName.replaceFirst("async", "");
         return predefinedName.substring(0, 1).toLowerCase(Locale.ROOT) + predefinedName.substring(1);
     }

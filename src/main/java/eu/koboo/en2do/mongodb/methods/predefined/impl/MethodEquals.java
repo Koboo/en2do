@@ -1,20 +1,20 @@
 package eu.koboo.en2do.mongodb.methods.predefined.impl;
 
-import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.mongodb.RepositoryMeta;
-import eu.koboo.en2do.mongodb.methods.predefined.PredefinedMethod;
+import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
 
 import java.lang.reflect.Method;
 
-public class MethodEquals<E, ID, R extends Repository<E, ID>> extends PredefinedMethod<E, ID, R> {
+public class MethodEquals extends GlobalPredefinedMethod {
 
-    public MethodEquals(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
-        super("equals", meta, entityCollection);
+    public MethodEquals() {
+        super("equals");
     }
 
     @Override
-    public Object handle(Method method, Object[] arguments) throws Exception {
+    public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryMeta<E, ID, R> repositoryMeta,
+                                                              Method method, Object[] arguments) throws Exception {
         if (arguments.length != 1) {
             return false;
         }

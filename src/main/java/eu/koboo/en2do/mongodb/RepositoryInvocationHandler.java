@@ -7,7 +7,7 @@ import com.mongodb.client.result.UpdateResult;
 import eu.koboo.en2do.mongodb.exception.methods.MethodUnsupportedException;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryInvalidCallException;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
-import eu.koboo.en2do.mongodb.methods.predefined.PredefinedMethod;
+import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.methods.async.Async;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
@@ -20,6 +20,7 @@ import org.bson.conversions.Bson;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
@@ -29,6 +30,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
 
     RepositoryMeta<E, ID, R> repositoryMeta;
     ExecutorService executorService;
+    Map<String, GlobalPredefinedMethod> predefinedMethodRegistry;
 
     @Override
     @SuppressWarnings("all")
@@ -43,21 +45,22 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         String methodName = tempMethodName;
 
         // Get and check if a static handler for the methodName is available.
-        PredefinedMethod<E, ID, R> methodHandler = repositoryMeta.lookupPredefinedMethod(methodName);
+        GlobalPredefinedMethod methodHandler = predefinedMethodRegistry.get(methodName);
         if (methodHandler != null) {
             // Just handle the arguments and return the object
-            return methodHandler.handle(method, arguments);
+            return methodHandler.handle(repositoryMeta, method, arguments);
         }
 
         // Check for predefined method with async prefix.
         boolean isAsyncMethod = method.isAnnotationPresent(Async.class);
         if (transform == null && isAsyncMethod) {
-            String predefinedName = repositoryMeta.getPredefinedNameByAsyncName(methodName);
-            PredefinedMethod<E, ID, R> methodHandlerFuture = repositoryMeta.lookupPredefinedMethod(predefinedName);
-            if (methodHandlerFuture != null) {
+            String predefinedName = repositoryMeta.stripAsyncName(methodName);
+            methodHandler = predefinedMethodRegistry.get(predefinedName);
+            if (methodHandler != null) {
                 // Just handle the arguments and return the object
                 CompletableFuture<Object> future = new CompletableFuture<>();
-                executeFuture(future, () -> methodHandlerFuture.handle(method, arguments));
+                GlobalPredefinedMethod finalMethodHandler = methodHandler;
+                executeFuture(future, () -> finalMethodHandler.handle(repositoryMeta, method, arguments));
                 return future;
             }
         }

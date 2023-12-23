@@ -20,6 +20,7 @@ import eu.koboo.en2do.mongodb.exception.methods.*;
 import eu.koboo.en2do.mongodb.exception.repository.*;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedFilter;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
+import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
 import eu.koboo.en2do.mongodb.methods.predefined.impl.*;
 import eu.koboo.en2do.repository.AsyncRepository;
 import eu.koboo.en2do.repository.Collection;
@@ -73,6 +74,7 @@ public class MongoManager {
 
     Map<Class<?>, RepositoryMeta<?, ?, ?>> repositoryMetaRegistry;
     Map<Class<?>, Repository<?, ?>> repositoryRegistry;
+    Map<String, GlobalPredefinedMethod> predefinedMethodRegistry;
     ExecutorService executorService;
 
     InternalPropertyCodecProvider internalPropertyCodecProvider;
@@ -93,6 +95,7 @@ public class MongoManager {
         this.builder = builder;
         this.repositoryMetaRegistry = new ConcurrentHashMap<>();
         this.repositoryRegistry = new ConcurrentHashMap<>();
+        this.predefinedMethodRegistry = new LinkedHashMap<>();
         if (executorService == null) {
             executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
         }
@@ -153,6 +156,8 @@ public class MongoManager {
 
         client = MongoClients.create(clientSettings);
         database = client.getDatabase(databaseString);
+
+        registerPredefinedMethods();
     }
 
     public MongoManager(Credentials credentials, SettingsBuilder builder) {
@@ -194,6 +199,40 @@ public class MongoManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void registerPredefinedMethod(GlobalPredefinedMethod predefinedMethod) {
+        String methodName = predefinedMethod.getMethodName();
+        if (predefinedMethodRegistry.containsKey(methodName)) {
+            throw new RuntimeException("Already registered method with name \"" + methodName + "\".");
+        }
+        predefinedMethodRegistry.put(methodName, predefinedMethod);
+    }
+
+    private void registerPredefinedMethods() {
+        // Define default methods with handler into the meta registry
+        registerPredefinedMethod(new MethodCountAll());
+        registerPredefinedMethod(new MethodDelete());
+        registerPredefinedMethod(new MethodDeleteMany());
+        registerPredefinedMethod(new MethodDeleteById());
+        registerPredefinedMethod(new MethodDrop());
+        registerPredefinedMethod(new MethodEquals());
+        registerPredefinedMethod(new MethodExists());
+        registerPredefinedMethod(new MethodExistsById());
+        registerPredefinedMethod(new MethodFindAll());
+        registerPredefinedMethod(new MethodFindFirstById());
+        registerPredefinedMethod(new MethodGetClass());
+        registerPredefinedMethod(new MethodGetCollectionName());
+        registerPredefinedMethod(new MethodGetEntityClass());
+        registerPredefinedMethod(new MethodGetEntityUniqueIdClass());
+        registerPredefinedMethod(new MethodGetUniqueId());
+        registerPredefinedMethod(new MethodHashCode());
+        registerPredefinedMethod(new MethodPageAll());
+        registerPredefinedMethod(new MethodSave());
+        registerPredefinedMethod(new MethodSaveAll());
+        registerPredefinedMethod(new MethodSortAll());
+        registerPredefinedMethod(new MethodToString());
+        registerPredefinedMethod(new MethodUpdateAllFields());
     }
 
     @SuppressWarnings("unchecked")
@@ -280,7 +319,7 @@ public class MongoManager {
             }
             Field entityUniqueIdField = tempEntityUniqueIdField;
 
-            // Creating the collection and the repository metaobjects.
+            // Creating the collection and the repository meta-objects.
             MongoCollection<E> entityCollection = database.getCollection(entityCollectionName, entityClass);
             RepositoryMeta<E, ID, R> repositoryMeta = new RepositoryMeta<>(this,
                 repositoryClass, entityClass,
@@ -288,30 +327,6 @@ public class MongoManager {
                 entityIdClass, entityUniqueIdField,
                 entityCollection, entityCollectionName
             );
-
-            // Define default methods with handler into the meta registry
-            repositoryMeta.registerPredefinedMethod(new MethodCountAll<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodDelete<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodDeleteMany<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodDeleteById<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodDrop<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodEquals<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodExists<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodExistsById<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodFindAll<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodFindFirstById<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodGetClass<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodGetCollectionName<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodGetEntityClass<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodGetEntityUniqueIdClass<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodGetUniqueId<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodHashCode<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodPageAll<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodSave<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodSaveAll<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodSortAll<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodToString<>(repositoryMeta, entityCollection));
-            repositoryMeta.registerPredefinedMethod(new MethodUpdateAllFields<>(repositoryMeta, entityCollection));
 
             // Iterate through the repository methods
             for (Method method : repositoryClass.getMethods()) {
@@ -324,7 +339,7 @@ public class MongoManager {
                 }
 
                 // Check if we catch a predefined method
-                if (repositoryMeta.isRepositoryMethod(methodName)) {
+                if (predefinedMethodRegistry.containsKey(methodName)) {
                     continue;
                 }
 
@@ -341,8 +356,8 @@ public class MongoManager {
                 if (isAsyncMethod) {
                     // Check async method name
                     if (methodName.startsWith("async")) {
-                        String predefinedName = repositoryMeta.getPredefinedNameByAsyncName(methodName);
-                        if (repositoryMeta.isRepositoryMethod(predefinedName)) {
+                        String predefinedName = repositoryMeta.stripAsyncName(methodName);
+                        if (predefinedMethodRegistry.containsKey(predefinedName)) {
                             continue;
                         }
                         throw new MethodInvalidAsyncNameException(method, repositoryClass);
@@ -598,7 +613,7 @@ public class MongoManager {
             ClassLoader repoClassLoader = repositoryClass.getClassLoader();
             Class<?>[] interfaces = new Class[]{repositoryClass};
             Repository<E, ID> repository = (Repository<E, ID>) Proxy.newProxyInstance(repoClassLoader, interfaces,
-                new RepositoryInvocationHandler<>(repositoryMeta, executorService));
+                new RepositoryInvocationHandler<>(repositoryMeta, executorService, predefinedMethodRegistry));
             repositoryRegistry.put(repositoryClass, repository);
             repositoryMetaRegistry.put(repositoryClass, repositoryMeta);
             return (R) repository;

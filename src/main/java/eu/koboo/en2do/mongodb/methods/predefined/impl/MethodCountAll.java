@@ -1,20 +1,20 @@
 package eu.koboo.en2do.mongodb.methods.predefined.impl;
 
-import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.mongodb.RepositoryMeta;
-import eu.koboo.en2do.mongodb.methods.predefined.PredefinedMethod;
+import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
 
 import java.lang.reflect.Method;
 
-public class MethodCountAll<E, ID, R extends Repository<E, ID>> extends PredefinedMethod<E, ID, R> {
+public class MethodCountAll extends GlobalPredefinedMethod {
 
-    public MethodCountAll(RepositoryMeta<E, ID, R> meta, MongoCollection<E> entityCollection) {
-        super("countAll", meta, entityCollection);
+    public MethodCountAll() {
+        super("countAll");
     }
 
     @Override
-    public Object handle(Method method, Object[] arguments) throws Exception {
-        return entityCollection.countDocuments();
+    public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryMeta<E, ID, R> repositoryMeta,
+                                                              Method method, Object[] arguments) throws Exception {
+        return repositoryMeta.getCollection().countDocuments();
     }
 }
