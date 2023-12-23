@@ -18,6 +18,6 @@ public class MethodExistsById extends GlobalPredefinedMethod {
                                                               Method method, Object[] arguments) throws Exception {
         ID uniqueId = repositoryMeta.checkUniqueId(method, arguments[0]);
         Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
-        return repositoryMeta.getCollection().countDocuments(idFilter) > 0;
+        return repositoryMeta.getEntityCollection().countDocuments(idFilter) > 0;
     }
 }

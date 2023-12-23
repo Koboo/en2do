@@ -28,7 +28,7 @@ public class MethodSave extends GlobalPredefinedMethod {
         E entity = repositoryMeta.checkEntity(method, arguments[0]);
         ID uniqueId = repositoryMeta.checkUniqueId(method, repositoryMeta.getUniqueId(entity));
         Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
-        MongoCollection<E> entityCollection = repositoryMeta.getCollection();
+        MongoCollection<E> entityCollection = repositoryMeta.getEntityCollection();
         if (entityCollection.countDocuments(idFilter) > 0) {
             UpdateResult result = entityCollection.replaceOne(idFilter, entity, replaceOptions);
             return result.wasAcknowledged();

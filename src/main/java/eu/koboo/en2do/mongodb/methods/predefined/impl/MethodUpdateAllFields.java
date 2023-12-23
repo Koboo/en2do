@@ -20,7 +20,7 @@ public class MethodUpdateAllFields extends GlobalPredefinedMethod {
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryMeta<E, ID, R> repositoryMeta,
                                                               Method method, Object[] arguments) throws Exception {
         // Cast the first object of the array to the UpdateBatch object
-        MongoCollection<E> collection = repositoryMeta.getCollection();
+        MongoCollection<E> collection = repositoryMeta.getEntityCollection();
         UpdateBatch updateBatch = (UpdateBatch) arguments[0];
 
         // Call the UpdateBatch on all documents with the "id" field of the entity,

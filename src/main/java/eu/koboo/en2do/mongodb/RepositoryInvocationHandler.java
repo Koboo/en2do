@@ -93,7 +93,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         }
 
         // Switch-case the method operator to use the correct mongo query.
-        final MongoCollection<E> collection = repositoryMeta.getCollection();
+        final MongoCollection<E> collection = repositoryMeta.getEntityCollection();
 
         FindIterable<E> findIterable;
         switch (dynamicMethod.getMethodOperator()) {

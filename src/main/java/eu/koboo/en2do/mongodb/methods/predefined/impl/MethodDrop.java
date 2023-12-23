@@ -15,7 +15,7 @@ public class MethodDrop extends GlobalPredefinedMethod {
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryMeta<E, ID, R> repositoryMeta,
                                                               Method method, Object[] arguments) throws Exception {
-        repositoryMeta.getCollection().drop();
+        repositoryMeta.getEntityCollection().drop();
         return true;
     }
 }

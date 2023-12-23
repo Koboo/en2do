@@ -27,7 +27,7 @@ public class MethodSaveAll extends GlobalPredefinedMethod {
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryMeta<E, ID, R> repositoryMeta,
                                                               Method method, Object[] arguments) throws Exception {
-        MongoCollection<E> entityCollection = repositoryMeta.getCollection();
+        MongoCollection<E> entityCollection = repositoryMeta.getEntityCollection();
         Collection<E> entityList = repositoryMeta.checkEntityList(method, arguments[0]);
         if (entityList.isEmpty()) {
             return true;

@@ -15,6 +15,6 @@ public class MethodCountAll extends GlobalPredefinedMethod {
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryMeta<E, ID, R> repositoryMeta,
                                                               Method method, Object[] arguments) throws Exception {
-        return repositoryMeta.getCollection().countDocuments();
+        return repositoryMeta.getEntityCollection().countDocuments();
     }
 }

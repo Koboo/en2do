@@ -30,7 +30,7 @@ public class MethodDeleteMany extends GlobalPredefinedMethod {
             idList.add(uniqueId);
         }
         Bson idFilter = Filters.in("_id", idList);
-        repositoryMeta.getCollection().deleteMany(idFilter);
+        repositoryMeta.getEntityCollection().deleteMany(idFilter);
         return true;
     }
 }

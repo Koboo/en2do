@@ -18,7 +18,7 @@ public class MethodDeleteById extends GlobalPredefinedMethod {
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryMeta<E, ID, R> repositoryMeta,
                                                               Method method, Object[] arguments) throws Exception {
-        MongoCollection<E> collection = repositoryMeta.getCollection();
+        MongoCollection<E> collection = repositoryMeta.getEntityCollection();
         ID uniqueId = repositoryMeta.checkUniqueId(method, arguments[0]);
         Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
         DeleteResult result = collection.deleteOne(idFilter);
