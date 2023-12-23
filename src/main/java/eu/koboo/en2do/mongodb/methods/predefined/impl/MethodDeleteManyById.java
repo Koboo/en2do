@@ -8,8 +8,6 @@ import org.bson.conversions.Bson;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
 
 public class MethodDeleteManyById extends GlobalPredefinedMethod {
 
