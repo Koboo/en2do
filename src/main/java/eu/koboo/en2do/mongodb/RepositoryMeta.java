@@ -32,9 +32,9 @@ import java.util.*;
 @Getter
 public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
 
-    MongoManager manager;
+    MongoManager mongoManager;
     String collectionName;
-    MongoCollection<E> collection;
+    MongoCollection<E> entityCollection;
     Class<R> repositoryClass;
     Class<E> entityClass;
     Set<Field> entityFieldSet;
@@ -44,13 +44,13 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     @Getter(AccessLevel.NONE)
     Map<String, IndexedMethod<E, ID, R>> dynamicMethodRegistry;
 
-    public RepositoryMeta(MongoManager manager, Class<R> repositoryClass, Class<E> entityClass,
+    public RepositoryMeta(MongoManager mongoManager, Class<R> repositoryClass, Class<E> entityClass,
                           Set<Field> entityFieldSet,
                           Class<ID> entityUniqueIdClass, Field entityUniqueIdField,
-                          MongoCollection<E> collection, String collectionName) {
-        this.manager = manager;
+                          MongoCollection<E> entityCollection, String collectionName) {
+        this.mongoManager = mongoManager;
         this.collectionName = collectionName;
-        this.collection = collection;
+        this.entityCollection = entityCollection;
 
         this.repositoryClass = repositoryClass;
         this.entityClass = entityClass;
@@ -124,11 +124,11 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     public FindIterable<E> createIterable(Bson filter, String methodName) {
         FindIterable<E> findIterable;
         if (filter != null) {
-            findIterable = collection.find(filter);
+            findIterable = entityCollection.find(filter);
         } else {
-            findIterable = collection.find();
+            findIterable = entityCollection.find();
         }
-        if (manager.getBuilder().isAppendMethodAsComment()) {
+        if (mongoManager.getBuilder().isAppendMethodAsComment()) {
             findIterable.comment("en2do \"" + methodName + "\"");
         }
         return findIterable;
@@ -169,7 +169,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
             }
             findIterable = findIterable.skip(skip);
         }
-        findIterable.allowDiskUse(true);
+        findIterable.allowDiskUse(mongoManager.getBuilder().isAllowDiskUse());
         return findIterable;
     }
 
@@ -197,7 +197,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
             }
             findIterable = findIterable.skip(value);
         }
-        findIterable.allowDiskUse(true);
+        findIterable.allowDiskUse(mongoManager.getBuilder().isAllowDiskUse());
         return findIterable;
     }
 

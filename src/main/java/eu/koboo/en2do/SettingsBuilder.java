@@ -12,7 +12,7 @@ public class SettingsBuilder {
 
     Level mongoLoggerLevel;
     boolean disallowUUIDKeys;
-    boolean disallowDiskUsage;
+    boolean allowDiskUse;
     boolean appendMethodAsComment;
     String collectionPrefix;
     String collectionSuffix;
@@ -33,7 +33,7 @@ public class SettingsBuilder {
     }
 
     public SettingsBuilder disallowDiskUsageOnPagination() {
-        this.disallowDiskUsage = true;
+        this.allowDiskUse = false;
         return this;
     }
 
