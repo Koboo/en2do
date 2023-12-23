@@ -34,6 +34,14 @@ public interface Repository<E, ID> {
     boolean delete(E entity);
 
     /**
+     * This method deletes the entity with the given identifier, filtering like the "#delete(E entity)" method.
+     *
+     * @param identifier The unique identifier of the entity, which should be deleted.
+     * @return true, if the entity was deleted successfully.
+     */
+    boolean deleteById(ID identifier);
+
+    /**
      * This method deletes all entities of the given list, filtering like the "#delete(E entity)" method.
      *
      * @param entityList The List with the entities, which should be deleted.
@@ -42,12 +50,12 @@ public interface Repository<E, ID> {
     boolean deleteMany(Collection<E> entityList);
 
     /**
-     * This method deletes the entity with the given identifier, filtering like the "#delete(E entity)" method.
+     * This method deletes all entities with the id within the given list.
      *
-     * @param identifier The unique identifier of the entity, which should be deleted.
-     * @return true, if the entity was deleted successfully.
+     * @param idList The List with the ids of the entities, which should be deleted.
+     * @return true, if all entities were deleted successfully.
      */
-    boolean deleteById(ID identifier);
+    boolean deleteManyById(Collection<ID> idList);
 
     /**
      * Drops / deletes all entities of the repository.

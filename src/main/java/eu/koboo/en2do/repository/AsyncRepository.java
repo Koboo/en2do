@@ -42,6 +42,16 @@ public interface AsyncRepository<E, ID> {
     /**
      * Async representation
      *
+     * @param identifier The identifier of the entity, which should be deleted
+     * @return Future, with a boolean of success
+     * @see Repository#deleteById(Object)
+     */
+    @Async
+    CompletableFuture<Boolean> asyncDeleteById(ID identifier);
+
+    /**
+     * Async representation
+     *
      * @param entityList The List with entities, which should be deleted
      * @return Future, with a boolean of success
      * @see Repository#deleteMany(Collection)
@@ -52,12 +62,12 @@ public interface AsyncRepository<E, ID> {
     /**
      * Async representation
      *
-     * @param identifier The identifier of the entity, which should be deleted
+     * @param idList The List with ids of the entities, which should be deleted
      * @return Future, with a boolean of success
-     * @see Repository#deleteById(Object)
+     * @see Repository#deleteManyById(Collection)
      */
     @Async
-    CompletableFuture<Boolean> asyncDeleteById(ID identifier);
+    CompletableFuture<Boolean> asyncDeleteManyById(Collection<ID> idList);
 
     /**
      * Async representation

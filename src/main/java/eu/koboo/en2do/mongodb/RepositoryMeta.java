@@ -109,6 +109,16 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
         return entity;
     }
 
+    @SuppressWarnings("unchecked")
+    public Collection<ID> checkUniqueIdList(Method method, Object argument) {
+        Collection<ID> entity = (Collection<ID>) argument;
+        if (entity == null) {
+            throw new NullPointerException("ID-List of Entities of type " + entityClass.getName() + " as parameter of method " +
+                method.getName() + " is null.");
+        }
+        return entity;
+    }
+
     public ID getUniqueId(E entity) throws IllegalAccessException {
         return entityUniqueIdClass.cast(entityUniqueIdField.get(entity));
     }
