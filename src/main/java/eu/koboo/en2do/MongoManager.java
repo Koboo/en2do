@@ -37,10 +37,7 @@ import eu.koboo.en2do.repository.methods.transform.NestedField;
 import eu.koboo.en2do.repository.methods.transform.Transform;
 import eu.koboo.en2do.repository.options.DropEntitiesOnStart;
 import eu.koboo.en2do.repository.options.DropIndexesOnStart;
-import eu.koboo.en2do.utility.AnnotationUtils;
-import eu.koboo.en2do.utility.FieldUtils;
-import eu.koboo.en2do.utility.GenericUtils;
-import eu.koboo.en2do.utility.MethodUtils;
+import eu.koboo.en2do.utility.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
@@ -245,32 +242,8 @@ public class MongoManager {
                 return (R) repositoryRegistry.get(repositoryClass);
             }
 
-            // Parse annotated collection name and create pojo-related mongo collection
-            Collection collectionAnnotation = repositoryClass.getAnnotation(Collection.class);
-            if (collectionAnnotation == null) {
-                throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
-            }
-
-            // Check if the collection name is valid and for duplication issues
-            String entityCollectionName = collectionAnnotation.value();
-            if (entityCollectionName.trim().equalsIgnoreCase("")) {
-                throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
-            }
-
-            String collectionPrefix = builder.getCollectionPrefix();
-            if (collectionPrefix != null) {
-                entityCollectionName = collectionPrefix + entityCollectionName;
-            }
-
-            String collectionSuffix = builder.getCollectionSuffix();
-            if (collectionSuffix != null) {
-                entityCollectionName = entityCollectionName + collectionSuffix;
-            }
-
-            for (RepositoryMeta<?, ?, ?> meta : repositoryMetaRegistry.values()) {
-                if (meta.getCollectionName().equalsIgnoreCase(entityCollectionName)) {
-                    throw new RepositoryNameDuplicateException(repositoryClass, Collection.class);
-                }
+            if(!Repository.class.isAssignableFrom(repositoryClass)) {
+                throw new RepositoryInvalidException(repositoryClass);
             }
 
             Map<Class<?>, List<Class<?>>> genericTypes = GenericUtils.getGenericTypes(repositoryClass);
@@ -284,6 +257,26 @@ public class MongoManager {
             }
             Class<E> entityClass = (Class<E>) classList.get(0);
             Class<ID> entityIdClass = (Class<ID>) classList.get(1);
+
+
+            // Parse annotated collection name and create pojo-related mongo collection
+            Collection collectionAnnotation = MongoCollectionUtils.parseAnnotation(repositoryClass, entityClass);
+            if(collectionAnnotation == null) {
+                throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
+            }
+
+            // Check if the collection name is valid and for duplication issues
+            String entityCollectionName = collectionAnnotation.value();
+            if (entityCollectionName.trim().equalsIgnoreCase("")) {
+                throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
+            }
+            entityCollectionName = MongoCollectionUtils.createCollectionName(builder, entityCollectionName);
+
+            for (RepositoryMeta<?, ?, ?> meta : repositoryMetaRegistry.values()) {
+                if (meta.getCollectionName().equalsIgnoreCase(entityCollectionName)) {
+                    throw new RepositoryNameDuplicateException(repositoryClass, Collection.class);
+                }
+            }
 
             if (AsyncRepository.class.isAssignableFrom(repositoryClass)) {
                 List<Class<?>> asyncClassList = genericTypes.get(AsyncRepository.class);
