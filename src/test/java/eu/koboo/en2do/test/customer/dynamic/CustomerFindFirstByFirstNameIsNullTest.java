@@ -10,7 +10,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CustomerFindFirstByFirstNameContainsTest extends CustomerRepositoryTest {
+public class CustomerFindFirstByFirstNameIsNullTest extends CustomerRepositoryTest {
 
     @Test
     @Order(1)
@@ -25,6 +25,7 @@ public class CustomerFindFirstByFirstNameContainsTest extends CustomerRepository
     public void saveCustomer() {
         Customer customer = Const.createCustomer();
         assertNotNull(customer);
+        customer.setFirstName(null);
         assertTrue(repository.save(customer));
         assertTrue(repository.exists(customer));
     }
@@ -32,10 +33,10 @@ public class CustomerFindFirstByFirstNameContainsTest extends CustomerRepository
     @Test
     @Order(3)
     public void operationTest() {
-        Customer customer = repository.findFirstByFirstNameContains("aine");
+        Customer customer = repository.findFirstByFirstNameIsNull();
         assertNotNull(customer);
         assertEquals(Const.CUSTOMER_ID, customer.getCustomerId());
-        assertEquals(Const.FIRST_NAME, customer.getFirstName());
+        assertNull(customer.getFirstName());
         assertEquals(Const.LAST_NAME, customer.getLastName());
         assertEquals(Const.BIRTHDAY, customer.getBirthday());
         assertEquals(Const.PHONE_NUMBER, customer.getPhoneNumber());

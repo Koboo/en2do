@@ -93,4 +93,12 @@ public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRep
 
     @NestedField(key = "KeyToIdentify", query = "order.orderText")
     Customer findFirstByUniqueIdAndKeyToIdentify(UUID uniqueId, String orderText);
+
+    Customer findFirstByFirstNameIsNull();
+
+    Customer findFirstByFirstNameNonNull();
+
+    Customer findFirstByLockedIsTrue();
+
+    Customer findFirstByLockedIsFalse();
 }

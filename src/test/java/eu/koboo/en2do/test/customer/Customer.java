@@ -24,6 +24,7 @@ public class Customer {
     UUID uniqueId;
 
     int customerId;
+    boolean locked;
     String firstName;
     String lastName;
     String birthday;
