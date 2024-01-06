@@ -1,6 +1,5 @@
-package eu.koboo.en2do.internal.operators;
+package eu.koboo.en2do.operators;
 
-import eu.koboo.en2do.internal.returntype.*;
 import eu.koboo.en2do.mongodb.exception.returntype.*;
 import eu.koboo.en2do.utility.GenericUtils;
 import lombok.AccessLevel;

@@ -1,6 +1,6 @@
 package eu.koboo.en2do.mongodb;
 
-import eu.koboo.en2do.internal.operators.FilterOperator;
+import eu.koboo.en2do.operators.FilterOperator;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidListParameterException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidRegexParameterException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodMismatchingTypeException;
