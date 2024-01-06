@@ -1,4 +1,4 @@
-package eu.koboo.en2do.internal.exceptions;
+package eu.koboo.en2do.mongodb.exception.returntype;
 
 import java.lang.reflect.Method;
 
