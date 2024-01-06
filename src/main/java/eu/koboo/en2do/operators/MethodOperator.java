@@ -25,7 +25,7 @@ public enum MethodOperator {
     FIND("find", (method, returnType, entityClass, repoClass) -> {
         boolean isList = !GenericUtils.isNotTypeOf(Collection.class, returnType);
         Class<?> returnEntityType;
-        if(isList) {
+        if (isList) {
             returnEntityType = GenericUtils.getGenericTypeOfReturnType(method);
         } else {
             returnEntityType = returnType;

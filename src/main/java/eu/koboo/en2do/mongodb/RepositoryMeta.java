@@ -214,7 +214,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     public FindIterable<E> applyMethodDefinedCount(IndexedMethod<E, ID, R> indexedMethod,
                                                    FindIterable<E> findIterable) throws Exception {
         Long methodDefinedEntityCount = indexedMethod.getMethodDefinedEntityCount();
-        if(methodDefinedEntityCount == null) {
+        if (methodDefinedEntityCount == null) {
             return findIterable;
         }
         return findIterable.limit(Math.toIntExact(methodDefinedEntityCount));

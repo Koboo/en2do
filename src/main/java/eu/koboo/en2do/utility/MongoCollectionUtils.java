@@ -25,7 +25,7 @@ public class MongoCollectionUtils {
     public Collection parseAnnotation(Class<?>... classes) {
         for (Class<?> clazz : classes) {
             Collection collectionAnnotation = clazz.getAnnotation(Collection.class);
-            if(collectionAnnotation == null) {
+            if (collectionAnnotation == null) {
                 continue;
             }
             return collectionAnnotation;

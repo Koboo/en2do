@@ -20,14 +20,14 @@ public class MethodUtils {
         char[] charArray = string.toCharArray();
         StringBuilder numberBuilder = new StringBuilder();
         for (char c : charArray) {
-            if(Character.isDigit(c)) {
+            if (Character.isDigit(c)) {
                 numberBuilder.append(c);
                 continue;
             }
             break;
         }
         String number = numberBuilder.toString();
-        if(number.isEmpty()) {
+        if (number.isEmpty()) {
             return 0;
         }
         return Long.parseLong(number);

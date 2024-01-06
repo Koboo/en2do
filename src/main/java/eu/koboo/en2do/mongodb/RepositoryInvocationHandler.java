@@ -114,7 +114,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 // First = 1 / first entity
                 Long methodDefinedEntityCount = indexedMethod.getMethodDefinedEntityCount();
                 if (methodDefinedEntityCount == -1 || methodDefinedEntityCount > 1) {
-                    if(methodDefinedEntityCount != -1) {
+                    if (methodDefinedEntityCount != -1) {
                         findIterable = findIterable.limit(Math.toIntExact(methodDefinedEntityCount));
                     }
                     return findIterable.into(new ArrayList<>());

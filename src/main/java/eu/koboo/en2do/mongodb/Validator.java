@@ -1,11 +1,11 @@
 package eu.koboo.en2do.mongodb;
 
-import eu.koboo.en2do.operators.FilterOperator;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidListParameterException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidRegexParameterException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodMismatchingTypeException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodParameterNotFoundException;
 import eu.koboo.en2do.mongodb.exception.repository.*;
+import eu.koboo.en2do.operators.FilterOperator;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.entity.TransformField;

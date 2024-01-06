@@ -8,9 +8,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import eu.koboo.en2do.operators.Chain;
-import eu.koboo.en2do.operators.FilterOperator;
-import eu.koboo.en2do.operators.MethodOperator;
 import eu.koboo.en2do.mongodb.RepositoryInvocationHandler;
 import eu.koboo.en2do.mongodb.RepositoryMeta;
 import eu.koboo.en2do.mongodb.Validator;
@@ -22,6 +19,9 @@ import eu.koboo.en2do.mongodb.methods.dynamic.IndexedFilter;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
 import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
 import eu.koboo.en2do.mongodb.methods.predefined.impl.*;
+import eu.koboo.en2do.operators.Chain;
+import eu.koboo.en2do.operators.FilterOperator;
+import eu.koboo.en2do.operators.MethodOperator;
 import eu.koboo.en2do.repository.AsyncRepository;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.Repository;
@@ -242,7 +242,7 @@ public class MongoManager {
                 return (R) repositoryRegistry.get(repositoryClass);
             }
 
-            if(!Repository.class.isAssignableFrom(repositoryClass)) {
+            if (!Repository.class.isAssignableFrom(repositoryClass)) {
                 throw new RepositoryInvalidException(repositoryClass);
             }
 
@@ -261,7 +261,7 @@ public class MongoManager {
 
             // Parse annotated collection name and create pojo-related mongo collection
             Collection collectionAnnotation = MongoCollectionUtils.parseAnnotation(repositoryClass, entityClass);
-            if(collectionAnnotation == null) {
+            if (collectionAnnotation == null) {
                 throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
             }
 
@@ -380,24 +380,24 @@ public class MongoManager {
                 String strippedMethodName = methodOperator.removeOperatorFrom(methodName);
 
                 Long methodDefinedEntityCount = null;
-                if(strippedMethodName.startsWith("Top")) {
+                if (strippedMethodName.startsWith("Top")) {
                     strippedMethodName = strippedMethodName.replaceFirst("Top", "");
-                    if(strippedMethodName.startsWith("0")) {
+                    if (strippedMethodName.startsWith("0")) {
                         //TODO: better exception
                         throw new RuntimeException("The number shouldnt start with zero.");
                     }
                     methodDefinedEntityCount = MethodUtils.getPrefixedNumber(strippedMethodName);
-                    if(methodDefinedEntityCount == 0) {
+                    if (methodDefinedEntityCount == 0) {
                         //TODO: better exception
                         throw new RuntimeException("0 isnt a valid top number");
                     }
                     strippedMethodName = strippedMethodName.replaceFirst(String.valueOf(methodDefinedEntityCount), "");
                 }
-                if(strippedMethodName.startsWith("Many")) {
+                if (strippedMethodName.startsWith("Many")) {
                     strippedMethodName = strippedMethodName.replaceFirst("Many", "");
                     methodDefinedEntityCount = -1L;
                 }
-                if(strippedMethodName.startsWith("First")) {
+                if (strippedMethodName.startsWith("First")) {
                     strippedMethodName = strippedMethodName.replaceFirst("First", "");
                     methodDefinedEntityCount = 1L;
                 }
