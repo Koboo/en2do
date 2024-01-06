@@ -53,6 +53,10 @@ public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRep
 
     Customer findFirstByFirstNameExists();
 
+    List<Customer> findManyByFirstNameExists();
+
+    List<Customer> findTop20ByFirstNameExists();
+
     Customer findFirstByFirstNameContains(String partOfFirstName);
 
     List<Customer> findManyByBalanceBetweenAndCustomerId(double from, double to, int customerId);
