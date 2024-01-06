@@ -149,6 +149,18 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 Object hasObject = repositoryMeta.getFilterableValue(args[paramsIndexAt]);
                 retFilter = Filters.in(queryFieldName, hasObject);
                 break;
+            case IS_NULL:
+                retFilter = Filters.eq(queryFieldName, null);
+                break;
+            case NON_NULL:
+                retFilter = Filters.not(Filters.eq(queryFieldName, null));
+                break;
+            case IS_TRUE:
+                retFilter = Filters.eq(queryFieldName, true);
+                break;
+            case IS_FALSE:
+                retFilter = Filters.eq(queryFieldName, false);
+                break;
             default: // This filter is not supported. Throw exception.
                 throw new MethodUnsupportedFilterException(method, repositoryMeta.getRepositoryClass());
         }

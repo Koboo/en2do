@@ -26,7 +26,14 @@ public enum FilterOperator {
     BETWEEN_EQUALS("BetweenEq", 2),
     IN("In", 1),
     HAS_KEY("HasKey", 1),
-    HAS("Has", 1);
+    HAS("Has", 1),
+
+    IS_NULL("IsNull", 0),
+    NON_NULL("NonNull", 0),
+    IS_TRUE("IsTrue", 0),
+    IS_FALSE("IsFalse", 0),
+
+    ;
 
     public static final FilterOperator[] VALUES = FilterOperator.values();
 
