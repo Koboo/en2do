@@ -84,35 +84,43 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         }
     }
 
-    private Object executeMethod(IndexedMethod<E, ID, R> dynamicMethod, Object[] arguments, Method method, String methodName) throws Exception {
+    private Object executeMethod(IndexedMethod<E, ID, R> indexedMethod, Object[] arguments, Method method, String methodName) throws Exception {
         // Generate bson filter by dynamic Method object.
-        Bson filter = dynamicMethod.createFilter(arguments);
+        Bson filter = indexedMethod.createFilter(arguments);
 
         if (filter == null) {
-            throw new NullPointerException("The created filter for " + dynamicMethod.getMethod().getName() + " is null!");
+            throw new NullPointerException("The created filter for " + indexedMethod.getMethod().getName() + " is null!");
         }
 
         // Switch-case the method operator to use the correct mongo query.
         final MongoCollection<E> collection = repositoryMeta.getEntityCollection();
 
         FindIterable<E> findIterable;
-        switch (dynamicMethod.getMethodOperator()) {
+        switch (indexedMethod.getMethodOperator()) {
             case COUNT:
                 return collection.countDocuments(filter);
             case DELETE:
                 return collection.deleteMany(filter).wasAcknowledged();
             case EXISTS:
                 return collection.countDocuments(filter) > 0;
-            case FIND_MANY:
+            case FIND:
                 findIterable = repositoryMeta.createIterable(filter, methodName);
                 findIterable = repositoryMeta.applySortObject(method, findIterable, arguments);
                 findIterable = repositoryMeta.applySortAnnotations(method, findIterable);
-                return findIterable.into(new ArrayList<>());
-            case FIND_FIRST:
-                findIterable = repositoryMeta.createIterable(filter, methodName);
-                findIterable = repositoryMeta.applySortObject(method, findIterable, arguments);
-                findIterable = repositoryMeta.applySortAnnotations(method, findIterable);
-                return findIterable.limit(1).first();
+
+                // Because it's a find method, we always got an entity defined count.
+                // Many = -1 / unlimited
+                // Top = specific count
+                // First = 1 / first entity
+                Long methodDefinedEntityCount = indexedMethod.getMethodDefinedEntityCount();
+                if (methodDefinedEntityCount == -1 || methodDefinedEntityCount > 1) {
+                    if(methodDefinedEntityCount != -1) {
+                        findIterable = findIterable.limit(Math.toIntExact(methodDefinedEntityCount));
+                    }
+                    return findIterable.into(new ArrayList<>());
+                } else {
+                    return findIterable.first();
+                }
             case PAGE:
                 findIterable = repositoryMeta.createIterable(filter, methodName);
                 findIterable = repositoryMeta.applyPageObject(method, findIterable, arguments);

@@ -30,6 +30,9 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
     MethodOperator methodOperator;
     Chain chain;
 
+    @Getter
+    Long methodDefinedEntityCount;
+
     List<IndexedFilter> indexedFilterList;
 
     RepositoryMeta<E, ID, R> repositoryMeta;

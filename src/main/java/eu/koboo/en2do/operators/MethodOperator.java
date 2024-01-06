@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -19,29 +20,24 @@ import java.util.List;
 public enum MethodOperator {
 
     /**
-     * Searches the first entity with the given filters.
+     * Searches entities with the given filters.
      */
-    FIND_FIRST("findFirstBy", (method, returnType, entityClass, repoClass) -> {
-        if (GenericUtils.isNotTypeOf(entityClass, returnType)) {
+    FIND("find", (method, returnType, entityClass, repoClass) -> {
+        boolean isList = !GenericUtils.isNotTypeOf(Collection.class, returnType);
+        Class<?> returnEntityType;
+        if(isList) {
+            returnEntityType = GenericUtils.getGenericTypeOfReturnType(method);
+        } else {
+            returnEntityType = returnType;
+        }
+        if (GenericUtils.isNotTypeOf(entityClass, returnEntityType)) {
             throw new MethodFindReturnTypeException(method, entityClass, repoClass);
-        }
-    }),
-    /**
-     * Searches all entities with the given filters.
-     */
-    FIND_MANY("findManyBy", (method, returnType, entityClass, repoClass) -> {
-        if (GenericUtils.isNotTypeOf(List.class, returnType)) {
-            throw new MethodFindListReturnTypeException(method, entityClass, repoClass);
-        }
-        Class<?> listType = GenericUtils.getGenericTypeOfReturnType(method);
-        if (!listType.isAssignableFrom(entityClass)) {
-            throw new MethodFindListTypeException(method, repoClass, listType, entityClass);
         }
     }),
     /**
      * Deletes all entities with the given filters.
      */
-    DELETE("deleteBy", (method, returnType, entityClass, repoClass) -> {
+    DELETE("delete", (method, returnType, entityClass, repoClass) -> {
         if (GenericUtils.isNotTypeOf(Boolean.class, returnType)) {
             throw new MethodBooleanReturnTypeException(method, repoClass);
         }
@@ -49,7 +45,7 @@ public enum MethodOperator {
     /**
      * Checks if any entity exists with the given filters.
      */
-    EXISTS("existsBy", (method, returnType, entityClass, repoClass) -> {
+    EXISTS("exists", (method, returnType, entityClass, repoClass) -> {
         if (GenericUtils.isNotTypeOf(Boolean.class, returnType)) {
             throw new MethodBooleanReturnTypeException(method, repoClass);
         }
@@ -57,7 +53,7 @@ public enum MethodOperator {
     /**
      * Counts all entities with the given filters.
      */
-    COUNT("countBy", (method, returnType, entityClass, repoClass) -> {
+    COUNT("count", (method, returnType, entityClass, repoClass) -> {
         if (GenericUtils.isNotTypeOf(Long.class, returnType)) {
             throw new MethodLongReturnTypeException(method, repoClass);
         }
@@ -65,7 +61,7 @@ public enum MethodOperator {
     /**
      * Creates pagination on all entities with the given filters.
      */
-    PAGE("pageBy", (method, returnType, entityClass, repoClass) -> {
+    PAGE("page", (method, returnType, entityClass, repoClass) -> {
         if (GenericUtils.isNotTypeOf(List.class, returnType)) {
             throw new MethodFindListReturnTypeException(method, entityClass, repoClass);
         }
@@ -77,7 +73,7 @@ public enum MethodOperator {
     /**
      * Updates specific fields on all entities with the given filters.
      */
-    UPDATE_FIELD("updateFieldsBy", (method, returnType, entityClass, repoClass) -> {
+    UPDATE_FIELD("updateFields", (method, returnType, entityClass, repoClass) -> {
         if (GenericUtils.isNotTypeOf(Boolean.class, returnType)) {
             throw new MethodBooleanReturnTypeException(method, repoClass);
         }

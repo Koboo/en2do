@@ -370,11 +370,39 @@ public class MongoManager {
                     throw new MethodNoMethodOperatorException(method, repositoryClass);
                 }
 
+                // TODO: Save fetched count to indexed method
+                // TODO: Replace "By" part of the filter.
+
                 // Check the returnTypes by using the predefined validator.
                 methodOperator.validate(method, returnType, entityClass, repositoryClass);
 
                 // Remove the leading methodOperator to ensure it doesn't trick the validation
                 String strippedMethodName = methodOperator.removeOperatorFrom(methodName);
+
+                Long methodDefinedEntityCount = null;
+                if(strippedMethodName.startsWith("Top")) {
+                    strippedMethodName = strippedMethodName.replaceFirst("Top", "");
+                    if(strippedMethodName.startsWith("0")) {
+                        //TODO: better exception
+                        throw new RuntimeException("The number shouldnt start with zero.");
+                    }
+                    methodDefinedEntityCount = MethodUtils.getPrefixedNumber(strippedMethodName);
+                    if(methodDefinedEntityCount == 0) {
+                        //TODO: better exception
+                        throw new RuntimeException("0 isnt a valid top number");
+                    }
+                    strippedMethodName = strippedMethodName.replaceFirst(String.valueOf(methodDefinedEntityCount), "");
+                }
+                if(strippedMethodName.startsWith("Many")) {
+                    strippedMethodName = strippedMethodName.replaceFirst("Many", "");
+                    methodDefinedEntityCount = -1L;
+                }
+                if(strippedMethodName.startsWith("First")) {
+                    strippedMethodName = strippedMethodName.replaceFirst("First", "");
+                    methodDefinedEntityCount = 1L;
+                }
+
+                strippedMethodName = strippedMethodName.replaceFirst("By", "");
 
                 // Parse, validate and handle the method name and "compile" it to en2do internal usage objects.
                 Set<NestedField> nestedFieldSet = AnnotationUtils.getNestedKeySet(method);
@@ -530,11 +558,13 @@ public class MongoManager {
                         throw new MethodMixedSortException(method, repositoryClass, Sort.class, SortBy.class);
                     }
                     // We can't check the field, because it's a parameter, we can only check it, on executing
-                    // while runtime
+                    // while runtime, so good luck to you my dear ;)
                 }
 
-                IndexedMethod<E, ID, R> dynamicMethod = new IndexedMethod<>(method, methodOperator,
-                    chain, indexedFilterList, repositoryMeta);
+                IndexedMethod<E, ID, R> dynamicMethod = new IndexedMethod<>(
+                    method, methodOperator, chain,
+                    methodDefinedEntityCount,
+                    indexedFilterList, repositoryMeta);
                 repositoryMeta.registerDynamicMethod(methodName, dynamicMethod);
             }
 
