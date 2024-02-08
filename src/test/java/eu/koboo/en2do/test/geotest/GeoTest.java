@@ -8,10 +8,17 @@ import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GeoTest extends RepositoryTest<GeoEntity, UUID, GeoEntityRepository> {
+
+    static final GeoEntity ENTITY;
+
+    static {
+        ENTITY = new GeoEntity();
+        ENTITY.setIdentifier(UUID.randomUUID());
+        ENTITY.setPoint(new Point(new Position(10.047910, 51.186266)));
+    }
 
     @Override
     public Class<GeoEntityRepository> repositoryClass() {
@@ -19,26 +26,56 @@ public class GeoTest extends RepositoryTest<GeoEntity, UUID, GeoEntityRepository
     }
 
     @Test
-    public void test() {
-        GeoEntity entity = new GeoEntity();
-        entity.setIdentifier(UUID.randomUUID());
-        entity.setPoint(new Point(new Position(51.186266, 10.047910)));
-
-        repository.save(entity);
+    public void getByMaxDistanceSuccess() {
+        repository.save(ENTITY);
 
         GeoEntity first = repository.findFirstByPointGeo(Geo.of()
             .coordinates(51.182230604432114, 10.040056400797514)
-            .maxDistance(1000D));
-
-        // 720m
-        //Point point = new Point(new Position(10.040056400797514, 51.182230604432114));
-//        Point point = new Point(new Position(51.182230604432114, 10.040056400797514));
-//
-//        Bson filter = Filters.near("point", point, 1000d, null);
-//        FindIterable<GeoEntity> entities = collection.find(filter);
-//        GeoEntity first = entities.first();
+            .maxDistance(710));
 
         assertNotNull(first);
-        assertEquals(entity.getIdentifier(), first.getIdentifier());
+        assertEquals(ENTITY.getIdentifier(), first.getIdentifier());
+        assertTrue(repository.delete(first));
+        assertFalse(repository.exists(first));
+    }
+
+    @Test
+    public void getByMaxDistanceFailure() {
+        repository.save(ENTITY);
+
+        GeoEntity first = repository.findFirstByPointGeo(Geo.of()
+            .coordinates(51.182230604432114, 10.040056400797514)
+            .maxDistance(700));
+
+        assertNull(first);
+        assertTrue(repository.delete(ENTITY));
+        assertFalse(repository.exists(ENTITY));
+    }
+
+    @Test
+    public void getByMinDistanceSuccess() {
+        repository.save(ENTITY);
+
+        GeoEntity first = repository.findFirstByPointGeo(Geo.of()
+            .coordinates(51.182230604432114, 10.040056400797514)
+            .minDistance(700));
+
+        assertNotNull(first);
+        assertEquals(ENTITY.getIdentifier(), first.getIdentifier());
+        assertTrue(repository.delete(first));
+        assertFalse(repository.exists(first));
+    }
+
+    @Test
+    public void getByMinDistanceFailure() {
+        repository.save(ENTITY);
+
+        GeoEntity first = repository.findFirstByPointGeo(Geo.of()
+            .coordinates(51.182230604432114, 10.040056400797514)
+            .minDistance(710));
+
+        assertNull(first);
+        assertTrue(repository.delete(ENTITY));
+        assertFalse(repository.exists(ENTITY));
     }
 }
