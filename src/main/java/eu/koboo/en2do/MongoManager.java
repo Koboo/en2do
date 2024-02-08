@@ -643,7 +643,6 @@ public class MongoManager {
                     continue;
                 }
 
-                System.out.println(Geometry.class.isAssignableFrom(field.getType()));
                 if (!Geometry.class.isAssignableFrom(field.getType())) {
                     continue;
                 }
