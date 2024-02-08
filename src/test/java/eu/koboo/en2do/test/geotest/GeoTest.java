@@ -1,20 +1,15 @@
 package eu.koboo.en2do.test.geotest;
 
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.IndexOptions;
-import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Position;
-import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.repository.methods.geo.Geo;
 import eu.koboo.en2do.test.RepositoryTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class GeoTest extends RepositoryTest<GeoEntity, UUID, GeoEntityRepository> {
 
