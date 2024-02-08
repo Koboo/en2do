@@ -1,5 +1,6 @@
 package eu.koboo.en2do.repository;
 
+import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Sort;
@@ -164,4 +165,6 @@ public interface Repository<E, ID> {
      * @return true, if the operation was successful.
      */
     boolean updateAllFields(UpdateBatch updateBatch);
+
+    MongoCollection<E> getNativeCollection();
 }
