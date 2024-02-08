@@ -22,12 +22,12 @@ public abstract class GlobalPredefinedMethod {
     /**
      * Invokes the method and returns the created object.
      *
-     * @param <E> The generic type of the entity
-     * @param <ID> The generic type of the entity id
-     * @param <R> The generic type of the repository
+     * @param <E>            The generic type of the entity
+     * @param <ID>           The generic type of the entity id
+     * @param <R>            The generic type of the repository
      * @param repositoryMeta The repository meta of the called repository
-     * @param method    The method, which should be invoked
-     * @param arguments The object array, which represents the arguments of the method
+     * @param method         The method, which should be invoked
+     * @param arguments      The object array, which represents the arguments of the method
      * @return The object created by the method invocation
      * @throws Exception any, if something bad happens
      */

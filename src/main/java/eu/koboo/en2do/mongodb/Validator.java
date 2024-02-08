@@ -257,10 +257,10 @@ public class Validator {
                     }
                     break;
                 case GEO:
-                    if(!Geometry.class.isAssignableFrom(fieldClass)) {
+                    if (!Geometry.class.isAssignableFrom(fieldClass)) {
                         throw new RuntimeException("Field is not of type geometry!");
                     }
-                    if(!Geo.class.isAssignableFrom(paramClass)) {
+                    if (!Geo.class.isAssignableFrom(paramClass)) {
                         throw new MethodMismatchingTypeException(method, repositoryClass, Geo.class, paramClass);
                     }
                     break;

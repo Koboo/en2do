@@ -637,23 +637,23 @@ public class MongoManager {
             // Create geo index
             for (Field field : entityFieldSet) {
                 int modifiers = field.getModifiers();
-                if(Modifier.isStatic(modifiers)
+                if (Modifier.isStatic(modifiers)
                     || Modifier.isFinal(modifiers)
                     || Modifier.isTransient(modifiers)) {
                     continue;
                 }
 
                 System.out.println(Geometry.class.isAssignableFrom(field.getType()));
-                if(!Geometry.class.isAssignableFrom(field.getType())) {
+                if (!Geometry.class.isAssignableFrom(field.getType())) {
                     continue;
                 }
                 GeoIndex geoIndex = field.getAnnotation(GeoIndex.class);
-                if(geoIndex == null) {
+                if (geoIndex == null) {
                     continue;
                 }
                 String fieldName = FieldUtils.parseBsonName(field);
                 Bson indexBson;
-                if(geoIndex.sphere()) {
+                if (geoIndex.sphere()) {
                     indexBson = Indexes.geo2dsphere(fieldName);
                 } else {
                     indexBson = Indexes.geo2d(fieldName);

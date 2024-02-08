@@ -1,17 +1,9 @@
 package eu.koboo.en2do.repository.methods.geo;
 
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.geojson.Geometry;
-import com.mongodb.client.model.geojson.Point;
-import com.mongodb.client.model.geojson.Position;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
-import org.bson.conversions.Bson;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)

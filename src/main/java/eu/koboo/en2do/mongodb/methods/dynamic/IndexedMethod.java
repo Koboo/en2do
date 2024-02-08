@@ -162,7 +162,7 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                     case NEAR:
                     case NEAR_SPHERE:
                         Point point = new Point(new Position(geo.getLatitude(), geo.getLongitude()));
-                        if(geo.getType() == GeoType.NEAR) {
+                        if (geo.getType() == GeoType.NEAR) {
                             retFilter = Filters.near(queryFieldName, point, geo.getMaxDistance(), geo.getMinDistance());
                         } else {
                             retFilter = Filters.nearSphere(queryFieldName, point, geo.getMaxDistance(), geo.getMinDistance());

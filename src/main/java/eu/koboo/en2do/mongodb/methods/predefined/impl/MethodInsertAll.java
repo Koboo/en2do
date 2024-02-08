@@ -1,7 +1,6 @@
 package eu.koboo.en2do.mongodb.methods.predefined.impl;
 
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.ReplaceOptions;
 import eu.koboo.en2do.mongodb.RepositoryMeta;
 import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
@@ -9,7 +8,6 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.List;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
