@@ -20,7 +20,7 @@ public class MethodDeleteMany extends GlobalPredefinedMethod {
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryMeta<E, ID, R> repositoryMeta,
                                                               Method method, Object[] arguments) throws Exception {
-        Collection<E> entityList = repositoryMeta.checkEntityList(method, arguments[0]);
+        Collection<E> entityList = repositoryMeta.checkEntityCollection(method, arguments[0]);
         if (entityList.isEmpty()) {
             return true;
         }
