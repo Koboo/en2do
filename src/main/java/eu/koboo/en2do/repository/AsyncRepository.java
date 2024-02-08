@@ -150,6 +150,16 @@ public interface AsyncRepository<E, ID> {
     /**
      * Async representation
      *
+     * @param entityList The List of entities, which should be saved
+     * @return Future, with a boolean of success
+     * @see Repository#insertAll(List) (Collection)
+     */
+    @Async
+    CompletableFuture<Boolean> asyncInsertAll(List<E> entityList);
+
+    /**
+     * Async representation
+     *
      * @param sort The options, which should be used for sorting
      * @return Future, with all entities, sorted by the Sort object
      * @see Repository#sortAll(Sort)
