@@ -26,7 +26,7 @@ public class Geo {
     GeoType type;
 
     private Geo() {
-        type = GeoType.NEAR;
+        type = GeoType.NEAR_SPHERE;
     }
 
     public Geo latitude(double latitude) {
