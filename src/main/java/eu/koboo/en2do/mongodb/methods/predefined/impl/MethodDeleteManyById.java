@@ -1,6 +1,7 @@
 package eu.koboo.en2do.mongodb.methods.predefined.impl;
 
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.DeleteResult;
 import eu.koboo.en2do.mongodb.RepositoryMeta;
 import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
@@ -23,7 +24,7 @@ public class MethodDeleteManyById extends GlobalPredefinedMethod {
             return true;
         }
         Bson idFilter = Filters.in("_id", idList);
-        repositoryMeta.getEntityCollection().deleteMany(idFilter);
-        return true;
+        DeleteResult deleteResult = repositoryMeta.getEntityCollection().deleteMany(idFilter);
+        return deleteResult.wasAcknowledged();
     }
 }

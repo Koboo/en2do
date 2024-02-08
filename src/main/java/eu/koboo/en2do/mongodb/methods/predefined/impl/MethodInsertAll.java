@@ -1,6 +1,7 @@
 package eu.koboo.en2do.mongodb.methods.predefined.impl;
 
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.result.InsertManyResult;
 import eu.koboo.en2do.mongodb.RepositoryMeta;
 import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
@@ -26,7 +27,7 @@ public class MethodInsertAll extends GlobalPredefinedMethod {
             return true;
         }
         // Using "insertMany" should speed up inserting performance drastically
-        entityCollection.insertMany(insertList);
-        return true;
+        InsertManyResult result = entityCollection.insertMany(insertList);
+        return result.wasAcknowledged();
     }
 }
