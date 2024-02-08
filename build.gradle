@@ -69,10 +69,6 @@ publishing {
     }
 }
 
-shadowJar {
-    relocate('org.mongodb', 'eu.koboo.en2do.libs.mongo')
-}
-
 project.tasks.shadowJar.finalizedBy(project.tasks.javadocJar)
 project.tasks.shadowJar.finalizedBy(project.tasks.sourcesJar)
 project.tasks.publish.dependsOn(project.tasks.shadowJar)
