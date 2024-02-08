@@ -42,6 +42,15 @@ public interface AsyncRepository<E, ID> {
     /**
      * Async representation
      *
+     * @return Future, with a boolean of success
+     * @see Repository#deleteAll()
+     */
+    @Async
+    CompletableFuture<Boolean> asyncDeleteAll();
+
+    /**
+     * Async representation
+     *
      * @param identifier The identifier of the entity, which should be deleted
      * @return Future, with a boolean of success
      * @see Repository#deleteById(Object)

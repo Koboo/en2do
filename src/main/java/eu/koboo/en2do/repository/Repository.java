@@ -35,6 +35,14 @@ public interface Repository<E, ID> {
     boolean delete(E entity);
 
     /**
+     * This method deletes all entities of the repository.
+     * Difference between drop is, that the indices stay the same.
+     *
+     * @return true, if entities were successfully deleted.
+     */
+    boolean deleteAll();
+
+    /**
      * This method deletes the entity with the given identifier, filtering like the "#delete(E entity)" method.
      *
      * @param identifier The unique identifier of the entity, which should be deleted.

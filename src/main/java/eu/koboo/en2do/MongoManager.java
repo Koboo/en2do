@@ -213,6 +213,7 @@ public class MongoManager {
         // Define default methods with handler into the meta registry
         registerPredefinedMethod(new MethodCountAll());
         registerPredefinedMethod(new MethodDelete());
+        registerPredefinedMethod(new MethodDeleteAll());
         registerPredefinedMethod(new MethodDeleteById());
         registerPredefinedMethod(new MethodDeleteMany());
         registerPredefinedMethod(new MethodDeleteManyById());
