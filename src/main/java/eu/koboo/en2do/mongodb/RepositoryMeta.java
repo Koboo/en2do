@@ -100,8 +100,18 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     }
 
     @SuppressWarnings("unchecked")
-    public Collection<E> checkEntityList(Method method, Object argument) {
+    public Collection<E> checkEntityCollection(Method method, Object argument) {
         Collection<E> entity = (Collection<E>) argument;
+        if (entity == null) {
+            throw new NullPointerException("List of Entities of type " + entityClass.getName() + " as parameter of method " +
+                method.getName() + " is null.");
+        }
+        return entity;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<E> checkEntityList(Method method, Object argument) {
+        List<E> entity = (List<E>) argument;
         if (entity == null) {
             throw new NullPointerException("List of Entities of type " + entityClass.getName() + " as parameter of method " +
                 method.getName() + " is null.");
