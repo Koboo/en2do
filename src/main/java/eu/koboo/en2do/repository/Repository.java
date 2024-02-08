@@ -157,7 +157,7 @@ public interface Repository<E, ID> {
      * @param entityList A List of the entities, which should be saved
      * @return true, if the entities were successfully saved.
      */
-    boolean insertMany(List<E> entityList);
+    boolean insertAll(List<E> entityList);
 
     /**
      * This method applies the Sort object of all entities of the repository.
