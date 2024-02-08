@@ -8,6 +8,8 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.java.Log;
 import org.junit.jupiter.api.*;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -28,7 +30,9 @@ public abstract class RepositoryTest<E, ID, R extends Repository<E, ID>> {
         assertNotNull(manager);
         repository = manager.create(repositoryClass());
         assertNotNull(repository);
-        assertTrue(repository.drop());
+        List<E> all = repository.findAll();
+        assertNotNull(all);
+        assertTrue(repository.deleteMany(all));
         assertEquals(0, repository.findAll().size());
     }
 
