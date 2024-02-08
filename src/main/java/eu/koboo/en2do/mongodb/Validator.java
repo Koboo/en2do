@@ -1,5 +1,6 @@
 package eu.koboo.en2do.mongodb;
 
+import com.mongodb.client.model.geojson.Geometry;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidListParameterException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidRegexParameterException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodMismatchingTypeException;
@@ -10,6 +11,7 @@ import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.entity.TransformField;
 import eu.koboo.en2do.repository.entity.Transient;
+import eu.koboo.en2do.repository.methods.geo.Geo;
 import eu.koboo.en2do.utility.FieldUtils;
 import eu.koboo.en2do.utility.GenericUtils;
 import lombok.experimental.UtilityClass;
@@ -252,6 +254,14 @@ public class Validator {
                         if (GenericUtils.isNotTypeOf(paramClass, listType)) {
                             throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
                         }
+                    }
+                    break;
+                case GEO:
+                    if(!Geometry.class.isAssignableFrom(fieldClass)) {
+                        throw new RuntimeException("Field is not of type geometry!");
+                    }
+                    if(!Geo.class.isAssignableFrom(paramClass)) {
+                        throw new MethodMismatchingTypeException(method, repositoryClass, Geo.class, paramClass);
                     }
                     break;
                 default:

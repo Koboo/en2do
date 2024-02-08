@@ -27,6 +27,7 @@ public enum FilterOperator {
     IN("In", 1),
     HAS_KEY("HasKey", 1),
     HAS("Has", 1),
+    GEO("Geo", 1),
 
     IS_NULL("IsNull", 0),
     NON_NULL("NonNull", 0),
@@ -39,34 +40,4 @@ public enum FilterOperator {
 
     String keyword;
     int expectedParameterCount;
-
-    /**
-     * Removes the filter operator from end of the given text and returns it.
-     *
-     * @param textWithOperator The text, which has to end with the filter operator.
-     * @return The text without the filter operator.
-     */
-    public String removeOperatorFrom(String textWithOperator) {
-        return textWithOperator.substring(0, textWithOperator.length() - getKeyword().length());
-    }
-
-    /**
-     * Parses a string to a filter operator by checking, if the text is ending with the
-     * keyword of the filter operator, and returns the results.
-     *
-     * @param methodNamePart The text, which should be parsed.
-     * @return The FilterOperator if any found, otherwise it fallbacks to EQUALS.
-     */
-    public static FilterOperator parseFilterEndsWith(String methodNamePart) {
-        for (FilterOperator operator : VALUES) {
-            if (operator == EQUALS) {
-                continue;
-            }
-            if (!methodNamePart.endsWith(operator.getKeyword())) {
-                continue;
-            }
-            return operator;
-        }
-        return EQUALS;
-    }
 }

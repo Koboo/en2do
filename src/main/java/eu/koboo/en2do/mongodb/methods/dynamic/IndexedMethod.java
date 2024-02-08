@@ -1,12 +1,16 @@
 package eu.koboo.en2do.mongodb.methods.dynamic;
 
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.geojson.Point;
+import com.mongodb.client.model.geojson.Position;
 import eu.koboo.en2do.mongodb.RepositoryMeta;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidRegexParameterException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodUnsupportedFilterException;
 import eu.koboo.en2do.operators.Chain;
 import eu.koboo.en2do.operators.MethodOperator;
 import eu.koboo.en2do.repository.Repository;
+import eu.koboo.en2do.repository.methods.geo.Geo;
+import eu.koboo.en2do.repository.methods.geo.GeoType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -151,6 +155,22 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
             case HAS:
                 Object hasObject = repositoryMeta.getFilterableValue(args[paramsIndexAt]);
                 retFilter = Filters.in(queryFieldName, hasObject);
+                break;
+            case GEO:
+                Geo geo = (Geo) args[paramsIndexAt];
+                switch (geo.getType()) {
+                    case NEAR:
+                    case NEAR_SPHERE:
+                        Point point = new Point(new Position(geo.getLatitude(), geo.getLongitude()));
+                        if(geo.getType() == GeoType.NEAR) {
+                            retFilter = Filters.near(queryFieldName, point, geo.getMaxDistance(), geo.getMinDistance());
+                        } else {
+                            retFilter = Filters.nearSphere(queryFieldName, point, geo.getMaxDistance(), geo.getMinDistance());
+                        }
+                        break;
+                    default:
+                        throw new RuntimeException("Only near and near sphere are supported for now!");
+                }
                 break;
             case IS_NULL:
                 retFilter = Filters.eq(queryFieldName, null);

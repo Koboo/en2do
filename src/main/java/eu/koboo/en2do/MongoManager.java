@@ -8,6 +8,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
+import com.mongodb.client.model.geojson.Geometry;
 import eu.koboo.en2do.mongodb.RepositoryInvocationHandler;
 import eu.koboo.en2do.mongodb.RepositoryMeta;
 import eu.koboo.en2do.mongodb.Validator;
@@ -27,6 +28,7 @@ import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.entity.Id;
 import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
+import eu.koboo.en2do.repository.entity.compound.GeoIndex;
 import eu.koboo.en2do.repository.entity.compound.Index;
 import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
 import eu.koboo.en2do.repository.methods.async.Async;
@@ -50,6 +52,7 @@ import org.bson.conversions.Bson;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -223,6 +226,7 @@ public class MongoManager {
         registerPredefinedMethod(new MethodGetCollectionName());
         registerPredefinedMethod(new MethodGetEntityClass());
         registerPredefinedMethod(new MethodGetEntityUniqueIdClass());
+        registerPredefinedMethod(new MethodGetNativeCollection());
         registerPredefinedMethod(new MethodGetUniqueId());
         registerPredefinedMethod(new MethodHashCode());
         registerPredefinedMethod(new MethodPageAll());
@@ -578,6 +582,7 @@ public class MongoManager {
                 entityCollection.dropIndexes();
             }
 
+            // Create compound indexes
             Set<CompoundIndex> compoundIndexSet = AnnotationUtils.collectAnnotations(entityClass, CompoundIndex.class);
             for (CompoundIndex compoundIndex : compoundIndexSet) {
                 // Checking if the field in the annotation exists in the entity class.
@@ -604,6 +609,7 @@ public class MongoManager {
                 entityCollection.createIndex(Indexes.compoundIndex(indexBsonList), indexOptions);
             }
 
+            // Create ttl indexes
             Set<TTLIndex> ttlIndexSet = AnnotationUtils.collectAnnotations(entityClass, TTLIndex.class);
             for (TTLIndex ttlIndex : ttlIndexSet) {
                 // Checking if the field in the annotation exists in the entity class.
@@ -625,6 +631,33 @@ public class MongoManager {
                 IndexOptions indexOptions = new IndexOptions()
                     .expireAfter(ttlIndex.ttl(), ttlIndex.time());
                 entityCollection.createIndex(Indexes.ascending(ttlField), indexOptions);
+            }
+
+            // Create geo index
+            for (Field field : entityFieldSet) {
+                int modifiers = field.getModifiers();
+                if(Modifier.isStatic(modifiers)
+                    || Modifier.isFinal(modifiers)
+                    || Modifier.isTransient(modifiers)) {
+                    continue;
+                }
+
+                System.out.println(Geometry.class.isAssignableFrom(field.getType()));
+                if(!Geometry.class.isAssignableFrom(field.getType())) {
+                    continue;
+                }
+                GeoIndex geoIndex = field.getAnnotation(GeoIndex.class);
+                if(geoIndex == null) {
+                    continue;
+                }
+                String fieldName = FieldUtils.parseBsonName(field);
+                Bson indexBson;
+                if(geoIndex.sphere()) {
+                    indexBson = Indexes.geo2dsphere(fieldName);
+                } else {
+                    indexBson = Indexes.geo2d(fieldName);
+                }
+                entityCollection.createIndex(indexBson);
             }
 
             ///////////////////////////
