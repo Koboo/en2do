@@ -328,6 +328,21 @@ public class MongoManager {
                 entityCollection, entityCollectionName
             );
 
+            List<String> fieldBsonList = new LinkedList<>();
+            Map<String, Field> nonSortedFieldMap = new HashMap<>();
+            for (Field field : entityFieldSet) {
+                String bsonName = FieldUtils.parseBsonName(field);
+                fieldBsonList.add(bsonName);
+                nonSortedFieldMap.put(bsonName, field);
+            }
+            fieldBsonList.sort(Comparator.comparingInt(String::length));
+            Collections.reverse(fieldBsonList);
+
+            Map<String, Field> sortedFieldMap = new LinkedHashMap<>();
+            for (String bsonName : fieldBsonList) {
+                sortedFieldMap.put(bsonName, nonSortedFieldMap.get(bsonName));
+            }
+
             // Iterate through the repository methods
             for (Method method : repositoryClass.getMethods()) {
                 String methodName = method.getName();
@@ -376,9 +391,6 @@ public class MongoManager {
                     throw new MethodNoMethodOperatorException(method, repositoryClass);
                 }
 
-                // TODO: Save fetched count to indexed method
-                // TODO: Replace "By" part of the filter.
-
                 // Check the returnTypes by using the predefined validator.
                 methodOperator.validate(method, returnType, entityClass, repositoryClass);
 
@@ -426,6 +438,8 @@ public class MongoManager {
                     safeBreakAmount--;
 
                     String bsonName = null;
+
+                    // Check if we can found any nested fields
                     for (NestedField nestedField : nestedFieldSet) {
                         String loweredKey = nestedField.key().toLowerCase(Locale.ROOT);
                         if (!loweredStrip.startsWith(loweredKey)) {
@@ -435,8 +449,10 @@ public class MongoManager {
                         bsonName = nestedField.query();
                         break;
                     }
+
+                    // Check if we can found any direct fields
                     Field entityField = null;
-                    for (Field field : entityFieldSet) {
+                    for (Field field : sortedFieldMap.values()) {
                         String bsonFieldName = FieldUtils.parseBsonName(field);
                         String loweredBsonName = bsonFieldName.toLowerCase(Locale.ROOT);
                         if (!loweredStrip.startsWith(loweredBsonName)) {
@@ -447,6 +463,8 @@ public class MongoManager {
                         bsonName = bsonFieldName;
                         break;
                     }
+
+                    // Check if we found any field.
                     if (bsonName == null) {
                         throw new MethodFieldNotFoundException(strippedMethodName, method, entityClass, repositoryClass);
                     }
