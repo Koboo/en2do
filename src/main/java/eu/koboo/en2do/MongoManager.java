@@ -420,27 +420,31 @@ public class MongoManager {
                 List<IndexedFilter> indexedFilterList = new LinkedList<>();
                 String loweredStrip = strippedMethodName.toLowerCase(Locale.ROOT);
                 Chain chain = null;
-                while (!loweredStrip.equalsIgnoreCase("")) {
+                int safeBreakAmount = 200;
+                while (!loweredStrip.equalsIgnoreCase("") && safeBreakAmount > 0) {
+                    // Add safe break to avoid infinite loops
+                    safeBreakAmount--;
 
                     String bsonName = null;
                     for (NestedField nestedField : nestedFieldSet) {
-                        bsonName = nestedField.query();
                         String loweredKey = nestedField.key().toLowerCase(Locale.ROOT);
                         if (!loweredStrip.startsWith(loweredKey)) {
                             continue;
                         }
                         loweredStrip = loweredStrip.replaceFirst(loweredKey, "");
+                        bsonName = nestedField.query();
                         break;
                     }
                     Field entityField = null;
                     for (Field field : entityFieldSet) {
-                        bsonName = FieldUtils.parseBsonName(field);
-                        String loweredBsonName = bsonName.toLowerCase(Locale.ROOT);
+                        String bsonFieldName = FieldUtils.parseBsonName(field);
+                        String loweredBsonName = bsonFieldName.toLowerCase(Locale.ROOT);
                         if (!loweredStrip.startsWith(loweredBsonName)) {
                             continue;
                         }
                         loweredStrip = loweredStrip.replaceFirst(loweredBsonName, "");
                         entityField = field;
+                        bsonName = bsonFieldName;
                         break;
                     }
                     if (bsonName == null) {
