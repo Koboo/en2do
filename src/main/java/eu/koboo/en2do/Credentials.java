@@ -38,7 +38,7 @@ public class Credentials {
     /**
      * The default name of the credentials file.
      */
-    private static final String DEFAULT_CREDENTIAL_FILE = "credentials.properties";
+    private static final String DEFAULT_CREDENTIALS_FILE_NAME = "credentials.properties";
 
     /**
      * Utility method for reading credentials from an input stream.
@@ -84,7 +84,7 @@ public class Credentials {
      * @return The new created credentials object.
      */
     public static Credentials fromResource() {
-        return fromResource("/" + DEFAULT_CREDENTIAL_FILE);
+        return fromResource("/" + DEFAULT_CREDENTIALS_FILE_NAME);
     }
 
     /**
@@ -119,7 +119,7 @@ public class Credentials {
      * @return The new created credentials object.
      */
     public static Credentials fromFile() {
-        return fromFile(DEFAULT_CREDENTIAL_FILE);
+        return fromFile(DEFAULT_CREDENTIALS_FILE_NAME);
     }
 
     /**
