@@ -1,10 +1,12 @@
+import com.vanniktech.maven.publish.SonatypeHost
+
 plugins {
     id 'java-library'
-    id 'maven-publish'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'com.vanniktech.maven.publish' version '0.29.0'
 }
 
-group 'eu.koboo.en2do'
+group 'eu.koboo'
 version '3.1.9'
 
 repositories {
@@ -13,13 +15,13 @@ repositories {
 
 dependencies {
     // The driver itself
-    api("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
-    testImplementation("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
+    api "org.mongodb:mongodb-driver-sync:$mongoDriverVersion"
+    testImplementation "org.mongodb:mongodb-driver-sync:$mongoDriverVersion"
 
     // Eliminate boilerplate code
     compileOnly "org.projectlombok:lombok:$lombokVersion"
     annotationProcessor "org.projectlombok:lombok:$lombokVersion"
-    testCompileOnly "org.projectlombok:lombok:$lombokVersion"
+    testImplementation "org.projectlombok:lombok:$lombokVersion"
     testAnnotationProcessor "org.projectlombok:lombok:$lombokVersion"
 
     // Test-Suite runtime
@@ -41,34 +43,51 @@ compileJava {
     options.release.set(11)
 }
 
-task sourcesJar(type: Jar) {
+tasks.register('sourcesJar', Jar) {
     from sourceSets.main.allJava
     archiveClassifier.set('sources')
 }
-task javadocJar(type: Jar) {
-    from javadoc
+tasks.register('javadocJar', Jar) {
+    from javadoc.destinationDir
     archiveClassifier.set('javadoc')
 }
 
-publishing {
-    repositories {
-        maven {
-            url('https://reposilite.koboo.eu/releases')
-            credentials {
-                username(System.getenv('REPO_USER'))
-                password(System.getenv('REPO_TOKEN'))
-            }
-        }
-    }
-    publications {
-        maven(MavenPublication) {
-            from components.java
-            artifact sourcesJar
-            artifact javadocJar
-        }
-    }
+artifacts {
+    archives shadowJar
+    archives sourcesJar
+    archives javadocJar
 }
 
-project.tasks.shadowJar.finalizedBy(project.tasks.javadocJar)
-project.tasks.shadowJar.finalizedBy(project.tasks.sourcesJar)
-project.tasks.publish.dependsOn(project.tasks.shadowJar)
+mavenPublishing {
+    coordinates(project.group.toString(), "${project.name}", project.version.toString())
+
+    pom {
+        name = 'En2do'
+        description = 'MongoDB entity to document wrapper'
+        inceptionYear = '2022'
+        url = 'https://github.com/Koboo/en2do'
+        licenses {
+            license {
+                name = 'The Apache License, Version 2.0'
+                url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                distribution = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+            }
+        }
+        developers {
+            developer {
+                id = 'koboo'
+                name = 'Koboo'
+                email = 'admin@koboo.eu'
+                url = 'https://github.com/Koboo/'
+            }
+        }
+        scm {
+            url = 'https://github.com/Koboo/en2do'
+            connection = 'scm:git:https://github.com/Koboo/en2do'
+            developerConnection = 'scm:git:https://github.com/Koboo/en2do'
+        }
+    }
+
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
+}
