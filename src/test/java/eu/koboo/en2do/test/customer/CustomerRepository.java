@@ -105,4 +105,8 @@ public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRep
     Customer findFirstByLockedIsTrue();
 
     Customer findFirstByLockedIsFalse();
+
+    List<Customer> findManyByOrdersListEmpty();
+
+    List<Customer> findManyByOrdersNotListEmpty();
 }

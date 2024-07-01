@@ -15,13 +15,11 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
@@ -184,12 +182,21 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
             case IS_FALSE:
                 retFilter = Filters.eq(queryFieldName, false);
                 break;
+            case LIST_EMPTY:
+                retFilter = Filters.and(
+                    Filters.exists(queryFieldName, true),
+                    Filters.type(queryFieldName, "array"),
+                    Filters.ne(queryFieldName, new ArrayList<Document>())
+                    //Filters.size(queryFieldName, 0)
+                );
+                break;
             default: // This filter is not supported. Throw exception.
                 throw new MethodUnsupportedFilterException(method, repositoryMeta.getRepositoryClass());
         }
         // Applying negotiating of the filter, if needed
         if (filter.isNotFilter()) {
-            return Filters.not(retFilter);
+            //return Filters.not(retFilter);
+            return Filters.nor(retFilter);
         }
         return retFilter;
     }

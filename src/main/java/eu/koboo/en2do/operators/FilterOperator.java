@@ -28,6 +28,7 @@ public enum FilterOperator {
     HAS_KEY("HasKey", 1),
     HAS("Has", 1),
     GEO("Geo", 1),
+    LIST_EMPTY("ListEmpty", 0),
 
     IS_NULL("IsNull", 0),
     NON_NULL("NonNull", 0),
