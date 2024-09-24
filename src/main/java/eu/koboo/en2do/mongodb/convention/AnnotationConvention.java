@@ -23,29 +23,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AnnotationConvention implements Convention {
 
-    Map<Class<?>, RepositoryData<?, ?, ?>> repositoryDataByTypeRegistry;
-
-    /**
-     * This method is used to get the RepositoryMeta object by the given typeClass,
-     * and if non is found, it returns null.
-     *
-     * @param typeClass The type of RepositoryMeta (should be the entity class)
-     * @return The RepositoryMeta if found, otherwise "null"
-     */
-    private RepositoryData<?, ?, ?> findRepositoryMetaOf(Class<?> typeClass) {
-        RepositoryData<?, ?, ?> repositoryData = repositoryDataByTypeRegistry.get(typeClass);
-        if(repositoryData != null) {
-            return repositoryData;
-        }
-        for (RepositoryData<?, ?, ?> meta : repositoryDataByTypeRegistry.values()) {
-            if (!meta.getEntityClass().equals(typeClass)) {
-                continue;
-            }
-            return meta;
-        }
-        return null;
-    }
-
     /**
      * @param classModelBuilder the ClassModelBuilder to apply the convention to
      * @see Convention
@@ -64,10 +41,7 @@ public class AnnotationConvention implements Convention {
                     continue;
                 }
                 if (readAnnotation instanceof Id) {
-                    RepositoryData<?, ?, ?> repositoryData = findRepositoryMetaOf(classModelBuilder.getType());
-                    if (repositoryData != null) {
-                        classModelBuilder.idPropertyName(propertyModelBuilder.getName());
-                    }
+                    classModelBuilder.idPropertyName(propertyModelBuilder.getName());
                 }
             }
             for (Annotation writeAnnotation : propertyModelBuilder.getWriteAnnotations()) {
@@ -78,6 +52,9 @@ public class AnnotationConvention implements Convention {
                 if (writeAnnotation instanceof TransformField) {
                     TransformField transformField = (TransformField) writeAnnotation;
                     propertyModelBuilder.writeName(transformField.value());
+                }
+                if(writeAnnotation instanceof Id) {
+                    classModelBuilder.idPropertyName(propertyModelBuilder.getName());
                 }
             }
         }
