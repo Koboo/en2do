@@ -32,6 +32,10 @@ import java.util.*;
 @Getter
 public class RepositoryData<E, ID, R extends Repository<E, ID>> {
 
+    private static final String UPDATE_FIELD_SET = "$set";
+    private static final String UPDATE_FIELD_UNSET = "$unset";
+    private static final String UPDATE_FIELD_RENAME = "$rename";
+
     MongoManager mongoManager;
     String collectionName;
     MongoCollection<E> entityCollection;
@@ -284,13 +288,13 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             }
         }
         if (!fieldUnsetDocument.isEmpty()) {
-            document.append("$unset", fieldUnsetDocument);
+            document.append(UPDATE_FIELD_UNSET, fieldUnsetDocument);
         }
         if (!fieldSetDocument.isEmpty()) {
-            document.append("$set", fieldSetDocument);
+            document.append(UPDATE_FIELD_SET, fieldSetDocument);
         }
         if (!fieldRenameDocument.isEmpty()) {
-            document.append("$rename", fieldRenameDocument);
+            document.append(UPDATE_FIELD_RENAME, fieldRenameDocument);
         }
         return document;
     }
