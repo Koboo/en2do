@@ -3,7 +3,7 @@ package eu.koboo.en2do.mongodb.methods.dynamic;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Position;
-import eu.koboo.en2do.mongodb.RepositoryMeta;
+import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidRegexParameterException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodUnsupportedFilterException;
 import eu.koboo.en2do.operators.Chain;
@@ -37,7 +37,7 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
 
     List<IndexedFilter> indexedFilterList;
 
-    RepositoryMeta<E, ID, R> repositoryMeta;
+    RepositoryData<E, ID, R> repositoryData;
 
     @SuppressWarnings("unchecked")
     public <F> F createFilter(Object[] arguments) throws Exception {
@@ -69,39 +69,39 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
         String queryFieldName = filter.getBsonName();
         // Check if the uniqueId field is used.
         // This is needed if uniqueId field and "_id" of documents are the same!
-        if (queryFieldName.equalsIgnoreCase(repositoryMeta.getEntityUniqueIdField().getName())) {
+        if (queryFieldName.equalsIgnoreCase(repositoryData.getEntityUniqueIdField().getName())) {
             queryFieldName = "_id";
         }
         Bson retFilter = null;
         switch (filter.getOperator()) {
             case EQUALS:
-                retFilter = Filters.eq(queryFieldName, repositoryMeta.getFilterableValue(args[paramsIndexAt]));
+                retFilter = Filters.eq(queryFieldName, repositoryData.getFilterableValue(args[paramsIndexAt]));
                 break;
             case EQUALS_IGNORE_CASE:
-                String ignCasePatternString = "(?i)^" + repositoryMeta.getFilterableValue(args[paramsIndexAt]) + "$";
+                String ignCasePatternString = "(?i)^" + repositoryData.getFilterableValue(args[paramsIndexAt]) + "$";
                 Pattern ignCasePattern = Pattern.compile(ignCasePatternString, Pattern.CASE_INSENSITIVE);
                 retFilter = Filters.regex(queryFieldName, ignCasePattern);
                 break;
             case CONTAINS:
-                String containsPatternString = ".*" + repositoryMeta.getFilterableValue(args[paramsIndexAt]) + ".*";
+                String containsPatternString = ".*" + repositoryData.getFilterableValue(args[paramsIndexAt]) + ".*";
                 Pattern containsPattern = Pattern.compile(containsPatternString, Pattern.CASE_INSENSITIVE);
                 retFilter = Filters.regex(queryFieldName, containsPattern);
                 break;
             case GREATER_THAN:
-                retFilter = Filters.gt(queryFieldName, repositoryMeta.getFilterableValue(args[paramsIndexAt]));
+                retFilter = Filters.gt(queryFieldName, repositoryData.getFilterableValue(args[paramsIndexAt]));
                 break;
             case LESS_THAN:
-                retFilter = Filters.lt(queryFieldName, repositoryMeta.getFilterableValue(args[paramsIndexAt]));
+                retFilter = Filters.lt(queryFieldName, repositoryData.getFilterableValue(args[paramsIndexAt]));
                 break;
             case GREATER_EQUALS:
-                retFilter = Filters.gte(queryFieldName, repositoryMeta.getFilterableValue(args[paramsIndexAt]));
+                retFilter = Filters.gte(queryFieldName, repositoryData.getFilterableValue(args[paramsIndexAt]));
                 break;
             case LESS_EQUALS:
-                retFilter = Filters.lte(queryFieldName, repositoryMeta.getFilterableValue(args[paramsIndexAt]));
+                retFilter = Filters.lte(queryFieldName, repositoryData.getFilterableValue(args[paramsIndexAt]));
                 break;
             case REGEX:
                 // MongoDB supports multiple types of regex filtering, so check which type is provided.
-                Object value = repositoryMeta.getFilterableValue(args[paramsIndexAt]);
+                Object value = repositoryData.getFilterableValue(args[paramsIndexAt]);
                 if (value instanceof String) {
                     String regexPatternString = (String) value;
                     retFilter = Filters.regex(queryFieldName, regexPatternString);
@@ -111,19 +111,19 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                     retFilter = Filters.regex(queryFieldName, regexPattern);
                 }
                 if (retFilter == null) {
-                    throw new MethodInvalidRegexParameterException(method, repositoryMeta.getRepositoryClass(), value.getClass());
+                    throw new MethodInvalidRegexParameterException(method, repositoryData.getRepositoryClass(), value.getClass());
                 }
                 break;
             case EXISTS:
                 retFilter = Filters.exists(queryFieldName);
                 break;
             case BETWEEN:
-                Object betweenStart = repositoryMeta.getFilterableValue(args[paramsIndexAt]);
+                Object betweenStart = repositoryData.getFilterableValue(args[paramsIndexAt]);
                 Object betweenEnd = args[paramsIndexAt + 1];
                 retFilter = Filters.and(Filters.gt(queryFieldName, betweenStart), Filters.lt(queryFieldName, betweenEnd));
                 break;
             case BETWEEN_EQUALS:
-                Object betweenEqStart = repositoryMeta.getFilterableValue(args[paramsIndexAt]);
+                Object betweenEqStart = repositoryData.getFilterableValue(args[paramsIndexAt]);
                 Object betweenEqEnd = args[paramsIndexAt + 1];
                 retFilter = Filters.and(Filters.gte(queryFieldName, betweenEqStart), Filters.lte(queryFieldName, betweenEqEnd));
                 break;
@@ -147,11 +147,11 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 retFilter = Filters.in(queryFieldName, objectArray);
                 break;
             case HAS_KEY:
-                Object keyObject = repositoryMeta.getFilterableValue(args[paramsIndexAt], true);
+                Object keyObject = repositoryData.getFilterableValue(args[paramsIndexAt], true);
                 retFilter = Filters.exists(queryFieldName + "." + keyObject);
                 break;
             case HAS:
-                Object hasObject = repositoryMeta.getFilterableValue(args[paramsIndexAt]);
+                Object hasObject = repositoryData.getFilterableValue(args[paramsIndexAt]);
                 retFilter = Filters.in(queryFieldName, hasObject);
                 break;
             case GEO:
@@ -191,7 +191,7 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 );
                 break;
             default: // This filter is not supported. Throw exception.
-                throw new MethodUnsupportedFilterException(method, repositoryMeta.getRepositoryClass());
+                throw new MethodUnsupportedFilterException(method, repositoryData.getRepositoryClass());
         }
         // Applying negotiating of the filter, if needed
         if (filter.isNotFilter()) {

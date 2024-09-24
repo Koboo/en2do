@@ -10,7 +10,7 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.geojson.Geometry;
 import eu.koboo.en2do.mongodb.RepositoryInvocationHandler;
-import eu.koboo.en2do.mongodb.RepositoryMeta;
+import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.mongodb.Validator;
 import eu.koboo.en2do.mongodb.codec.InternalPropertyCodecProvider;
 import eu.koboo.en2do.mongodb.convention.AnnotationConvention;
@@ -72,8 +72,9 @@ public class MongoManager {
     @Getter
     SettingsBuilder builder;
 
-    Map<Class<?>, RepositoryMeta<?, ?, ?>> repositoryMetaRegistry;
-    Map<Class<?>, Repository<?, ?>> repositoryRegistry;
+    Map<Class<?>, RepositoryData<?, ?, ?>> repositoryDataByClassMap;
+    Map<Class<?>, RepositoryData<?, ?, ?>> repositoryDataByTypeMap;
+    Map<Class<?>, Repository<?, ?>> repositoryByClassRegistry;
     Map<String, GlobalPredefinedMethod> predefinedMethodRegistry;
     ExecutorService executorService;
 
@@ -93,8 +94,9 @@ public class MongoManager {
             Logger.getLogger("com.mongodb").setLevel(loggerLevel);
         }
         this.builder = builder;
-        this.repositoryMetaRegistry = new ConcurrentHashMap<>();
-        this.repositoryRegistry = new ConcurrentHashMap<>();
+        this.repositoryDataByClassMap = new ConcurrentHashMap<>();
+        this.repositoryDataByTypeMap = new ConcurrentHashMap<>();
+        this.repositoryByClassRegistry = new ConcurrentHashMap<>();
         this.predefinedMethodRegistry = new LinkedHashMap<>();
         if (executorService == null) {
             executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
@@ -139,7 +141,7 @@ public class MongoManager {
                 .register(internalPropertyCodecProvider)
                 .automatic(true)
                 .conventions(List.of(
-                    new AnnotationConvention(repositoryMetaRegistry),
+                    new AnnotationConvention(repositoryDataByTypeMap),
                     Conventions.ANNOTATION_CONVENTION,
                     Conventions.SET_PRIVATE_FIELDS_CONVENTION,
                     Conventions.USE_GETTERS_FOR_SETTERS
@@ -188,16 +190,16 @@ public class MongoManager {
             if (executorService != null && shutdownExecutorService) {
                 executorService.shutdown();
             }
-            repositoryRegistry.clear();
-            for (RepositoryMeta<?, ?, ?> meta : repositoryMetaRegistry.values()) {
+            repositoryByClassRegistry.clear();
+            for (RepositoryData<?, ?, ?> meta : repositoryDataByClassMap.values()) {
                 meta.destroy();
             }
-            repositoryMetaRegistry.clear();
+            repositoryDataByClassMap.clear();
             if (client != null) {
                 client.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error while closing: " + MongoManager.class, e);
         }
     }
 
@@ -244,8 +246,8 @@ public class MongoManager {
         try {
 
             // Check for already created repository to avoid multiply instances of the same repository
-            if (repositoryRegistry.containsKey(repositoryClass)) {
-                return (R) repositoryRegistry.get(repositoryClass);
+            if (repositoryByClassRegistry.containsKey(repositoryClass)) {
+                return (R) repositoryByClassRegistry.get(repositoryClass);
             }
 
             if (!Repository.class.isAssignableFrom(repositoryClass)) {
@@ -278,7 +280,7 @@ public class MongoManager {
             }
             entityCollectionName = MongoCollectionUtils.createCollectionName(builder, entityCollectionName);
 
-            for (RepositoryMeta<?, ?, ?> meta : repositoryMetaRegistry.values()) {
+            for (RepositoryData<?, ?, ?> meta : repositoryDataByClassMap.values()) {
                 if (meta.getCollectionName().equalsIgnoreCase(entityCollectionName)) {
                     throw new RepositoryNameDuplicateException(repositoryClass, Collection.class);
                 }
@@ -321,7 +323,7 @@ public class MongoManager {
 
             // Creating the collection and the repository meta-objects.
             MongoCollection<E> entityCollection = database.getCollection(entityCollectionName, entityClass);
-            RepositoryMeta<E, ID, R> repositoryMeta = new RepositoryMeta<>(this,
+            RepositoryData<E, ID, R> repositoryData = new RepositoryData<>(this,
                 repositoryClass, entityClass,
                 entityFieldSet,
                 entityIdClass, entityUniqueIdField,
@@ -371,7 +373,7 @@ public class MongoManager {
                 if (isAsyncMethod) {
                     // Check async method name
                     if (methodName.startsWith("async")) {
-                        String predefinedName = repositoryMeta.stripAsyncName(methodName);
+                        String predefinedName = repositoryData.stripAsyncName(methodName);
                         if (predefinedMethodRegistry.containsKey(predefinedName)) {
                             continue;
                         }
@@ -401,13 +403,11 @@ public class MongoManager {
                 if (strippedMethodName.startsWith("Top")) {
                     strippedMethodName = strippedMethodName.replaceFirst("Top", "");
                     if (strippedMethodName.startsWith("0")) {
-                        //TODO: better exception
-                        throw new RuntimeException("The number shouldnt start with zero.");
+                        throw new RuntimeException("The number you want to filter can not start with \"0\".");
                     }
                     methodDefinedEntityCount = MethodUtils.getPrefixedNumber(strippedMethodName);
                     if (methodDefinedEntityCount == 0) {
-                        //TODO: better exception
-                        throw new RuntimeException("0 isnt a valid top number");
+                        throw new RuntimeException("The number 0 is not a valid top number.");
                     }
                     strippedMethodName = strippedMethodName.replaceFirst(String.valueOf(methodDefinedEntityCount), "");
                 }
@@ -592,8 +592,8 @@ public class MongoManager {
                 IndexedMethod<E, ID, R> dynamicMethod = new IndexedMethod<>(
                     method, methodOperator, chain,
                     methodDefinedEntityCount,
-                    indexedFilterList, repositoryMeta);
-                repositoryMeta.registerDynamicMethod(methodName, dynamicMethod);
+                    indexedFilterList, repositoryData);
+                repositoryData.registerDynamicMethod(methodName, dynamicMethod);
             }
 
             // Drop all entities on start if annotation is present.
@@ -693,9 +693,12 @@ public class MongoManager {
             ClassLoader repoClassLoader = repositoryClass.getClassLoader();
             Class<?>[] interfaces = new Class[]{repositoryClass};
             Repository<E, ID> repository = (Repository<E, ID>) Proxy.newProxyInstance(repoClassLoader, interfaces,
-                new RepositoryInvocationHandler<>(repositoryMeta, executorService, predefinedMethodRegistry));
-            repositoryRegistry.put(repositoryClass, repository);
-            repositoryMetaRegistry.put(repositoryClass, repositoryMeta);
+                new RepositoryInvocationHandler<>(repositoryData, executorService, predefinedMethodRegistry));
+
+            repositoryDataByClassMap.put(repositoryClass, repositoryData);
+            repositoryDataByTypeMap.put(entityClass, repositoryData);
+
+            repositoryByClassRegistry.put(repositoryClass, repository);
             return (R) repository;
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -2,7 +2,7 @@ package eu.koboo.en2do.mongodb.methods.predefined.impl;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
-import eu.koboo.en2do.mongodb.RepositoryMeta;
+import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
 import org.bson.conversions.Bson;
@@ -16,12 +16,12 @@ public class MethodDelete extends GlobalPredefinedMethod {
     }
 
     @Override
-    public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryMeta<E, ID, R> repositoryMeta,
+    public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method, Object[] arguments) throws Exception {
-        MongoCollection<E> collection = repositoryMeta.getEntityCollection();
-        E entity = repositoryMeta.checkEntity(method, arguments[0]);
-        ID uniqueId = repositoryMeta.checkUniqueId(method, repositoryMeta.getUniqueId(entity));
-        Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
+        MongoCollection<E> collection = repositoryData.getEntityCollection();
+        E entity = repositoryData.checkEntity(method, arguments[0]);
+        ID uniqueId = repositoryData.checkUniqueId(method, repositoryData.getUniqueId(entity));
+        Bson idFilter = repositoryData.createIdFilter(uniqueId);
         DeleteResult result = collection.deleteOne(idFilter);
         return result.wasAcknowledged();
     }

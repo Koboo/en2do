@@ -1,6 +1,6 @@
 package eu.koboo.en2do.mongodb.convention;
 
-import eu.koboo.en2do.mongodb.RepositoryMeta;
+import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.repository.entity.Id;
 import eu.koboo.en2do.repository.entity.TransformField;
 import eu.koboo.en2do.repository.entity.Transient;
@@ -23,7 +23,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AnnotationConvention implements Convention {
 
-    Map<Class<?>, RepositoryMeta<?, ?, ?>> repositoryMetaRegistry;
+    Map<Class<?>, RepositoryData<?, ?, ?>> repositoryMetaRegistry;
 
     /**
      * This method is used to get the RepositoryMeta object by the given typeClass,
@@ -32,8 +32,8 @@ public class AnnotationConvention implements Convention {
      * @param typeClass The type of RepositoryMeta (should be the entity class)
      * @return The RepositoryMeta if found, otherwise "null"
      */
-    private RepositoryMeta<?, ?, ?> findRepositoryMetaOf(Class<?> typeClass) {
-        for (RepositoryMeta<?, ?, ?> meta : repositoryMetaRegistry.values()) {
+    private RepositoryData<?, ?, ?> findRepositoryMetaOf(Class<?> typeClass) {
+        for (RepositoryData<?, ?, ?> meta : repositoryMetaRegistry.values()) {
             if (!meta.getEntityClass().equals(typeClass)) {
                 continue;
             }
@@ -60,8 +60,8 @@ public class AnnotationConvention implements Convention {
                     continue;
                 }
                 if (readAnnotation instanceof Id) {
-                    RepositoryMeta<?, ?, ?> repositoryMeta = findRepositoryMetaOf(classModelBuilder.getType());
-                    if (repositoryMeta != null) {
+                    RepositoryData<?, ?, ?> repositoryData = findRepositoryMetaOf(classModelBuilder.getType());
+                    if (repositoryData != null) {
                         classModelBuilder.idPropertyName(propertyModelBuilder.getName());
                     }
                 }

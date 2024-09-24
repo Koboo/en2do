@@ -2,7 +2,7 @@ package eu.koboo.en2do.mongodb.methods.predefined.impl;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.ReplaceOptions;
-import eu.koboo.en2do.mongodb.RepositoryMeta;
+import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
 import lombok.AccessLevel;
@@ -25,18 +25,18 @@ public class MethodSaveAll extends GlobalPredefinedMethod {
     }
 
     @Override
-    public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryMeta<E, ID, R> repositoryMeta,
+    public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method, Object[] arguments) throws Exception {
-        MongoCollection<E> entityCollection = repositoryMeta.getEntityCollection();
-        Collection<E> entityList = repositoryMeta.checkEntityCollection(method, arguments[0]);
+        MongoCollection<E> entityCollection = repositoryData.getEntityCollection();
+        Collection<E> entityList = repositoryData.checkEntityCollection(method, arguments[0]);
         if (entityList.isEmpty()) {
             return true;
         }
         List<E> insertList = new ArrayList<>();
         // Iterate through entities and check if it already exists by unique identifier.
         for (E entity : entityList) {
-            ID uniqueId = repositoryMeta.checkUniqueId(method, repositoryMeta.getUniqueId(entity));
-            Bson idFilter = repositoryMeta.createIdFilter(uniqueId);
+            ID uniqueId = repositoryData.checkUniqueId(method, repositoryData.getUniqueId(entity));
+            Bson idFilter = repositoryData.createIdFilter(uniqueId);
             if (entityCollection.countDocuments(idFilter) > 0) {
                 // Entity exists, so we want to update the existing document.
                 entityCollection.replaceOne(idFilter, entity, replaceOptions);

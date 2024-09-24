@@ -28,7 +28,7 @@ import java.util.concurrent.ExecutorService;
 @AllArgsConstructor
 public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> implements InvocationHandler {
 
-    RepositoryMeta<E, ID, R> repositoryMeta;
+    RepositoryData<E, ID, R> repositoryData;
     ExecutorService executorService;
     Map<String, GlobalPredefinedMethod> predefinedMethodRegistry;
 
@@ -48,19 +48,19 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         GlobalPredefinedMethod methodHandler = predefinedMethodRegistry.get(methodName);
         if (methodHandler != null) {
             // Just handle the arguments and return the object
-            return methodHandler.handle(repositoryMeta, method, arguments);
+            return methodHandler.handle(repositoryData, method, arguments);
         }
 
         // Check for predefined method with async prefix.
         boolean isAsyncMethod = method.isAnnotationPresent(Async.class);
         if (transform == null && isAsyncMethod) {
-            String predefinedName = repositoryMeta.stripAsyncName(methodName);
+            String predefinedName = repositoryData.stripAsyncName(methodName);
             methodHandler = predefinedMethodRegistry.get(predefinedName);
             if (methodHandler != null) {
                 // Just handle the arguments and return the object
                 CompletableFuture<Object> future = new CompletableFuture<>();
                 GlobalPredefinedMethod finalMethodHandler = methodHandler;
-                executeFuture(future, () -> finalMethodHandler.handle(repositoryMeta, method, arguments));
+                executeFuture(future, () -> finalMethodHandler.handle(repositoryData, method, arguments));
                 return future;
             }
         }
@@ -68,10 +68,10 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         // No predefined handler found, checking for dynamic methods
 
         // Get and check if any dynamic method matches the methodName
-        IndexedMethod<E, ID, R> dynamicMethod = repositoryMeta.lookupDynamicMethod(methodName);
+        IndexedMethod<E, ID, R> dynamicMethod = repositoryData.lookupDynamicMethod(methodName);
         if (dynamicMethod == null) {
             // No handling found for method with this name.
-            throw new MethodUnsupportedException(method, repositoryMeta.getRepositoryClass());
+            throw new MethodUnsupportedException(method, repositoryData.getRepositoryClass());
         }
 
         MethodCallable methodCallable = () -> executeMethod(dynamicMethod, arguments, method, methodName);
@@ -93,7 +93,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         }
 
         // Switch-case the method operator to use the correct mongo query.
-        final MongoCollection<E> collection = repositoryMeta.getEntityCollection();
+        final MongoCollection<E> collection = repositoryData.getEntityCollection();
 
         FindIterable<E> findIterable;
         switch (indexedMethod.getMethodOperator()) {
@@ -104,9 +104,9 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             case EXISTS:
                 return collection.countDocuments(filter) > 0;
             case FIND:
-                findIterable = repositoryMeta.createIterable(filter, methodName);
-                findIterable = repositoryMeta.applySortObject(method, findIterable, arguments);
-                findIterable = repositoryMeta.applySortAnnotations(method, findIterable);
+                findIterable = repositoryData.createIterable(filter, methodName);
+                findIterable = repositoryData.applySortObject(method, findIterable, arguments);
+                findIterable = repositoryData.applySortAnnotations(method, findIterable);
 
                 // Because it's a find method, we always got an entity defined count.
                 // Many = -1 / unlimited
@@ -122,17 +122,17 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                     return findIterable.first();
                 }
             case PAGE:
-                findIterable = repositoryMeta.createIterable(filter, methodName);
-                findIterable = repositoryMeta.applyPageObject(method, findIterable, arguments);
+                findIterable = repositoryData.createIterable(filter, methodName);
+                findIterable = repositoryData.applyPageObject(method, findIterable, arguments);
                 return findIterable.into(new ArrayList<>());
             case UPDATE_FIELD:
                 UpdateBatch updateBatch = (UpdateBatch) arguments[arguments.length - 1];
-                UpdateResult result = collection.updateMany(filter, repositoryMeta.createUpdateDocument(updateBatch),
+                UpdateResult result = collection.updateMany(filter, repositoryData.createUpdateDocument(updateBatch),
                     new UpdateOptions().upsert(false));
                 return result.wasAcknowledged();
             default:
                 // Couldn't find any match method operator, but that shouldn't happen
-                throw new RepositoryInvalidCallException(method, repositoryMeta.getRepositoryClass());
+                throw new RepositoryInvalidCallException(method, repositoryData.getRepositoryClass());
         }
     }
 

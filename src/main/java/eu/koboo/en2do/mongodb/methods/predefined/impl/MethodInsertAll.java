@@ -2,7 +2,7 @@ package eu.koboo.en2do.mongodb.methods.predefined.impl;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.InsertManyResult;
-import eu.koboo.en2do.mongodb.RepositoryMeta;
+import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
 import lombok.AccessLevel;
@@ -19,10 +19,10 @@ public class MethodInsertAll extends GlobalPredefinedMethod {
     }
 
     @Override
-    public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryMeta<E, ID, R> repositoryMeta,
+    public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method, Object[] arguments) throws Exception {
-        MongoCollection<E> entityCollection = repositoryMeta.getEntityCollection();
-        List<E> insertList = repositoryMeta.checkEntityList(method, arguments[0]);
+        MongoCollection<E> entityCollection = repositoryData.getEntityCollection();
+        List<E> insertList = repositoryData.checkEntityList(method, arguments[0]);
         if (insertList.isEmpty()) {
             return true;
         }

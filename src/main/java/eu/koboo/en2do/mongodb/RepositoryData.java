@@ -30,7 +30,7 @@ import java.util.*;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Getter
-public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
+public class RepositoryData<E, ID, R extends Repository<E, ID>> {
 
     MongoManager mongoManager;
     String collectionName;
@@ -44,7 +44,7 @@ public class RepositoryMeta<E, ID, R extends Repository<E, ID>> {
     @Getter(AccessLevel.NONE)
     Map<String, IndexedMethod<E, ID, R>> dynamicMethodRegistry;
 
-    public RepositoryMeta(MongoManager mongoManager, Class<R> repositoryClass, Class<E> entityClass,
+    public RepositoryData(MongoManager mongoManager, Class<R> repositoryClass, Class<E> entityClass,
                           Set<Field> entityFieldSet,
                           Class<ID> entityUniqueIdClass, Field entityUniqueIdField,
                           MongoCollection<E> entityCollection, String collectionName) {
