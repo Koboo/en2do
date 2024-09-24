@@ -83,16 +83,16 @@ public class MongoManager {
     MongoClient client;
     MongoDatabase database;
 
-    public MongoManager(Credentials credentials, ExecutorService executorService, SettingsBuilder builder) {
-        if (builder == null) {
-            builder = new SettingsBuilder();
+    public MongoManager(Credentials credentials, ExecutorService executorService, SettingsBuilder settingsBuilder) {
+        if (settingsBuilder == null) {
+            settingsBuilder = new SettingsBuilder();
         }
-        Level loggerLevel = builder.getMongoLoggerLevel();
+        Level loggerLevel = settingsBuilder.getMongoLoggerLevel();
         if (loggerLevel != null) {
             Logger.getLogger("org.mongodb").setLevel(loggerLevel);
             Logger.getLogger("com.mongodb").setLevel(loggerLevel);
         }
-        this.builder = builder;
+        this.builder = settingsBuilder;
         this.repositoryDataByClassMap = new ConcurrentHashMap<>();
         this.repositoryByClassRegistry = new ConcurrentHashMap<>();
         this.predefinedMethodRegistry = new LinkedHashMap<>();
@@ -300,7 +300,8 @@ public class MongoManager {
 
             Validator.validateCompatibility(codecRegistry, repositoryClass, entityClass);
 
-            // Collect all fields recursively to ensure, we'll get the inheritance fields
+            // Collect all fields recursively to ensure,
+            // we'll get the even the fields from the inheritance between object
             Set<Field> entityFieldSet = FieldUtils.collectFields(entityClass);
 
             // Get the field of the uniqueId of the entity.
@@ -319,7 +320,8 @@ public class MongoManager {
             }
             Field entityUniqueIdField = tempEntityUniqueIdField;
 
-            // Creating the collection and the repository meta-objects.
+            // Creating the native mongodb collection object,
+            // and it's respective repository data object.
             MongoCollection<E> entityCollection = database.getCollection(entityCollectionName, entityClass);
             RepositoryData<E, ID, R> repositoryData = new RepositoryData<>(this,
                 repositoryClass, entityClass,
@@ -328,6 +330,8 @@ public class MongoManager {
                 entityCollection, entityCollectionName
             );
 
+            // Create list of all entity fields with their
+            // respective bson names and related them to the Field object.
             List<String> fieldBsonList = new LinkedList<>();
             Map<String, Field> nonSortedFieldMap = new HashMap<>();
             for (Field field : entityFieldSet) {
@@ -335,13 +339,18 @@ public class MongoManager {
                 fieldBsonList.add(bsonName);
                 nonSortedFieldMap.put(bsonName, field);
             }
+
+            // Sorting the list by length and putting them back into a linked map.
             fieldBsonList.sort(Comparator.comparingInt(String::length));
             Collections.reverse(fieldBsonList);
-
             Map<String, Field> sortedFieldMap = new LinkedHashMap<>();
             for (String bsonName : fieldBsonList) {
                 sortedFieldMap.put(bsonName, nonSortedFieldMap.get(bsonName));
             }
+
+            // Clear the unused collections.
+            nonSortedFieldMap.clear();
+            fieldBsonList.clear();
 
             // Iterate through the repository methods
             for (Method method : repositoryClass.getMethods()) {
@@ -369,7 +378,8 @@ public class MongoManager {
                 // Check if the method is async and if so, check for completable future return type.
                 boolean isAsyncMethod = method.isAnnotationPresent(Async.class);
                 if (isAsyncMethod) {
-                    // Check async method name
+                    // Check async method name and if the user tries to
+                    // "fake" one of our predefined methods.
                     if (methodName.startsWith("async")) {
                         String predefinedName = repositoryData.stripAsyncName(methodName);
                         if (predefinedMethodRegistry.containsKey(predefinedName)) {
@@ -377,7 +387,7 @@ public class MongoManager {
                         }
                         throw new MethodInvalidAsyncNameException(method, repositoryClass);
                     }
-                    // Check CompletableFuture return type
+                    // Check CompletableFuture return type of async repository methods.
                     if (GenericUtils.isNotTypeOf(returnType, CompletableFuture.class)) {
                         throw new MethodInvalidAsyncReturnException(method, repositoryClass);
                     }
@@ -397,6 +407,10 @@ public class MongoManager {
                 // Remove the leading methodOperator to ensure it doesn't trick the validation
                 String strippedMethodName = methodOperator.removeOperatorFrom(methodName);
 
+                // Parse the defined entity count, by checking for the keywords
+                // "Top" - The first X entities
+                // "Many" - All entities
+                // "First" - Only the first entity
                 Long methodDefinedEntityCount = null;
                 if (strippedMethodName.startsWith("Top")) {
                     strippedMethodName = strippedMethodName.replaceFirst("Top", "");
@@ -418,26 +432,37 @@ public class MongoManager {
                     methodDefinedEntityCount = 1L;
                 }
 
+                // Remove the string "By" from the method name.
                 strippedMethodName = strippedMethodName.replaceFirst("By", "");
 
-                // Parse, validate and handle the method name and "compile" it to en2do internal usage objects.
+                // Parse, validate and handle the method name and "compile" it
+                // so en2do can use the extracted information for the internal usage.
                 Set<NestedField> nestedFieldSet = AnnotationUtils.getNestedKeySet(method);
 
                 // Counts for further validation
                 int expectedParameterCount = 0;
                 int nextParameterIndex = 0;
                 int itemCount = 0;
+
+                // The list of the filters of this method.
                 List<IndexedFilter> indexedFilterList = new LinkedList<>();
+
+                // The previous method name, but stripped by the method operator.
+                // So only the filters are left and lower cased.
                 String loweredStrip = strippedMethodName.toLowerCase(Locale.ROOT);
+
+                // Chain represents either AND or OR for all filters.
                 Chain chain = null;
+
+                // We are using a while loop. Just to ensure we are not doing
+                // infinite loops, we also track the execution amount using the safeBreakAmount.
                 int safeBreakAmount = 200;
                 while (!loweredStrip.equalsIgnoreCase("") && safeBreakAmount > 0) {
                     // Add safe break to avoid infinite loops
                     safeBreakAmount--;
 
                     String bsonName = null;
-
-                    // Check if we can found any nested fields
+                    // Check if we can find any nested fields
                     for (NestedField nestedField : nestedFieldSet) {
                         String loweredKey = nestedField.key().toLowerCase(Locale.ROOT);
                         if (!loweredStrip.startsWith(loweredKey)) {
@@ -448,7 +473,7 @@ public class MongoManager {
                         break;
                     }
 
-                    // Check if we can found any direct fields
+                    // Check if we can find any direct entity fields
                     Field entityField = null;
                     for (Field field : sortedFieldMap.values()) {
                         String bsonFieldName = FieldUtils.parseBsonName(field);
@@ -521,14 +546,16 @@ public class MongoManager {
                 }
 
                 int methodParameterCount = method.getParameterCount();
-                // If the method is a pageBy, it needs at least one parameter of type Pager
+
+                // If the method is a pageBy, it needs at least one parameter of type Pagination
                 if (methodOperator == MethodOperator.PAGE && methodParameterCount == 0) {
                     throw new MethodPageRequiredException(method, repositoryClass, Pagination.class);
                 }
+
                 // Validate the parameterCount of the filters and the method parameters itself.
                 if (expectedParameterCount != methodParameterCount) {
                     if (methodParameterCount > 0) {
-                        // Subtract 1 from parameterCount. This object could be a Sort or Pager object.
+                        // Subtract 1 from parameterCount. This object could be a Sort or Pagination object.
                         // That means, the expectedParameterCount is less than the actualParameterCount.
                         Class<?> lastMethodParameter = method.getParameterTypes()[methodParameterCount - 1];
                         if (lastMethodParameter.isAssignableFrom(Sort.class)) {
@@ -560,7 +587,7 @@ public class MongoManager {
                     }
                 }
 
-                // Check if the field from sort annotation exists.
+                // Check if the method has the Sort annotation set.
                 SortBy sortAnnotation = method.getAnnotation(SortBy.class);
                 if (sortAnnotation != null) {
                     if (methodOperator == MethodOperator.PAGE) {
@@ -576,6 +603,8 @@ public class MongoManager {
                     Class<?> lastMethodParameter = method.getParameterTypes()[methodParameterCount - 1];
                     // Check if both Sort types are used.
                     // This is not allowed, even if it is possible internally.
+                    // En2do is capable of handling it, but I don't know the result.
+                    // Probably one sort would get an override by the other one.
                     boolean hasAnySortAnnotation = method.isAnnotationPresent(Limit.class)
                         || method.isAnnotationPresent(Skip.class)
                         || method.isAnnotationPresent(SortBy.class)
