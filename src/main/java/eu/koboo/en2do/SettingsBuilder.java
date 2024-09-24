@@ -17,7 +17,6 @@ public class SettingsBuilder {
     String collectionPrefix;
     String collectionSuffix;
 
-
     public SettingsBuilder setMongoDBLoggerLevel(Level level) {
         this.mongoLoggerLevel = level;
         return this;
