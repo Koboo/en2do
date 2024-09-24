@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.util.logging.Level;
 
+@SuppressWarnings("unused")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
 public class SettingsBuilder {

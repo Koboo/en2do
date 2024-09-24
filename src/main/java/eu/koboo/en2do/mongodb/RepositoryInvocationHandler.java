@@ -109,9 +109,9 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 findIterable = repositoryData.applySortAnnotations(method, findIterable);
 
                 // Because it's a find method, we always got an entity defined count.
-                // Many = -1 / unlimited
-                // Top = specific count
-                // First = 1 / first entity
+                // "Many" = -1 / unlimited
+                // "Top" = user specific count
+                // "First" = 1 / first entity
                 Long methodDefinedEntityCount = indexedMethod.getMethodDefinedEntityCount();
                 if (methodDefinedEntityCount == -1 || methodDefinedEntityCount > 1) {
                     if (methodDefinedEntityCount != -1) {

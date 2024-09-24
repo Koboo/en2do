@@ -55,8 +55,8 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
             case AND:
                 filter = Filters.and(bsonFilterSet);
                 break;
-            default:
             case NONE:
+            default:
                 filter = bsonFilterSet.stream().findFirst().orElse(null);
                 break;
         }
