@@ -23,7 +23,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AnnotationConvention implements Convention {
 
-    Map<Class<?>, RepositoryData<?, ?, ?>> repositoryMetaRegistry;
+    Map<Class<?>, RepositoryData<?, ?, ?>> repositoryDataByTypeRegistry;
 
     /**
      * This method is used to get the RepositoryMeta object by the given typeClass,
@@ -33,7 +33,11 @@ public class AnnotationConvention implements Convention {
      * @return The RepositoryMeta if found, otherwise "null"
      */
     private RepositoryData<?, ?, ?> findRepositoryMetaOf(Class<?> typeClass) {
-        for (RepositoryData<?, ?, ?> meta : repositoryMetaRegistry.values()) {
+        RepositoryData<?, ?, ?> repositoryData = repositoryDataByTypeRegistry.get(typeClass);
+        if(repositoryData != null) {
+            return repositoryData;
+        }
+        for (RepositoryData<?, ?, ?> meta : repositoryDataByTypeRegistry.values()) {
             if (!meta.getEntityClass().equals(typeClass)) {
                 continue;
             }
