@@ -221,15 +221,6 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
         return findIterable;
     }
 
-    public FindIterable<E> applyMethodDefinedCount(IndexedMethod<E, ID, R> indexedMethod,
-                                                   FindIterable<E> findIterable) {
-        Long methodDefinedEntityCount = indexedMethod.getMethodDefinedEntityCount();
-        if (methodDefinedEntityCount == null) {
-            return findIterable;
-        }
-        return findIterable.limit(Math.toIntExact(methodDefinedEntityCount));
-    }
-
     public FindIterable<E> applyPageObject(Method method,
                                            FindIterable<E> findIterable, Object[] args) throws Exception {
         Pagination pagination = (Pagination) args[args.length - 1];
