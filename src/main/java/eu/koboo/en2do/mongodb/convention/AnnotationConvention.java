@@ -1,6 +1,5 @@
 package eu.koboo.en2do.mongodb.convention;
 
-import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.repository.entity.Id;
 import eu.koboo.en2do.repository.entity.TransformField;
 import eu.koboo.en2do.repository.entity.Transient;
@@ -52,7 +51,7 @@ public class AnnotationConvention implements Convention {
                     TransformField transformField = (TransformField) writeAnnotation;
                     propertyModelBuilder.writeName(transformField.value());
                 }
-                if(writeAnnotation instanceof Id) {
+                if (writeAnnotation instanceof Id) {
                     classModelBuilder.idPropertyName(propertyModelBuilder.getName());
                 }
             }
