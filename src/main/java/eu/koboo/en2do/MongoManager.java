@@ -73,7 +73,6 @@ public class MongoManager {
     SettingsBuilder builder;
 
     Map<Class<?>, RepositoryData<?, ?, ?>> repositoryDataByClassMap;
-    Map<Class<?>, RepositoryData<?, ?, ?>> repositoryDataByTypeMap;
     Map<Class<?>, Repository<?, ?>> repositoryByClassRegistry;
     Map<String, GlobalPredefinedMethod> predefinedMethodRegistry;
     ExecutorService executorService;
@@ -95,7 +94,6 @@ public class MongoManager {
         }
         this.builder = builder;
         this.repositoryDataByClassMap = new ConcurrentHashMap<>();
-        this.repositoryDataByTypeMap = new ConcurrentHashMap<>();
         this.repositoryByClassRegistry = new ConcurrentHashMap<>();
         this.predefinedMethodRegistry = new LinkedHashMap<>();
         if (executorService == null) {
@@ -141,7 +139,7 @@ public class MongoManager {
                 .register(internalPropertyCodecProvider)
                 .automatic(true)
                 .conventions(List.of(
-                    new AnnotationConvention(repositoryDataByTypeMap),
+                    new AnnotationConvention(),
                     Conventions.ANNOTATION_CONVENTION,
                     Conventions.SET_PRIVATE_FIELDS_CONVENTION,
                     Conventions.USE_GETTERS_FOR_SETTERS
@@ -696,7 +694,6 @@ public class MongoManager {
                 new RepositoryInvocationHandler<>(repositoryData, executorService, predefinedMethodRegistry));
 
             repositoryDataByClassMap.put(repositoryClass, repositoryData);
-            repositoryDataByTypeMap.put(entityClass, repositoryData);
 
             repositoryByClassRegistry.put(repositoryClass, repository);
             return (R) repository;
