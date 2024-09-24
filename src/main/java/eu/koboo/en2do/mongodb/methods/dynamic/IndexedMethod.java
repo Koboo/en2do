@@ -67,11 +67,14 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
     private Bson processBson(IndexedFilter filter, int paramsIndexAt,
                              Object[] args) throws Exception {
         String queryFieldName = filter.getBsonName();
-        // Check if the uniqueId field is used.
-        // This is needed if uniqueId field and "_id" of documents are the same!
+
+        // Check if the id field of the entity is used.
+        // We need to convert the actual field name to mongodb's "_id" of documents
+        // to be able to filter the id field.
         if (queryFieldName.equalsIgnoreCase(repositoryData.getEntityUniqueIdField().getName())) {
             queryFieldName = "_id";
         }
+
         Bson retFilter = null;
         switch (filter.getOperator()) {
             case EQUALS:
@@ -101,6 +104,7 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 break;
             case REGEX:
                 // MongoDB supports multiple types of regex filtering, so check which type is provided.
+                // We also support the plain String and the Pattern types.
                 Object value = repositoryData.getFilterableValue(args[paramsIndexAt]);
                 if (value instanceof String) {
                     String regexPatternString = (String) value;
@@ -130,7 +134,7 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
             case IN:
                 // MongoDB expects an Array and not a List, but for easier usage
                 // the framework wants a list or an array, so just convert the given object to an array
-                // and add it to the filter
+                // and pass it on to the filter.
                 Object possibleObject = args[paramsIndexAt];
                 Object[] objectArray = null;
                 if (possibleObject instanceof Collection) {
@@ -155,6 +159,7 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 retFilter = Filters.in(queryFieldName, hasObject);
                 break;
             case GEO:
+                // Do not ask about the geo filters.
                 Geo geo = (Geo) args[paramsIndexAt];
                 switch (geo.getType()) {
                     case NEAR:
@@ -183,19 +188,20 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 retFilter = Filters.eq(queryFieldName, false);
                 break;
             case LIST_EMPTY:
+                // We need to check that the field exists, it should be from
+                // type array and should represent an empty array.
                 retFilter = Filters.and(
                     Filters.exists(queryFieldName, true),
                     Filters.type(queryFieldName, "array"),
                     Filters.ne(queryFieldName, new ArrayList<Document>())
-                    //Filters.size(queryFieldName, 0)
                 );
                 break;
             default: // This filter is not supported. Throw exception.
                 throw new MethodUnsupportedFilterException(method, repositoryData.getRepositoryClass());
         }
+
         // Applying negotiating of the filter, if needed
         if (filter.isNotFilter()) {
-            //return Filters.not(retFilter);
             return Filters.nor(retFilter);
         }
         return retFilter;

@@ -12,11 +12,10 @@ import org.bson.codecs.pojo.Convention;
 import org.bson.codecs.pojo.PropertyModelBuilder;
 
 import java.lang.annotation.Annotation;
-import java.util.Map;
 
 /**
  * This convention implementation enables the usage of the annotations from en2do
- * inside entity classes. This convention checks the annotations in the class model
+ * inside entity classes. This convention checks the annotations in the class model builder
  * and modifies it accordingly.
  */
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
