@@ -16,7 +16,7 @@ You need help or want to share a project, which uses en2do?
 
 ## Documentation
 
-- [If yo need help, take a look at the documentation](https://koboo.gitbook.io/en2do/)
+- [If you need help, take a look at the documentation](https://koboo.gitbook.io/en2do/)
 - [Check the javadocs of the newest release](https://github.com/Koboo/en2do/releases/latest)
 - [Find the latest artifacts in our repository](https://reposilite.koboo.eu/#/releases/eu/koboo/en2do)
 - [Artifacts are also available through our jenkins](https://jenkins.koboo.eu/job/en2do/job/Build%20and%20Publish%20(main)/)
