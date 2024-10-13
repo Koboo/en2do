@@ -8,7 +8,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import com.mongodb.client.model.geojson.Geometry;
 import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.mongodb.RepositoryInvocationHandler;
 import eu.koboo.en2do.mongodb.Validator;
@@ -23,12 +22,11 @@ import eu.koboo.en2do.mongodb.methods.predefined.impl.*;
 import eu.koboo.en2do.operators.Chain;
 import eu.koboo.en2do.operators.FilterOperator;
 import eu.koboo.en2do.operators.MethodOperator;
-import eu.koboo.en2do.repository.AsyncRepository;
+import eu.koboo.en2do.parser.RepositoryParser;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.entity.Id;
 import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
-import eu.koboo.en2do.repository.entity.compound.GeoIndex;
 import eu.koboo.en2do.repository.entity.compound.Index;
 import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
 import eu.koboo.en2do.repository.methods.async.Async;
@@ -52,7 +50,6 @@ import org.bson.conversions.Bson;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -71,6 +68,7 @@ public class MongoManager {
 
     @Getter
     SettingsBuilder builder;
+    RepositoryParser parser;
 
     Map<Class<?>, RepositoryData<?, ?, ?>> repositoryDataByClassMap;
     Map<Class<?>, Repository<?, ?>> repositoryByClassRegistry;
@@ -93,6 +91,7 @@ public class MongoManager {
             Logger.getLogger("com.mongodb").setLevel(loggerLevel);
         }
         this.builder = settingsBuilder;
+        this.parser = new RepositoryParser(settingsBuilder);
         this.repositoryDataByClassMap = new ConcurrentHashMap<>();
         this.repositoryByClassRegistry = new ConcurrentHashMap<>();
         this.predefinedMethodRegistry = new LinkedHashMap<>();
@@ -252,49 +251,20 @@ public class MongoManager {
                 throw new RepositoryInvalidException(repositoryClass);
             }
 
-            Map<Class<?>, List<Class<?>>> genericTypes = GenericUtils.getGenericTypes(repositoryClass);
-            if (genericTypes.isEmpty()) {
-                throw new RepositoryNoTypeException(repositoryClass);
-            }
+            Tuple<Class<?>, Class<?>> genericTypeTuple = parser.parseGenericTypes(repositoryClass, Repository.class);
+            Class<E> entityClass = (Class<E>) genericTypeTuple.first();
+            Class<ID> entityIdClass = (Class<ID>) genericTypeTuple.second();
 
-            List<Class<?>> classList = genericTypes.get(Repository.class);
-            if (classList == null || classList.size() != 2) {
-                throw new RepositoryEntityNotFoundException(repositoryClass);
-            }
-            Class<E> entityClass = (Class<E>) classList.get(0);
-            Class<ID> entityIdClass = (Class<ID>) classList.get(1);
+            // Check if repository and async repository use the same entity and id types.
+            parser.validateRepositoryTypes(repositoryClass, genericTypeTuple);
 
+            // Check if the collection name is valid
+            String entityCollectionName = parser.parseCollectionName(repositoryClass, entityClass);
 
-            // Parse annotated collection name and create pojo-related mongo collection
-            Collection collectionAnnotation = MongoCollectionUtils.parseAnnotation(repositoryClass, entityClass);
-            if (collectionAnnotation == null) {
-                throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
-            }
-
-            // Check if the collection name is valid and for duplication issues
-            String entityCollectionName = collectionAnnotation.value();
-            if (entityCollectionName.trim().equalsIgnoreCase("")) {
-                throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
-            }
-            entityCollectionName = MongoCollectionUtils.createCollectionName(builder, entityCollectionName);
-
+            // Check if we already got a repository with that name.
             for (RepositoryData<?, ?, ?> meta : repositoryDataByClassMap.values()) {
                 if (meta.getCollectionName().equalsIgnoreCase(entityCollectionName)) {
                     throw new RepositoryNameDuplicateException(repositoryClass, Collection.class);
-                }
-            }
-
-            if (AsyncRepository.class.isAssignableFrom(repositoryClass)) {
-                List<Class<?>> asyncClassList = genericTypes.get(AsyncRepository.class);
-                if (asyncClassList != null && asyncClassList.size() == 2) {
-                    Class<?> asyncEntityClass = asyncClassList.get(0);
-                    if (GenericUtils.isNotTypeOf(asyncEntityClass, entityClass)) {
-                        throw new RepositoryInvalidTypeException(entityClass, asyncEntityClass, repositoryClass);
-                    }
-                    Class<?> asyncIdClass = asyncClassList.get(1);
-                    if (GenericUtils.isNotTypeOf(asyncIdClass, entityIdClass)) {
-                        throw new RepositoryInvalidTypeException(entityClass, asyncEntityClass, repositoryClass);
-                    }
                 }
             }
 
@@ -302,23 +272,12 @@ public class MongoManager {
 
             // Collect all fields recursively to ensure,
             // we'll get the even the fields from the inheritance between object
-            Set<Field> entityFieldSet = FieldUtils.collectFields(entityClass);
+            Set<Field> entityFieldSet = parser.parseEntityFields(entityClass);
 
-            // Get the field of the uniqueId of the entity.
-            Field tempEntityUniqueIdField = null;
-            for (Field field : entityFieldSet) {
-                // Check for @Id annotation to find unique identifier of entity
-                if (!field.isAnnotationPresent(Id.class)) {
-                    continue;
-                }
-                tempEntityUniqueIdField = field;
-                tempEntityUniqueIdField.setAccessible(true);
-            }
-            // Check if we found any unique identifier.
-            if (tempEntityUniqueIdField == null) {
+            Field entityUniqueIdField = parser.parseEntityIdField(entityIdClass);
+            if(entityUniqueIdField == null) {
                 throw new RepositoryIdNotFoundException(entityClass, Id.class);
             }
-            Field entityUniqueIdField = tempEntityUniqueIdField;
 
             // Creating the native mongodb collection object,
             // and it's respective repository data object.
@@ -330,33 +289,14 @@ public class MongoManager {
                 entityCollection, entityCollectionName
             );
 
-            // Create list of all entity fields with their
-            // respective bson names and related them to the Field object.
-            List<String> fieldBsonList = new LinkedList<>();
-            Map<String, Field> nonSortedFieldMap = new HashMap<>();
-            for (Field field : entityFieldSet) {
-                String bsonName = FieldUtils.parseBsonName(field);
-                fieldBsonList.add(bsonName);
-                nonSortedFieldMap.put(bsonName, field);
-            }
-
-            // Sorting the list by length and putting them back into a linked map.
-            fieldBsonList.sort(Comparator.comparingInt(String::length));
-            Collections.reverse(fieldBsonList);
-            Map<String, Field> sortedFieldMap = new LinkedHashMap<>();
-            for (String bsonName : fieldBsonList) {
-                sortedFieldMap.put(bsonName, nonSortedFieldMap.get(bsonName));
-            }
-
-            // Clear the unused collections.
-            nonSortedFieldMap.clear();
-            fieldBsonList.clear();
+            Map<String, Field> sortedFieldMap = parser.parseSortedFieldBsonNames(entityClass);
 
             // Iterate through the repository methods
             for (Method method : repositoryClass.getMethods()) {
-                String methodName = method.getName();
+                String originalMethodName = method.getName();
 
                 // Apply transform annotation
+                String methodName = originalMethodName;
                 Transform transform = method.getAnnotation(Transform.class);
                 if (transform != null) {
                     methodName = transform.value();
@@ -367,7 +307,13 @@ public class MongoManager {
                     continue;
                 }
 
-                // Skip if the method should be ignored
+                // Method was override and transformed. Nice try my friend ;)
+                if(method.isAnnotationPresent(Override.class)
+                    && predefinedMethodRegistry.containsKey(originalMethodName)) {
+                    continue;
+                }
+
+                // Skip the methods, which we can "safely" ignore.
                 if (MethodUtils.IGNORED_DEFAULT_METHODS.contains(methodName)) {
                     continue;
                 }
@@ -375,7 +321,8 @@ public class MongoManager {
                 // Get the default return type of the method
                 Class<?> returnType = method.getReturnType();
 
-                // Check if the method is async and if so, check for completable future return type.
+                // Check if the method is async and if so,
+                // validate that the return types is a completable future.
                 boolean isAsyncMethod = method.isAnnotationPresent(Async.class);
                 if (isAsyncMethod) {
                     // Check async method name and if the user tries to
@@ -633,82 +580,7 @@ public class MongoManager {
                 entityCollection.dropIndexes();
             }
 
-            // Create compound indexes
-            Set<CompoundIndex> compoundIndexSet = AnnotationUtils.collectAnnotations(entityClass, CompoundIndex.class);
-            for (CompoundIndex compoundIndex : compoundIndexSet) {
-                // Checking if the field in the annotation exists in the entity class.
-                Index[] fieldIndexes = compoundIndex.value();
-                for (Index fieldIndex : fieldIndexes) {
-                    if (entityFieldSet.stream().map(Field::getName).noneMatch(fieldName -> fieldIndex.value().equalsIgnoreCase(fieldName))) {
-                        throw new RepositoryIndexFieldNotFoundException(repositoryClass, fieldIndex.value());
-                    }
-                }
-                // Validated all fields and creating the indexes on the collection.
-                List<Bson> indexBsonList = new ArrayList<>();
-                for (Index fieldIndex : fieldIndexes) {
-                    String fieldName = fieldIndex.value();
-                    Bson bsonIndex;
-                    if (fieldIndex.ascending()) {
-                        bsonIndex = Indexes.ascending(fieldName);
-                    } else {
-                        bsonIndex = Indexes.descending(fieldName);
-                    }
-                    indexBsonList.add(bsonIndex);
-                }
-                IndexOptions indexOptions = new IndexOptions()
-                    .unique(compoundIndex.uniqueIndex());
-                entityCollection.createIndex(Indexes.compoundIndex(indexBsonList), indexOptions);
-            }
-
-            // Create ttl indexes
-            Set<TTLIndex> ttlIndexSet = AnnotationUtils.collectAnnotations(entityClass, TTLIndex.class);
-            for (TTLIndex ttlIndex : ttlIndexSet) {
-                // Checking if the field in the annotation exists in the entity class.
-                String ttlField = ttlIndex.value();
-                boolean foundTTLField = false;
-                for (Field entityField : entityFieldSet) {
-                    if (!entityField.getName().equalsIgnoreCase(ttlField)) {
-                        continue;
-                    }
-                    if (GenericUtils.isNotTypeOf(entityField.getType(), Date.class)) {
-                        continue;
-                    }
-                    foundTTLField = true;
-                    break;
-                }
-                if (!foundTTLField) {
-                    throw new RepositoryTTLFieldNotFoundException(repositoryClass, ttlField);
-                }
-                IndexOptions indexOptions = new IndexOptions()
-                    .expireAfter(ttlIndex.ttl(), ttlIndex.time());
-                entityCollection.createIndex(Indexes.ascending(ttlField), indexOptions);
-            }
-
-            // Create geo index
-            for (Field field : entityFieldSet) {
-                int modifiers = field.getModifiers();
-                if (Modifier.isStatic(modifiers)
-                    || Modifier.isFinal(modifiers)
-                    || Modifier.isTransient(modifiers)) {
-                    continue;
-                }
-
-                if (!Geometry.class.isAssignableFrom(field.getType())) {
-                    continue;
-                }
-                GeoIndex geoIndex = field.getAnnotation(GeoIndex.class);
-                if (geoIndex == null) {
-                    continue;
-                }
-                String fieldName = FieldUtils.parseBsonName(field);
-                Bson indexBson;
-                if (geoIndex.sphere()) {
-                    indexBson = Indexes.geo2dsphere(fieldName);
-                } else {
-                    indexBson = Indexes.geo2d(fieldName);
-                }
-                entityCollection.createIndex(indexBson);
-            }
+            parser.parseIndices(repositoryClass, entityClass, entityCollection);
 
             ///////////////////////////
             //                       //
