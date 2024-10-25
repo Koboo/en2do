@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "eu.koboo"
-version = "1.0.2"
+version = "1.0.3"
 
 repositories {
     mavenCentral()
@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
     api("org.mongodb:mongodb-driver-sync:5.2.0")
-    testImplementation("org.mongodb:mongodb-driver-sync:4.11.4")
+    testImplementation("org.mongodb:mongodb-driver-sync:5.2.0")
 
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
