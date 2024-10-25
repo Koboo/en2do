@@ -26,7 +26,7 @@ dependencies {
 
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.11.3")
 
-    testImplementation("org.slf4j:slf4j-jdk14:2.0.9")
+    testImplementation("org.slf4j:slf4j-jdk14:2.0.16")
 }
 
 tasks.test {
