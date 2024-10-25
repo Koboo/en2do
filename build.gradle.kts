@@ -16,8 +16,8 @@ repositories {
 }
 
 dependencies {
-    api("org.mongodb:mongodb-driver-sync:4.11.1")
-    testImplementation("org.mongodb:mongodb-driver-sync:4.11.1")
+    api("org.mongodb:mongodb-driver-sync:4.11.4")
+    testImplementation("org.mongodb:mongodb-driver-sync:4.11.4")
 
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
