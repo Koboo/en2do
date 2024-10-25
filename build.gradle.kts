@@ -8,7 +8,7 @@ plugins {
     id("maven-publish")
 }
 
-group = "de.derioo"
+group = "eu.koboo"
 version = "2.0.0"
 
 repositories {
