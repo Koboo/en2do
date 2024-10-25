@@ -16,13 +16,13 @@ repositories {
 }
 
 dependencies {
-    api("org.mongodb:mongodb-driver-sync:4.11.1")
-    testImplementation("org.mongodb:mongodb-driver-sync:4.11.1")
+    api("org.mongodb:mongodb-driver-sync:4.11.4")
+    testImplementation("org.mongodb:mongodb-driver-sync:4.11.4")
 
-    compileOnly("org.projectlombok:lombok:1.18.30")
-    annotationProcessor("org.projectlombok:lombok:1.18.30")
-    testImplementation("org.projectlombok:lombok:1.18.30")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.30")
+    compileOnly("org.projectlombok:lombok:1.18.34")
+    annotationProcessor("org.projectlombok:lombok:1.18.34")
+    testImplementation("org.projectlombok:lombok:1.18.34")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.34")
 
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.1")
 
