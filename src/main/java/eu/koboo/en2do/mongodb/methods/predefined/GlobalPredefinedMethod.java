@@ -62,7 +62,7 @@ public abstract class GlobalPredefinedMethod {
     }
 
     protected <E, ID, R extends Repository<E, ID>> ID checkUniqueIdByArgument(RepositoryData<E, ID, R> repositoryData,
-                                                                            Method method, Object argument) throws IllegalAccessException {
+                                                                              Method method, Object argument) throws IllegalAccessException {
         Class<ID> entityIdClass = repositoryData.getEntityUniqueIdClass();
         ID uniqueId = entityIdClass.cast(argument);
         if (uniqueId == null) {
@@ -74,7 +74,7 @@ public abstract class GlobalPredefinedMethod {
     }
 
     protected <E, ID, R extends Repository<E, ID>> E checkEntity(RepositoryData<E, ID, R> repositoryData,
-                                                              Method method, Object argument) {
+                                                                 Method method, Object argument) {
         Class<E> entityClass = repositoryData.getEntityClass();
         E entity = entityClass.cast(argument);
         if (entity == null) {
