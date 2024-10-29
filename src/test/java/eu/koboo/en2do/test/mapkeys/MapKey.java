@@ -1,4 +1,4 @@
-package eu.koboo.en2do.test.keytest;
+package eu.koboo.en2do.test.mapkeys;
 
 import eu.koboo.en2do.repository.entity.Id;
 import lombok.*;
@@ -17,13 +17,9 @@ public class MapKey {
     @Id
     UUID uniqueId;
 
-    String address;
-    boolean addressBanned;
-    Type type;
-
     Map<String, String> stringMap;
     Map<Boolean, String> booleanMap;
     Map<Double, String> doubleMap;
     Map<UUID, String> uuidMap;
-    Map<SomeEnum, String> enumMap;
+    Map<MapKeyEnum, String> enumMap;
 }
