@@ -6,15 +6,15 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.IndexOptions;
-import com.mongodb.client.model.Indexes;
 import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.mongodb.RepositoryInvocationHandler;
 import eu.koboo.en2do.mongodb.Validator;
 import eu.koboo.en2do.mongodb.codec.InternalPropertyCodecProvider;
 import eu.koboo.en2do.mongodb.convention.AnnotationConvention;
 import eu.koboo.en2do.mongodb.exception.methods.*;
-import eu.koboo.en2do.mongodb.exception.repository.*;
+import eu.koboo.en2do.mongodb.exception.repository.RepositoryIdNotFoundException;
+import eu.koboo.en2do.mongodb.exception.repository.RepositoryInvalidException;
+import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameDuplicateException;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedFilter;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
 import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
@@ -26,9 +26,6 @@ import eu.koboo.en2do.parser.RepositoryParser;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.entity.Id;
-import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
-import eu.koboo.en2do.repository.entity.compound.Index;
-import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
 import eu.koboo.en2do.repository.methods.async.Async;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
@@ -46,7 +43,6 @@ import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.Conventions;
 import org.bson.codecs.pojo.PojoCodecProvider;
-import org.bson.conversions.Bson;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -275,7 +271,7 @@ public class MongoManager {
             Set<Field> entityFieldSet = parser.parseEntityFields(entityClass);
 
             Field entityUniqueIdField = parser.parseEntityIdField(entityIdClass);
-            if(entityUniqueIdField == null) {
+            if (entityUniqueIdField == null) {
                 throw new RepositoryIdNotFoundException(entityClass, Id.class);
             }
 
@@ -308,7 +304,7 @@ public class MongoManager {
                 }
 
                 // Method was override and transformed. Nice try my friend ;)
-                if(method.isAnnotationPresent(Override.class)
+                if (method.isAnnotationPresent(Override.class)
                     && predefinedMethodRegistry.containsKey(originalMethodName)) {
                     continue;
                 }

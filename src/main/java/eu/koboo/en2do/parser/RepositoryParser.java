@@ -2,9 +2,10 @@ package eu.koboo.en2do.parser;
 
 import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.SettingsBuilder;
-import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidAsyncNameException;
-import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidAsyncReturnException;
-import eu.koboo.en2do.mongodb.exception.repository.*;
+import eu.koboo.en2do.mongodb.exception.repository.RepositoryEntityNotFoundException;
+import eu.koboo.en2do.mongodb.exception.repository.RepositoryInvalidTypeException;
+import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameNotFoundException;
+import eu.koboo.en2do.mongodb.exception.repository.RepositoryNoTypeException;
 import eu.koboo.en2do.parser.indices.CompoundIndicesParser;
 import eu.koboo.en2do.parser.indices.GeoIndicesParser;
 import eu.koboo.en2do.parser.indices.IndicesParser;
@@ -12,7 +13,6 @@ import eu.koboo.en2do.parser.indices.TimeToLiveIndicesParser;
 import eu.koboo.en2do.repository.AsyncRepository;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.entity.Id;
-import eu.koboo.en2do.repository.methods.async.Async;
 import eu.koboo.en2do.utility.FieldUtils;
 import eu.koboo.en2do.utility.GenericUtils;
 import eu.koboo.en2do.utility.Tuple;
@@ -20,10 +20,8 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
@@ -104,7 +102,7 @@ public class RepositoryParser {
             entityCollectionName = entityCollectionName + collectionSuffix;
         }
 
-        if(!COLLECTION_REGEX_NAME.matcher(entityCollectionName).matches()) {
+        if (!COLLECTION_REGEX_NAME.matcher(entityCollectionName).matches()) {
             throw new RepositoryInvalidNameException(repositoryClass, Collection.class, entityCollectionName);
         }
 
