@@ -252,8 +252,8 @@ public class MongoManager {
             }
 
             Tuple<Class<?>, Class<?>> genericTypeTuple = parser.parseGenericTypes(repositoryClass, Repository.class);
-            Class<E> entityClass = (Class<E>) genericTypeTuple.first();
-            Class<ID> entityIdClass = (Class<ID>) genericTypeTuple.second();
+            Class<E> entityClass = (Class<E>) genericTypeTuple.getFirst();
+            Class<ID> entityIdClass = (Class<ID>) genericTypeTuple.getSecond();
 
             // Check if repository and async repository use the same entity and id types.
             parser.validateRepositoryTypes(repositoryClass, genericTypeTuple);
