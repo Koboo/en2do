@@ -55,7 +55,7 @@ public class EntityUtils {
             }
         } catch (IntrospectionException | InvocationTargetException | IllegalAccessException |
                  IllegalArgumentException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Couldn't copy-clone properties: ", e);
         }
     }
 }

@@ -14,7 +14,7 @@ public class MethodHashCode extends GlobalPredefinedMethod {
 
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
-                                                              Method method, Object[] arguments) throws Exception {
+                                                              Method method, Object[] arguments) {
         Class<R> repositoryClass = repositoryData.getRepositoryClass();
         return repositoryClass.getName().hashCode() + repositoryData.getCollectionName().hashCode();
     }

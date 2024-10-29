@@ -19,7 +19,7 @@ public class MethodUpdateAllFields extends GlobalPredefinedMethod {
 
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
-                                                              Method method, Object[] arguments) throws Exception {
+                                                              Method method, Object[] arguments) {
         // Cast the first object of the array to the UpdateBatch object
         MongoCollection<E> collection = repositoryData.getEntityCollection();
         UpdateBatch updateBatch = (UpdateBatch) arguments[0];

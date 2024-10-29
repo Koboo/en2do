@@ -18,7 +18,7 @@ public class MethodDeleteManyById extends GlobalPredefinedMethod {
 
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
-                                                              Method method, Object[] arguments) throws Exception {
+                                                              Method method, Object[] arguments) {
         Collection<ID> idList = checkUniqueIdList(repositoryData, method, arguments[0]);
         if (idList.isEmpty()) {
             return true;
