@@ -51,4 +51,13 @@ public class SettingsBuilder {
         this.collectionSuffix = suffix;
         return this;
     }
+
+    protected void merge(SettingsBuilder otherBuilder) {
+        this.mongoLoggerLevel = otherBuilder.getMongoLoggerLevel();
+        this.disallowUUIDKeys = otherBuilder.isDisallowUUIDKeys();
+        this.allowDiskUse = otherBuilder.isAllowDiskUse();
+        this.appendMethodAsComment = otherBuilder.isAppendMethodAsComment();
+        this.collectionPrefix = otherBuilder.getCollectionPrefix();
+        this.collectionSuffix = otherBuilder.getCollectionSuffix();
+    }
 }

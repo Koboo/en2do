@@ -89,7 +89,7 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
         } else {
             findIterable = entityCollection.find();
         }
-        if (mongoManager.getBuilder().isAppendMethodAsComment()) {
+        if (mongoManager.getSettingsBuilder().isAppendMethodAsComment()) {
             findIterable.comment("en2do \"" + methodName + "\"");
         }
         return findIterable;
@@ -130,7 +130,7 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             }
             findIterable = findIterable.skip(skip);
         }
-        findIterable = findIterable.allowDiskUse(mongoManager.getBuilder().isAllowDiskUse());
+        findIterable = findIterable.allowDiskUse(mongoManager.getSettingsBuilder().isAllowDiskUse());
         return findIterable;
     }
 
@@ -158,7 +158,7 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             }
             findIterable = findIterable.skip(value);
         }
-        findIterable = findIterable.allowDiskUse(mongoManager.getBuilder().isAllowDiskUse());
+        findIterable = findIterable.allowDiskUse(mongoManager.getSettingsBuilder().isAllowDiskUse());
         return findIterable;
     }
 
@@ -177,7 +177,7 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
         findIterable = findIterable
             .limit(pagination.getEntitiesPerPage())
             .skip(skip)
-            .allowDiskUse(mongoManager.getBuilder().isAllowDiskUse());
+            .allowDiskUse(mongoManager.getSettingsBuilder().isAllowDiskUse());
         return findIterable;
     }
 

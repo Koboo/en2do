@@ -63,7 +63,7 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 public class MongoManager {
 
     @Getter
-    SettingsBuilder builder;
+    SettingsBuilder settingsBuilder;
     RepositoryParser parser;
 
     Map<Class<?>, RepositoryData<?, ?, ?>> repositoryDataByClassMap;
@@ -86,7 +86,7 @@ public class MongoManager {
             Logger.getLogger("org.mongodb").setLevel(loggerLevel);
             Logger.getLogger("com.mongodb").setLevel(loggerLevel);
         }
-        this.builder = settingsBuilder;
+        this.settingsBuilder = settingsBuilder;
         this.parser = new RepositoryParser(settingsBuilder);
         this.repositoryDataByClassMap = new ConcurrentHashMap<>();
         this.repositoryByClassRegistry = new ConcurrentHashMap<>();
@@ -155,12 +155,12 @@ public class MongoManager {
         registerPredefinedMethods();
     }
 
-    public MongoManager(Credentials credentials, SettingsBuilder builder) {
-        this(credentials, null, builder);
+    public MongoManager(Credentials credentials, SettingsBuilder settingsBuilder) {
+        this(credentials, null, settingsBuilder);
     }
 
-    public MongoManager(SettingsBuilder builder) {
-        this(null, null, builder);
+    public MongoManager(SettingsBuilder settingsBuilder) {
+        this(null, null, settingsBuilder);
     }
 
     public MongoManager(Credentials credentials) {
@@ -601,6 +601,11 @@ public class MongoManager {
 
     public <T> MongoManager registerCodec(Codec<T> typeCodec) {
         internalPropertyCodecProvider.registerCodec(typeCodec.getEncoderClass(), typeCodec);
+        return this;
+    }
+
+    public MongoManager applySettings(SettingsBuilder newBuilder) {
+        settingsBuilder.merge(newBuilder);
         return this;
     }
 }
