@@ -2,7 +2,7 @@
 
 ![Discord](https://img.shields.io/discord/1021053609359708211)
 ![Release](https://img.shields.io/github/v/release/Koboo/en2do)
-![Maven](https://reposilite.koboo.eu/api/badge/latest/releases/eu/koboo/en2do?color=40c14a&name=maven&prefix=v)
+![Maven](https://img.shields.io/maven-central/v/eu.koboo/en2do)
 
 Entity framework for MongoDB in Java 17.
 
@@ -16,15 +16,14 @@ You need help or want to share a project, which uses en2do?
 
 ## Documentation
 
-- [If you need help, take a look at the documentation](https://koboo.gitbook.io/en2do/)
-- [Check the javadocs of the newest release](https://github.com/Koboo/en2do/releases/latest)
-- [Find the latest artifacts in our repository](https://reposilite.koboo.eu/#/releases/eu/koboo/en2do)
-- [Artifacts are also available through our jenkins](https://jenkins.koboo.eu/job/en2do/job/Build%20and%20Publish%20(main)/)
+- If you need help, take a look at [the documentation](https://koboo.gitbook.io/en2do/)
+- Check [the javadocs](https://github.com/Koboo/en2do/releases/latest) of the newest release
+- Find [the latest artifacts](https://mvnrepository.com/artifact/eu.koboo/en2do) in maven central
 
 ### Other
 
-- [See the License](LICENSE)
-- [Search for help on the Discord](https://discord.gg/VGrxZDQu2n)
+- [License](LICENSE)
+- [Join our Discord](https://discord.gg/VGrxZDQu2n)
 
 ### References
 
