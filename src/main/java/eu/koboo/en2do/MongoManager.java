@@ -75,10 +75,10 @@ public class MongoManager {
     CodecRegistry codecRegistry;
 
     @Getter
-    MongoClient client;
+    MongoClient mongoClient;
 
     @Getter
-    MongoDatabase database;
+    MongoDatabase mongoDatabase;
 
     public MongoManager(Credentials credentials, ExecutorService executorService, SettingsBuilder settingsBuilder) {
         if (settingsBuilder == null) {
@@ -149,8 +149,8 @@ public class MongoManager {
             .codecRegistry(codecRegistry)
             .build();
 
-        client = MongoClients.create(clientSettings);
-        database = client.getDatabase(databaseString);
+        mongoClient = MongoClients.create(clientSettings);
+        mongoDatabase = mongoClient.getDatabase(databaseString);
 
         registerPredefinedMethods();
     }
@@ -185,8 +185,8 @@ public class MongoManager {
                 meta.destroy();
             }
             repositoryDataByClassMap.clear();
-            if (client != null) {
-                client.close();
+            if (mongoClient != null) {
+                mongoClient.close();
             }
         } catch (Exception e) {
             throw new RuntimeException("Error while closing: " + MongoManager.class, e);
@@ -275,7 +275,7 @@ public class MongoManager {
 
             // Creating the native mongodb collection object,
             // and it's respective repository data object.
-            MongoCollection<E> entityCollection = database.getCollection(entityCollectionName, entityClass);
+            MongoCollection<E> entityCollection = mongoDatabase.getCollection(entityCollectionName, entityClass);
             RepositoryData<E, ID, R> repositoryData = new RepositoryData<>(this,
                 repositoryClass, entityClass,
                 entityFieldSet,
