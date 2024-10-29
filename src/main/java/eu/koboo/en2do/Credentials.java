@@ -27,14 +27,17 @@ public class Credentials {
      * Empty representation of the credentials object
      */
     private static final Credentials EMPTY = new Credentials(null, null);
+
     /**
      * The default key of the connection string.
      */
     private static final String CONNECT_KEY = "en2do.connectstring";
+
     /**
      * The default key of the database.
      */
     private static final String DATABASE_KEY = "en2do.database";
+
     /**
      * The default name of the credentials file.
      */
