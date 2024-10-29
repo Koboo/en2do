@@ -7,6 +7,7 @@ import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
+import org.bson.conversions.Bson;
 
 import java.lang.reflect.Method;
 
@@ -25,7 +26,8 @@ public class MethodUpdateAllFields extends GlobalPredefinedMethod {
 
         // Call the UpdateBatch on all documents with the "id" field of the entity,
         // which could be a unique name or the "_id" field.
-        UpdateResult result = collection.updateMany(repositoryData.createIdExistsFilter(),
+        Bson idExistsFilter = createIdExistsFilter();
+        UpdateResult result = collection.updateMany(idExistsFilter,
             repositoryData.createUpdateDocument(updateBatch),
             new UpdateOptions().upsert(false));
         return result.wasAcknowledged();

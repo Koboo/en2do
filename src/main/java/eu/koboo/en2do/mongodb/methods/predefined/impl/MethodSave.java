@@ -27,7 +27,7 @@ public class MethodSave extends GlobalPredefinedMethod {
                                                               Method method, Object[] arguments) throws Exception {
         E entity = repositoryData.checkEntity(method, arguments[0]);
         ID uniqueId = repositoryData.checkUniqueId(method, repositoryData.getUniqueId(entity));
-        Bson idFilter = repositoryData.createIdFilter(uniqueId);
+        Bson idFilter = createIdFilter(uniqueId);
         MongoCollection<E> entityCollection = repositoryData.getEntityCollection();
         if (entityCollection.countDocuments(idFilter) > 0) {
             UpdateResult result = entityCollection.replaceOne(idFilter, entity, replaceOptions);

@@ -18,7 +18,7 @@ public class MethodExists extends GlobalPredefinedMethod {
                                                               Method method, Object[] arguments) throws Exception {
         E entity = repositoryData.checkEntity(method, arguments[0]);
         ID uniqueId = repositoryData.checkUniqueId(method, repositoryData.getUniqueId(entity));
-        Bson idFilter = repositoryData.createIdFilter(uniqueId);
+        Bson idFilter = createIdFilter(uniqueId);
         return repositoryData.getEntityCollection().countDocuments(idFilter) > 0;
     }
 }

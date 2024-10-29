@@ -1,11 +1,13 @@
 package eu.koboo.en2do.mongodb.methods.predefined;
 
+import com.mongodb.client.model.Filters;
 import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.repository.Repository;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.bson.conversions.Bson;
 
 import java.lang.reflect.Method;
 
@@ -34,4 +36,13 @@ public abstract class GlobalPredefinedMethod {
     public abstract <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                                        Method method,
                                                                        Object[] arguments) throws Exception;
+
+    protected <ID> Bson createIdFilter(ID uniqueId) {
+        return Filters.eq("_id", uniqueId);
+    }
+
+    protected Bson createIdExistsFilter() {
+        return Filters.exists("_id");
+    }
+
 }

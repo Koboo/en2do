@@ -36,7 +36,7 @@ public class MethodSaveAll extends GlobalPredefinedMethod {
         // Iterate through entities and check if it already exists by unique identifier.
         for (E entity : entityList) {
             ID uniqueId = repositoryData.checkUniqueId(method, repositoryData.getUniqueId(entity));
-            Bson idFilter = repositoryData.createIdFilter(uniqueId);
+            Bson idFilter = createIdFilter(uniqueId);
             if (entityCollection.countDocuments(idFilter) > 0) {
                 // Entity exists, so we want to update the existing document.
                 entityCollection.replaceOne(idFilter, entity, replaceOptions);

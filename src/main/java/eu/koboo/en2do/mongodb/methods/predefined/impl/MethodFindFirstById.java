@@ -18,7 +18,7 @@ public class MethodFindFirstById extends GlobalPredefinedMethod {
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method, Object[] arguments) throws Exception {
         ID uniqueId = repositoryData.checkUniqueId(method, arguments[0]);
-        Bson idFilter = repositoryData.createIdFilter(uniqueId);
+        Bson idFilter = createIdFilter(uniqueId);
         FindIterable<E> findIterable = repositoryData.createIterable(idFilter, methodName);
         return findIterable.limit(1).first();
     }
