@@ -3,7 +3,6 @@ package eu.koboo.en2do.mongodb;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Filters;
 import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidPageException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidSortLimitException;
@@ -83,68 +82,6 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
         return dynamicMethodRegistry.get(methodName);
     }
 
-    @SuppressWarnings("unchecked")
-    public E checkEntity(Method method, Object argument) {
-        E entity = (E) argument;
-        if (entity == null) {
-            throw new NullPointerException("Entity of type " + entityClass.getName() + " as parameter of method " +
-                    method.getName() + " is null.");
-        }
-        return entity;
-    }
-
-    @SuppressWarnings("unchecked")
-    public ID checkUniqueId(Method method, Object argument) {
-        ID uniqueId = (ID) argument;
-        if (uniqueId == null) {
-            throw new NullPointerException("UniqueId of Entity of type " + entityClass.getName() + " as parameter of method " +
-                    method.getName() + " is null.");
-        }
-        return uniqueId;
-    }
-
-    @SuppressWarnings("unchecked")
-    public Collection<E> checkEntityCollection(Method method, Object argument) {
-        Collection<E> entity = (Collection<E>) argument;
-        if (entity == null) {
-            throw new NullPointerException("List of Entities of type " + entityClass.getName() + " as parameter of method " +
-                    method.getName() + " is null.");
-        }
-        return entity;
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<E> checkEntityList(Method method, Object argument) {
-        List<E> entity = (List<E>) argument;
-        if (entity == null) {
-            throw new NullPointerException("List of Entities of type " + entityClass.getName() + " as parameter of method " +
-                    method.getName() + " is null.");
-        }
-        return entity;
-    }
-
-    @SuppressWarnings("unchecked")
-    public Collection<ID> checkUniqueIdList(Method method, Object argument) {
-        Collection<ID> entity = (Collection<ID>) argument;
-        if (entity == null) {
-            throw new NullPointerException("ID-List of Entities of type " + entityClass.getName() + " as parameter of method " +
-                    method.getName() + " is null.");
-        }
-        return entity;
-    }
-
-    public ID getUniqueId(E entity) throws IllegalAccessException {
-        return entityUniqueIdClass.cast(entityUniqueIdField.get(entity));
-    }
-
-    public Bson createIdFilter(ID uniqueId) {
-        return Filters.eq("_id", uniqueId);
-    }
-
-    public Bson createIdExistsFilter() {
-        return Filters.exists("_id");
-    }
-
     public FindIterable<E> createIterable(Bson filter, String methodName) {
         FindIterable<E> findIterable;
         if (filter != null) {
@@ -193,7 +130,7 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             }
             findIterable = findIterable.skip(skip);
         }
-        findIterable.allowDiskUse(mongoManager.getBuilder().isAllowDiskUse());
+        findIterable = findIterable.allowDiskUse(mongoManager.getBuilder().isAllowDiskUse());
         return findIterable;
     }
 
@@ -221,7 +158,7 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             }
             findIterable = findIterable.skip(value);
         }
-        findIterable.allowDiskUse(mongoManager.getBuilder().isAllowDiskUse());
+        findIterable = findIterable.allowDiskUse(mongoManager.getBuilder().isAllowDiskUse());
         return findIterable;
     }
 
@@ -237,8 +174,10 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             }
         }
         int skip = (int) ((pagination.getPage() - 1) * pagination.getEntitiesPerPage());
-        findIterable = findIterable.limit(pagination.getEntitiesPerPage()).skip(skip);
-        findIterable.allowDiskUse(true);
+        findIterable = findIterable
+            .limit(pagination.getEntitiesPerPage())
+            .skip(skip)
+            .allowDiskUse(mongoManager.getBuilder().isAllowDiskUse());
         return findIterable;
     }
 

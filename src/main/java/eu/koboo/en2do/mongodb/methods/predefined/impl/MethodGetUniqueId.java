@@ -15,8 +15,7 @@ public class MethodGetUniqueId extends GlobalPredefinedMethod {
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method, Object[] arguments) throws Exception {
-        E entity = repositoryData.checkEntity(method, arguments[0]);
-        Object identifier = repositoryData.getEntityUniqueIdField().get(entity);
-        return repositoryData.checkUniqueId(method, identifier);
+        E entity = checkEntity(repositoryData, method, arguments[0]);
+        return checkUniqueIdByEntity(repositoryData, method, entity);
     }
 }

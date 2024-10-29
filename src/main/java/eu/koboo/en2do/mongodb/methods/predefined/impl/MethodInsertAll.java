@@ -22,7 +22,7 @@ public class MethodInsertAll extends GlobalPredefinedMethod {
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method, Object[] arguments) throws Exception {
         MongoCollection<E> entityCollection = repositoryData.getEntityCollection();
-        List<E> insertList = repositoryData.checkEntityList(method, arguments[0]);
+        List<E> insertList = checkEntityList(repositoryData, method, arguments[0]);
         if (insertList.isEmpty()) {
             return true;
         }

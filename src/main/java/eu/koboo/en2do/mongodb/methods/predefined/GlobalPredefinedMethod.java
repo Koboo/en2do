@@ -9,7 +9,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.bson.conversions.Bson;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * This class is a representation of a predefined method from the repository
@@ -43,6 +46,78 @@ public abstract class GlobalPredefinedMethod {
 
     protected Bson createIdExistsFilter() {
         return Filters.exists("_id");
+    }
+
+    protected <E, ID, R extends Repository<E, ID>> ID checkUniqueIdByEntity(RepositoryData<E, ID, R> repositoryData,
+                                                                            Method method, E entity) throws IllegalAccessException {
+        Class<ID> entityIdClass = repositoryData.getEntityUniqueIdClass();
+        Field entityIdField = repositoryData.getEntityUniqueIdField();
+        ID uniqueId = entityIdClass.cast(entityIdField.get(entity));
+        if (uniqueId == null) {
+            Class<E> entityClass = repositoryData.getEntityClass();
+            throw new NullPointerException("UniqueId of Entity of type " + entityClass.getName() +
+                " as parameter of method " + method.getName() + " is null.");
+        }
+        return uniqueId;
+    }
+
+    protected <E, ID, R extends Repository<E, ID>> ID checkUniqueIdByArgument(RepositoryData<E, ID, R> repositoryData,
+                                                                            Method method, Object argument) throws IllegalAccessException {
+        Class<ID> entityIdClass = repositoryData.getEntityUniqueIdClass();
+        ID uniqueId = entityIdClass.cast(argument);
+        if (uniqueId == null) {
+            Class<E> entityClass = repositoryData.getEntityClass();
+            throw new NullPointerException("UniqueId of Entity of type " + entityClass.getName() +
+                " as parameter of method " + method.getName() + " is null.");
+        }
+        return uniqueId;
+    }
+
+    protected <E, ID, R extends Repository<E, ID>> E checkEntity(RepositoryData<E, ID, R> repositoryData,
+                                                              Method method, Object argument) {
+        Class<E> entityClass = repositoryData.getEntityClass();
+        E entity = entityClass.cast(argument);
+        if (entity == null) {
+            throw new NullPointerException("Entity of type " + entityClass.getName() +
+                " as parameter of method " + method.getName() + " is null.");
+        }
+        return entity;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <E, ID, R extends Repository<E, ID>> Collection<E> checkEntityCollection(RepositoryData<E, ID, R> repositoryData,
+                                                                                       Method method, Object argument) {
+        Class<E> entityClass = repositoryData.getEntityClass();
+        Collection<E> entity = (Collection<E>) argument;
+        if (entity == null) {
+            throw new NullPointerException("List of Entities of type " + entityClass.getName() +
+                " as parameter of method " + method.getName() + " is null.");
+        }
+        return entity;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <E, ID, R extends Repository<E, ID>> List<E> checkEntityList(RepositoryData<E, ID, R> repositoryData,
+                                                                           Method method, Object argument) {
+        Class<E> entityClass = repositoryData.getEntityClass();
+        List<E> entity = (List<E>) argument;
+        if (entity == null) {
+            throw new NullPointerException("List of Entities of type " + entityClass.getName() + " as parameter of method " +
+                method.getName() + " is null.");
+        }
+        return entity;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <E, ID, R extends Repository<E, ID>> Collection<ID> checkUniqueIdList(RepositoryData<E, ID, R> repositoryData,
+                                                                                    Method method, Object argument) {
+        Class<E> entityClass = repositoryData.getEntityClass();
+        Collection<ID> entity = (Collection<ID>) argument;
+        if (entity == null) {
+            throw new NullPointerException("ID-List of Entities of type " + entityClass.getName() +
+                " as parameter of method " + method.getName() + " is null.");
+        }
+        return entity;
     }
 
 }
