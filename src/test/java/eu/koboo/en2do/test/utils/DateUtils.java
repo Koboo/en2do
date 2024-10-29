@@ -1,4 +1,4 @@
-package eu.koboo.en2do.utility;
+package eu.koboo.en2do.test.utils;
 
 import lombok.experimental.UtilityClass;
 

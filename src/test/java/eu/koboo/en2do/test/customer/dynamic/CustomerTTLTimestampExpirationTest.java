@@ -3,7 +3,7 @@ package eu.koboo.en2do.test.customer.dynamic;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
-import eu.koboo.en2do.utility.DateUtils;
+import eu.koboo.en2do.test.utils.DateUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
