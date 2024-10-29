@@ -29,7 +29,7 @@ public class CustomerFindManyListEmptyTest extends CustomerRepositoryTest {
             Customer customer = Const.createCustomer();
             assertNotNull(customer);
             customer.setUniqueId(UUID.randomUUID());
-            if(i % 2 == 0) {
+            if (i % 2 == 0) {
                 customer.setOrders(Collections.emptyList());
             }
             assertTrue(repository.save(customer));
