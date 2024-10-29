@@ -13,11 +13,10 @@ You need help or want to share a project, which uses en2do?
 
 [Feel free to join our Discord](https://discord.gg/VGrxZDQu2n)!
 
-## Documentation
+## Links
 
-- If you need help, take a look at [the documentation](https://koboo.gitbook.io/en2do/)
-- Check [the javadocs](https://github.com/Koboo/en2do/releases/latest) of the newest release
-- Find [the latest artifacts](https://mvnrepository.com/artifact/eu.koboo/en2do) in maven central
+- Check out our [documentation](https://koboo.gitbook.io/en2do/) with many examples
+- Show all published [artifacts](https://mvnrepository.com/artifact/eu.koboo/en2do) in maven central
 
 ### Other
 
