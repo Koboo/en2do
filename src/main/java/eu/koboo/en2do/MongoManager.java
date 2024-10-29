@@ -171,9 +171,6 @@ public class MongoManager {
         this(null, null, null);
     }
 
-    public void start() {
-    }
-
     public void close() {
         close(true);
     }
