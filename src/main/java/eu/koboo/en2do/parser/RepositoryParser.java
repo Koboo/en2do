@@ -2,10 +2,7 @@ package eu.koboo.en2do.parser;
 
 import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.SettingsBuilder;
-import eu.koboo.en2do.mongodb.exception.repository.RepositoryEntityNotFoundException;
-import eu.koboo.en2do.mongodb.exception.repository.RepositoryInvalidTypeException;
-import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameNotFoundException;
-import eu.koboo.en2do.mongodb.exception.repository.RepositoryNoTypeException;
+import eu.koboo.en2do.mongodb.exception.repository.*;
 import eu.koboo.en2do.parser.indices.CompoundIndicesParser;
 import eu.koboo.en2do.parser.indices.GeoIndicesParser;
 import eu.koboo.en2do.parser.indices.IndicesParser;
@@ -66,13 +63,13 @@ public class RepositoryParser {
             return;
         }
         Tuple<Class<?>, Class<?>> asyncTypes = parseGenericTypes(repositoryClass, AsyncRepository.class);
-        Class<?> asyncEntityType = asyncTypes.first();
-        Class<?> entityType = entityTypes.first();
+        Class<?> asyncEntityType = asyncTypes.getFirst();
+        Class<?> entityType = entityTypes.getFirst();
         if (GenericUtils.isNotTypeOf(asyncEntityType, entityType)) {
             throw new RepositoryInvalidTypeException(entityType, asyncEntityType, repositoryClass);
         }
-        Class<?> asyncEntityId = asyncTypes.second();
-        Class<?> entityId = entityTypes.second();
+        Class<?> asyncEntityId = asyncTypes.getSecond();
+        Class<?> entityId = entityTypes.getSecond();
         if (GenericUtils.isNotTypeOf(asyncEntityId, entityId)) {
             throw new RepositoryInvalidTypeException(entityId, asyncEntityId, repositoryClass);
         }
@@ -130,7 +127,7 @@ public class RepositoryParser {
         return entityFieldSet;
     }
 
-    public Field parseEntityIdField(Class<?> entityClass) throws Exception {
+    public Field parseEntityIdField(Class<?> entityClass) {
         Set<Field> entityFieldSet = parseEntityFields(entityClass);
         // Get the field of the uniqueId of the entity.
         for (Field field : entityFieldSet) {

@@ -270,7 +270,7 @@ public class MongoManager {
             // we'll get the even the fields from the inheritance between object
             Set<Field> entityFieldSet = parser.parseEntityFields(entityClass);
 
-            Field entityUniqueIdField = parser.parseEntityIdField(entityIdClass);
+            Field entityUniqueIdField = parser.parseEntityIdField(entityClass);
             if (entityUniqueIdField == null) {
                 throw new RepositoryIdNotFoundException(entityClass, Id.class);
             }
