@@ -24,11 +24,6 @@ import java.util.Properties;
 public class Credentials {
 
     /**
-     * Empty representation of the credentials object
-     */
-    private static final Credentials EMPTY = new Credentials(null, null);
-
-    /**
      * The default key of the connection string.
      */
     private static final String CONNECT_KEY = "en2do.connectstring";
@@ -57,16 +52,6 @@ public class Credentials {
         } catch (IOException e) {
             throw new RuntimeException("Error while loading credentials");
         }
-    }
-
-    /**
-     * Checks if the given string is null of empty.
-     *
-     * @param string the string, which should be checked.
-     * @return true ich string is null or empty.
-     */
-    private static boolean isEmpty(String string) {
-        return string == null || string.trim().equalsIgnoreCase("");
     }
 
     /**
