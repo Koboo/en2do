@@ -72,21 +72,21 @@ public class MongoManager {
     ExecutorService executorService;
 
     InternalPropertyCodecProvider internalPropertyCodecProvider;
-    @Getter
     CodecRegistry codecRegistry;
+
+    @Getter
     MongoClient client;
+
+    @Getter
     MongoDatabase database;
 
     public MongoManager(Credentials credentials, ExecutorService executorService, SettingsBuilder settingsBuilder) {
         if (settingsBuilder == null) {
             settingsBuilder = new SettingsBuilder();
         }
-        Level loggerLevel = settingsBuilder.getMongoLoggerLevel();
-        if (loggerLevel != null) {
-            Logger.getLogger("org.mongodb").setLevel(loggerLevel);
-            Logger.getLogger("com.mongodb").setLevel(loggerLevel);
-        }
         this.settingsBuilder = settingsBuilder;
+        applyLoggerLevel();
+
         this.parser = new RepositoryParser(settingsBuilder);
         this.repositoryDataByClassMap = new ConcurrentHashMap<>();
         this.repositoryByClassRegistry = new ConcurrentHashMap<>();
@@ -96,11 +96,13 @@ public class MongoManager {
         }
         this.executorService = executorService;
 
-        // If no credentials given, try loading them from default file.
+        // If no credentials given, try loading them from the default sources,
+        // like resource files, system properties of environment variables.
+        // See Credentials for information about the keys of the properties.
+        // They can differ in every source location.
         if (credentials == null) {
             credentials = Credentials.fromFile();
         }
-        // If no credentials given, try loading them from default resource.
         if (credentials == null) {
             credentials = Credentials.fromResource();
         }
@@ -112,12 +114,10 @@ public class MongoManager {
         }
 
         String connectString = credentials.getConnectString();
-        // If credentials connectString is null, throw exception
         if (connectString == null) {
             throw new NullPointerException("No connectString given! Please make sure to provide a " +
                 "accessible connectString.");
         }
-        // If credentials databaseString is null, throw exception
         String databaseString = credentials.getDatabase();
         if (databaseString == null) {
             throw new NullPointerException("No databaseString given! Please make sure to provide a " +
@@ -202,7 +202,8 @@ public class MongoManager {
     }
 
     private void registerPredefinedMethods() {
-        // Define default methods with handler into the meta registry
+        // Register the default predefined methods, which can get executed
+        // on every created repository.
         registerPredefinedMethod(new MethodCountAll());
         registerPredefinedMethod(new MethodDelete());
         registerPredefinedMethod(new MethodDeleteAll());
@@ -603,6 +604,16 @@ public class MongoManager {
 
     public MongoManager applySettings(SettingsBuilder newBuilder) {
         settingsBuilder.merge(newBuilder);
+        applyLoggerLevel();
         return this;
+    }
+
+    private void applyLoggerLevel() {
+        Level loggerLevel = settingsBuilder.getMongoLoggerLevel();
+        if (loggerLevel == null) {
+            return;
+        }
+        Logger.getLogger("org.mongodb").setLevel(loggerLevel);
+        Logger.getLogger("com.mongodb").setLevel(loggerLevel);
     }
 }
