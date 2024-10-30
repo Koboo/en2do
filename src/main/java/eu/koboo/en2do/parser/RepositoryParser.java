@@ -41,6 +41,14 @@ public class RepositoryParser {
         this.indicesParserRegistry.add(new GeoIndicesParser());
     }
 
+    public void destroy() {
+        for (Set<Field> value : reflectedFieldIndex.values()) {
+            value.clear();
+        }
+        reflectedFieldIndex.clear();
+        indicesParserRegistry.clear();
+    }
+
     public Tuple<Class<?>, Class<?>> parseGenericTypes(Class<?> repositoryClass, Class<?> typeClass) throws Exception {
         Map<Class<?>, List<Class<?>>> genericTypes = GenericUtils.getGenericTypes(repositoryClass);
         if (genericTypes.isEmpty()) {

@@ -68,12 +68,13 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
 
     public void destroy() {
         dynamicMethodRegistry.clear();
+        entityFieldSet.clear();
     }
 
     public void registerDynamicMethod(String methodName, IndexedMethod<E, ID, R> dynamicMethod) {
         if (dynamicMethodRegistry.containsKey(methodName)) {
             // Removed regex condition, because the hashmap couldn't handle methods with the same name.
-            throw new RuntimeException("Already registered dynamicMethod with name \"" + methodName + "\".");
+            throw new RuntimeException("Already registered dynamic method with name \"" + methodName + "\".");
         }
         dynamicMethodRegistry.put(methodName, dynamicMethod);
     }

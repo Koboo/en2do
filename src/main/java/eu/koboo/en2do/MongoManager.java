@@ -188,6 +188,9 @@ public class MongoManager {
             if (mongoClient != null) {
                 mongoClient.close();
             }
+            if(parser != null) {
+                parser.destroy();
+            }
         } catch (Exception e) {
             throw new RuntimeException("Error while closing: " + MongoManager.class, e);
         }
