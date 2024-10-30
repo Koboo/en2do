@@ -15,6 +15,7 @@ public class SettingsBuilder {
     boolean disallowUUIDKeys;
     boolean allowDiskUse;
     boolean appendMethodAsComment;
+    boolean enableMethodProperties;
     String collectionPrefix;
     String collectionSuffix;
 
@@ -29,6 +30,11 @@ public class SettingsBuilder {
 
     public SettingsBuilder disallowUUIDMapKeys() {
         this.disallowUUIDKeys = true;
+        return this;
+    }
+
+    public SettingsBuilder enableMethodProperties() {
+        this.enableMethodProperties = true;
         return this;
     }
 
@@ -57,6 +63,7 @@ public class SettingsBuilder {
         this.disallowUUIDKeys = otherBuilder.isDisallowUUIDKeys();
         this.allowDiskUse = otherBuilder.isAllowDiskUse();
         this.appendMethodAsComment = otherBuilder.isAppendMethodAsComment();
+        this.enableMethodProperties = otherBuilder.isEnableMethodProperties();
         this.collectionPrefix = otherBuilder.getCollectionPrefix();
         this.collectionSuffix = otherBuilder.getCollectionSuffix();
     }

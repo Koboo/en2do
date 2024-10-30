@@ -12,8 +12,19 @@ public class UserRepositoryTest extends RepositoryTest<User, UUID, UserRepositor
         return UserRepository.class;
     }
 
+//    @Test
+//    public void drop() {
+//        repository.drop();
+//    }
+
     @Test
-    public void drop() {
-        repository.drop();
+    public void test() {
+        UUID userId = UUID.randomUUID();
+        User user = new User();
+        user.setUniqueId(userId);
+        user.setUserName("TestName");
+        user.setEmail("test@test.com");
+
+        repository.save(user);
     }
 }

@@ -11,6 +11,7 @@ import eu.koboo.en2do.mongodb.RepositoryInvocationHandler;
 import eu.koboo.en2do.mongodb.Validator;
 import eu.koboo.en2do.mongodb.codec.InternalPropertyCodecProvider;
 import eu.koboo.en2do.mongodb.convention.AnnotationConvention;
+import eu.koboo.en2do.mongodb.convention.MethodMappingConvention;
 import eu.koboo.en2do.mongodb.exception.methods.*;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryIdNotFoundException;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryInvalidException;
@@ -134,10 +135,11 @@ public class MongoManager {
                 .register(internalPropertyCodecProvider)
                 .automatic(true)
                 .conventions(List.of(
+                    new MethodMappingConvention(this, parser),
                     new AnnotationConvention(),
                     Conventions.ANNOTATION_CONVENTION,
-                    Conventions.SET_PRIVATE_FIELDS_CONVENTION,
-                    Conventions.USE_GETTERS_FOR_SETTERS
+                    Conventions.SET_PRIVATE_FIELDS_CONVENTION
+//                    Conventions.USE_GETTERS_FOR_SETTERS
                 ))
                 .build())
         );

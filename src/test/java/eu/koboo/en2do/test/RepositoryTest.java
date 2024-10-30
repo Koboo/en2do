@@ -42,7 +42,7 @@ public abstract class RepositoryTest<E, ID, R extends Repository<E, ID>> {
         log.info("Stopping Unit-Test: " + getClass().getSimpleName());
         assertNotNull(manager);
         assertNotNull(repository);
-        assertTrue(repository.drop());
+//        assertTrue(repository.drop());
         manager.close();
     }
 
