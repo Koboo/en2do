@@ -31,10 +31,6 @@ import java.util.*;
 @Getter
 public class RepositoryData<E, ID, R extends Repository<E, ID>> {
 
-    private static final String UPDATE_FIELD_SET = "$set";
-    private static final String UPDATE_FIELD_UNSET = "$unset";
-    private static final String UPDATE_FIELD_RENAME = "$rename";
-
     MongoManager mongoManager;
     String collectionName;
     MongoCollection<E> entityCollection;
@@ -205,36 +201,38 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
 
     public Document createUpdateDocument(UpdateBatch updateBatch) {
         Document document = new Document();
-        Document fieldSetDocument = new Document();
-        Document fieldRenameDocument = new Document();
-        Document fieldUnsetDocument = new Document();
+        Document documentSetFields = new Document();
+        Document documentRenameFields = new Document();
+        Document documentUnsetFields = new Document();
         for (FieldUpdate fieldUpdate : updateBatch.getUpdateList()) {
-            String field = fieldUpdate.getFieldName();
+            String fieldBsonName = fieldUpdate.getFieldName();
             UpdateType updateType = fieldUpdate.getUpdateType();
+
             Object filterableValue = null;
             if (fieldUpdate.getValue() != null && (updateType == UpdateType.SET || updateType == UpdateType.RENAME)) {
                 filterableValue = getFilterableValue(fieldUpdate.getValue());
             }
+
             switch (updateType) {
                 case SET:
-                    fieldSetDocument.append(field, filterableValue);
+                    documentSetFields.append(fieldBsonName, filterableValue);
                     break;
                 case RENAME:
-                    fieldRenameDocument.append(field, filterableValue);
+                    documentRenameFields.append(fieldBsonName, filterableValue);
                     break;
                 case REMOVE:
-                    fieldUnsetDocument.append(field, 0);
+                    documentUnsetFields.append(fieldBsonName, 0);
                     break;
             }
         }
-        if (!fieldUnsetDocument.isEmpty()) {
-            document.append(UPDATE_FIELD_UNSET, fieldUnsetDocument);
+        if (!documentUnsetFields.isEmpty()) {
+            document.append(UpdateFieldType.UNSET, documentUnsetFields);
         }
-        if (!fieldSetDocument.isEmpty()) {
-            document.append(UPDATE_FIELD_SET, fieldSetDocument);
+        if (!documentSetFields.isEmpty()) {
+            document.append(UpdateFieldType.SET, documentSetFields);
         }
-        if (!fieldRenameDocument.isEmpty()) {
-            document.append(UPDATE_FIELD_RENAME, fieldRenameDocument);
+        if (!documentRenameFields.isEmpty()) {
+            document.append(UpdateFieldType.RENAME, documentRenameFields);
         }
         return document;
     }

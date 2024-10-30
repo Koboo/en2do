@@ -118,17 +118,19 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                         findIterable = findIterable.limit(Math.toIntExact(methodDefinedEntityCount));
                     }
                     return findIterable.into(new ArrayList<>());
-                } else {
-                    return findIterable.first();
                 }
+                return findIterable.first();
             case PAGE:
                 findIterable = repositoryData.createIterable(filter, methodName);
                 findIterable = repositoryData.applyPageObject(method, findIterable, arguments);
                 return findIterable.into(new ArrayList<>());
             case UPDATE_FIELD:
                 UpdateBatch updateBatch = (UpdateBatch) arguments[arguments.length - 1];
-                UpdateResult result = collection.updateMany(filter, repositoryData.createUpdateDocument(updateBatch),
-                    new UpdateOptions().upsert(false));
+                UpdateResult result = collection.updateMany(
+                    filter,
+                    repositoryData.createUpdateDocument(updateBatch),
+                    new UpdateOptions().upsert(false)
+                );
                 return result.wasAcknowledged();
             default:
                 // Couldn't find any match method operator, but that shouldn't happen
