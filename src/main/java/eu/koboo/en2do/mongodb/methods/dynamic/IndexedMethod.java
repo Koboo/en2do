@@ -57,7 +57,9 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 break;
             case NONE:
             default:
-                filter = bsonFilterSet.stream().findFirst().orElse(null);
+                filter = bsonFilterSet.stream()
+                    .findFirst()
+                    .orElse(null);
                 break;
         }
         return (F) filter;
@@ -104,7 +106,7 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 break;
             case REGEX:
                 // MongoDB supports multiple types of regex filtering, so check which type is provided.
-                // We also support the plain String and the Pattern types.
+                // We support plain Strings and Pattern types.
                 Object value = repositoryData.getFilterableValue(args[paramsIndexAt]);
                 if (value instanceof String) {
                     String regexPatternString = (String) value;
@@ -114,8 +116,13 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                     Pattern regexPattern = (Pattern) value;
                     retFilter = Filters.regex(queryFieldName, regexPattern);
                 }
+                // No supported type provided, we can't do anything other than throwing exceptions.
                 if (retFilter == null) {
-                    throw new MethodInvalidRegexParameterException(method, repositoryData.getRepositoryClass(), value.getClass());
+                    throw new MethodInvalidRegexParameterException(
+                        method,
+                        repositoryData.getRepositoryClass(),
+                        value.getClass()
+                    );
                 }
                 break;
             case EXISTS:
@@ -124,17 +131,21 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
             case BETWEEN:
                 Object betweenStart = repositoryData.getFilterableValue(args[paramsIndexAt]);
                 Object betweenEnd = args[paramsIndexAt + 1];
-                retFilter = Filters.and(Filters.gt(queryFieldName, betweenStart), Filters.lt(queryFieldName, betweenEnd));
+                retFilter = Filters.and(
+                    Filters.gt(queryFieldName, betweenStart), Filters.lt(queryFieldName, betweenEnd)
+                );
                 break;
             case BETWEEN_EQUALS:
                 Object betweenEqStart = repositoryData.getFilterableValue(args[paramsIndexAt]);
                 Object betweenEqEnd = args[paramsIndexAt + 1];
-                retFilter = Filters.and(Filters.gte(queryFieldName, betweenEqStart), Filters.lte(queryFieldName, betweenEqEnd));
+                retFilter = Filters.and(
+                    Filters.gte(queryFieldName, betweenEqStart), Filters.lte(queryFieldName, betweenEqEnd)
+                );
                 break;
             case IN:
-                // MongoDB expects an Array and not a List, but for easier usage
-                // the framework wants a list or an array, so just convert the given object to an array
-                // and pass it on to the filter.
+                // MongoDB expects an Array in the Filter as argument. But for easier usage
+                // we want to support lists and arrays, so let's just convert the given object to an array
+                // no matter what type it is and pass it on to the filter parameters.
                 Object possibleObject = args[paramsIndexAt];
                 Object[] objectArray = null;
                 if (possibleObject instanceof Collection) {
@@ -144,13 +155,19 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 if (possibleObject.getClass().isArray() && possibleObject instanceof Object[]) {
                     objectArray = (Object[]) possibleObject;
                 }
+                // If you produce this exception, I'm very surprised then I see the code.
                 if (objectArray == null) {
-                    throw new NullPointerException("Please report your code and other information to " +
-                        "https://github.com/Koboo/en2do to ensure others don't get this bug.");
+                    throw new NullPointerException("Your Object array of the \"In\" filter was null.\n" +
+                        "This is a very rare case, since we do stuff, mongodb doesn't really support.\n" +
+                        "Please report your code and other information to\n" +
+                        "https://github.com/Koboo/en2do\n" +
+                        "to ensure others don't get this bug and we can't look further into this issue.");
                 }
                 retFilter = Filters.in(queryFieldName, objectArray);
                 break;
             case HAS_KEY:
+                // We need a separate getFilterableValue here, because we "faked" UUIDs map keys as strings
+                // in the codec. That's why we need the explicit "true" parameter here.
                 Object keyObject = repositoryData.getFilterableValue(args[paramsIndexAt], true);
                 retFilter = Filters.exists(queryFieldName + "." + keyObject);
                 break;
@@ -172,7 +189,7 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                         }
                         break;
                     default:
-                        throw new RuntimeException("Only near and near sphere are supported for now!");
+                        throw new RuntimeException("Only near and near sphere are currently supported!");
                 }
                 break;
             case IS_NULL:
@@ -188,8 +205,14 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 retFilter = Filters.eq(queryFieldName, false);
                 break;
             case LIST_EMPTY:
-                // We need to check that the field exists, it should be from
-                // type array and should represent an empty array.
+                // The thing with "IsListEmpty" check is the following:
+                // We need to check multiple conditions in a specific order.
+                //   1. Does the field exists?
+                //   2. Is the field of type array?
+                //   3. Is the value of the field an empty array?
+                // There's also a second approach with type equals check,
+                // but some tests are not working with that,
+                // so lets just create and use the empty list here.
                 retFilter = Filters.and(
                     Filters.exists(queryFieldName, true),
                     Filters.type(queryFieldName, "array"),
