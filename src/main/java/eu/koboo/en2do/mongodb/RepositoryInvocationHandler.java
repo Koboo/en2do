@@ -92,7 +92,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             throw new NullPointerException("The created filter for " + indexedMethod.getMethod().getName() + " is null!");
         }
 
-        // Switch-case the method operator to use the correct mongo query.
+        // Switch-case the method operator to create the correct mongo query.
         final MongoCollection<E> collection = repositoryData.getEntityCollection();
 
         FindIterable<E> findIterable;
@@ -109,8 +109,10 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 findIterable = repositoryData.applySortAnnotations(method, findIterable);
 
                 // Because it's a find method, we always got an entity defined count.
+                // This specifically defines the amount of returned entities.
+                // See below:
                 // "Many" = -1 / unlimited
-                // "Top" = user specific count
+                // "Top10" = user specific count of "10"
                 // "First" = 1 / first entity
                 Long methodDefinedEntityCount = indexedMethod.getMethodDefinedEntityCount();
                 if (methodDefinedEntityCount == -1 || methodDefinedEntityCount > 1) {
@@ -133,7 +135,8 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 );
                 return result.wasAcknowledged();
             default:
-                // Couldn't find any match method operator, but that shouldn't happen
+                // Couldn't find any match method operator, but that shouldn't happen.
+                // If this exception is thrown, I forgot something to implement :D
                 throw new RepositoryInvalidCallException(method, repositoryData.getRepositoryClass());
         }
     }
