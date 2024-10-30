@@ -161,18 +161,37 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
 
     public FindIterable<E> applyPageObject(Method method,
                                            FindIterable<E> findIterable, Object[] args) throws Exception {
-        Pagination pagination = (Pagination) args[args.length - 1];
+        // Pagination should always be the last parameter of the method.
+        // But of whatever reason, we could do something in the validation wrong,
+        // so we catch the class casting exception anyway.
+        Object parameterObject = args[args.length - 1];
+        Pagination pagination;
+        try {
+            pagination = (Pagination) parameterObject;
+        } catch (ClassCastException e) {
+            throw new RuntimeException("Invalid Pagination object " + parameterObject.getClass() + ": ", e);
+        }
+
+        // We do not allow pages lower or equal to zero. The results
+        // would just be empty, so we throw an exception to not allow that.
         if (pagination.getPage() <= 0) {
             throw new MethodInvalidPageException(method, repositoryClass);
         }
-        if (!pagination.getPageDirectionMap().isEmpty()) {
-            for (Map.Entry<String, Integer> byField : pagination.getPageDirectionMap().entrySet()) {
-                findIterable = findIterable.sort(new BasicDBObject(byField.getKey(), byField.getValue()));
+
+        // Let's apply the sorting direction of the pagination object.
+        for (String sortKey : pagination.getPageDirectionMap().keySet()) {
+            Integer ascending = pagination.getPageDirectionMap().get(sortKey);
+            if(ascending == null) {
+                continue;
             }
+            findIterable = findIterable.sort(new BasicDBObject(sortKey, ascending));
         }
-        int skip = (int) ((pagination.getPage() - 1) * pagination.getEntitiesPerPage());
+
+        int limit = pagination.getEntitiesPerPage();
+        int skip = (int) ((pagination.getPage() - 1) * limit);
+
         findIterable = findIterable
-            .limit(pagination.getEntitiesPerPage())
+            .limit(limit)
             .skip(skip)
             .allowDiskUse(mongoManager.getSettingsBuilder().isAllowDiskUse());
         return findIterable;
@@ -200,7 +219,7 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
     }
 
     public Document createUpdateDocument(UpdateBatch updateBatch) {
-        Document document = new Document();
+        Document rootDocument = new Document();
         Document documentSetFields = new Document();
         Document documentRenameFields = new Document();
         Document documentUnsetFields = new Document();
@@ -226,14 +245,14 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             }
         }
         if (!documentUnsetFields.isEmpty()) {
-            document.append(UpdateFieldType.UNSET, documentUnsetFields);
+            rootDocument.append(UpdateFieldType.UNSET, documentUnsetFields);
         }
         if (!documentSetFields.isEmpty()) {
-            document.append(UpdateFieldType.SET, documentSetFields);
+            rootDocument.append(UpdateFieldType.SET, documentSetFields);
         }
         if (!documentRenameFields.isEmpty()) {
-            document.append(UpdateFieldType.RENAME, documentRenameFields);
+            rootDocument.append(UpdateFieldType.RENAME, documentRenameFields);
         }
-        return document;
+        return rootDocument;
     }
 }
