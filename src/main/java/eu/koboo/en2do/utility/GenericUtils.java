@@ -3,7 +3,10 @@ package eu.koboo.en2do.utility;
 import lombok.experimental.UtilityClass;
 
 import java.lang.reflect.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A utility class for everything related to generic types or class types.

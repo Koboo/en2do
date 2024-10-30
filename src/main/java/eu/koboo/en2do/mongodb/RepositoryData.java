@@ -189,18 +189,18 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
         return findIterable;
     }
 
-    private FindIterable<E> sortDirection(FindIterable<E> findIterable, Map<String, Boolean>  fieldSortMap) {
-        if(findIterable == null) {
+    private FindIterable<E> sortDirection(FindIterable<E> findIterable, Map<String, Boolean> fieldSortMap) {
+        if (findIterable == null) {
             return findIterable;
         }
 
-        if(fieldSortMap == null || fieldSortMap.isEmpty()) {
+        if (fieldSortMap == null || fieldSortMap.isEmpty()) {
             return findIterable;
         }
 
         for (String sortKey : fieldSortMap.keySet()) {
             Boolean ascending = fieldSortMap.get(sortKey);
-            if(ascending == null) {
+            if (ascending == null) {
                 continue;
             }
             int direction = ascending ? 1 : -1;

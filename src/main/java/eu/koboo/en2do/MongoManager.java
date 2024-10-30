@@ -188,7 +188,7 @@ public class MongoManager {
             if (mongoClient != null) {
                 mongoClient.close();
             }
-            if(parser != null) {
+            if (parser != null) {
                 parser.destroy();
             }
         } catch (Exception e) {
