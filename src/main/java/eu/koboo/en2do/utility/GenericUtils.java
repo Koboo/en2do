@@ -3,10 +3,7 @@ package eu.koboo.en2do.utility;
 import lombok.experimental.UtilityClass;
 
 import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A utility class for everything related to generic types or class types.
@@ -30,7 +27,7 @@ public class GenericUtils {
             String implementedClass = split[0];
             try {
                 Class<?> clazz = Class.forName(implementedClass);
-                List<Class<?>> genericTypeList = genericTypeMap.computeIfAbsent(clazz, k -> new ArrayList<>());
+                List<Class<?>> genericTypeList = genericTypeMap.computeIfAbsent(clazz, k -> new LinkedList<>());
 
                 String genericTypeSplit = split[1];
                 String genericTypeString = genericTypeSplit.substring(0, genericTypeSplit.length() - 1)
