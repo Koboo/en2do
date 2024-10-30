@@ -14,14 +14,14 @@ import lombok.experimental.FieldDefaults;
 public class FieldUpdate {
 
     /**
-     * Set the value of a specific field.
+     * Set the defaultValue of a specific field.
      *
-     * @param fieldName The field, which should be set
-     * @param value     The value, which gets set into the field.
+     * @param fieldName    The field, which should be set
+     * @param defaultValue The default value, which gets set into the field.
      * @return The new created FieldUpdate instance.
      */
-    public static FieldUpdate set(String fieldName, Object value) {
-        return new FieldUpdate(UpdateType.SET, fieldName, value);
+    public static FieldUpdate set(String fieldName, Object defaultValue) {
+        return new FieldUpdate(UpdateType.SET, fieldName, defaultValue);
     }
 
     /**
@@ -31,7 +31,7 @@ public class FieldUpdate {
      * @param value     The new field name.
      * @return The new created FieldUpdate instance.
      */
-    public static FieldUpdate rename(String fieldName, Object value) {
+    public static FieldUpdate rename(String fieldName, String value) {
         return new FieldUpdate(UpdateType.RENAME, fieldName, value);
     }
 

@@ -245,13 +245,13 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             }
         }
         if (!documentUnsetFields.isEmpty()) {
-            rootDocument.append(UpdateFieldType.UNSET, documentUnsetFields);
+            rootDocument.append(UpdateType.REMOVE.getDocumentType(), documentUnsetFields);
         }
         if (!documentSetFields.isEmpty()) {
-            rootDocument.append(UpdateFieldType.SET, documentSetFields);
+            rootDocument.append(UpdateType.SET.getDocumentType(), documentSetFields);
         }
         if (!documentRenameFields.isEmpty()) {
-            rootDocument.append(UpdateFieldType.RENAME, documentRenameFields);
+            rootDocument.append(UpdateType.RENAME.getDocumentType(), documentRenameFields);
         }
         return rootDocument;
     }
