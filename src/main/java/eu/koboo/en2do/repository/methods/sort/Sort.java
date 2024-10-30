@@ -26,7 +26,7 @@ public class Sort {
         return new Sort();
     }
 
-    final Map<String, Integer> fieldDirectionMap;
+    final Map<String, Boolean> fieldDirectionMap;
     int limit;
     int skip;
 
@@ -44,7 +44,7 @@ public class Sort {
      * @return The used Sort object
      */
     public Sort order(String fieldName, boolean ascending) {
-        fieldDirectionMap.put(fieldName, ascending ? 1 : -1);
+        fieldDirectionMap.put(fieldName, ascending);
         return this;
     }
 

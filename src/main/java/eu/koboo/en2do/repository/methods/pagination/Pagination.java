@@ -29,7 +29,7 @@ public class Pagination {
     }
 
     int entitiesPerPage;
-    Map<String, Integer> pageDirectionMap;
+    Map<String, Boolean> pageDirectionMap;
     @NonFinal
     long page;
 
@@ -47,7 +47,7 @@ public class Pagination {
      * @return The used Pagination object
      */
     public Pagination order(String fieldName, boolean ascending) {
-        pageDirectionMap.put(fieldName, ascending ? 1 : -1);
+        pageDirectionMap.put(fieldName, ascending);
         return this;
     }
 

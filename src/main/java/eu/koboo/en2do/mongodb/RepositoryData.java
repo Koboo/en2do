@@ -108,11 +108,8 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             return findIterable;
         }
         Sort sortOptions = (Sort) lastParamObject;
-        if (!sortOptions.getFieldDirectionMap().isEmpty()) {
-            for (Map.Entry<String, Integer> byField : sortOptions.getFieldDirectionMap().entrySet()) {
-                findIterable = findIterable.sort(new BasicDBObject(byField.getKey(), byField.getValue()));
-            }
-        }
+        findIterable = sortDirection(findIterable, sortOptions.getFieldDirectionMap());
+
         int limit = sortOptions.getLimit();
         if (limit != -1) {
             if (limit < -1 || limit == 0) {
@@ -134,10 +131,11 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
     public FindIterable<E> applySortAnnotations(Method method, FindIterable<E> findIterable) throws Exception {
         SortBy[] sortAnnotations = method.getAnnotationsByType(SortBy.class);
         if (sortAnnotations != null) {
+            Map<String, Boolean> fieldSortMap = new LinkedHashMap<>();
             for (SortBy sortBy : sortAnnotations) {
-                int orderType = sortBy.ascending() ? 1 : -1;
-                findIterable = findIterable.sort(new BasicDBObject(sortBy.field(), orderType));
+                fieldSortMap.put(sortBy.field(), sortBy.ascending());
             }
+            findIterable = sortDirection(findIterable, fieldSortMap);
         }
         if (method.isAnnotationPresent(Limit.class)) {
             Limit limit = method.getAnnotation(Limit.class);
@@ -179,13 +177,7 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
         }
 
         // Let's apply the sorting direction of the pagination object.
-        for (String sortKey : pagination.getPageDirectionMap().keySet()) {
-            Integer ascending = pagination.getPageDirectionMap().get(sortKey);
-            if(ascending == null) {
-                continue;
-            }
-            findIterable = findIterable.sort(new BasicDBObject(sortKey, ascending));
-        }
+        findIterable = sortDirection(findIterable, pagination.getPageDirectionMap());
 
         int limit = pagination.getEntitiesPerPage();
         int skip = (int) ((pagination.getPage() - 1) * limit);
@@ -194,6 +186,26 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             .limit(limit)
             .skip(skip)
             .allowDiskUse(mongoManager.getSettingsBuilder().isAllowDiskUse());
+        return findIterable;
+    }
+
+    private FindIterable<E> sortDirection(FindIterable<E> findIterable, Map<String, Boolean>  fieldSortMap) {
+        if(findIterable == null) {
+            return findIterable;
+        }
+
+        if(fieldSortMap == null || fieldSortMap.isEmpty()) {
+            return findIterable;
+        }
+
+        for (String sortKey : fieldSortMap.keySet()) {
+            Boolean ascending = fieldSortMap.get(sortKey);
+            if(ascending == null) {
+                continue;
+            }
+            int direction = ascending ? 1 : -1;
+            findIterable = findIterable.sort(new BasicDBObject(sortKey, direction));
+        }
         return findIterable;
     }
 
