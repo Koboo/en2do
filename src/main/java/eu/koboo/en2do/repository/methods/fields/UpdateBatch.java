@@ -5,9 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Represents multiple field updates, like set, rename or remove.
@@ -24,8 +22,8 @@ public class UpdateBatch {
      * @return The new created UpdateBatch instance.
      * @see FieldUpdate
      */
-    public static UpdateBatch of(List<FieldUpdate> fieldUpdateList) {
-        return new UpdateBatch(new LinkedList<>()).addAll(fieldUpdateList);
+    public static UpdateBatch of(Collection<FieldUpdate> fieldUpdateList) {
+        return new UpdateBatch(new ArrayList<>()).addAll(fieldUpdateList);
     }
 
     /**
@@ -36,7 +34,7 @@ public class UpdateBatch {
      * @see FieldUpdate
      */
     public static UpdateBatch of(FieldUpdate... fieldUpdateArray) {
-        return new UpdateBatch(new LinkedList<>()).addAll(fieldUpdateArray);
+        return new UpdateBatch(new ArrayList<>()).addAll(fieldUpdateArray);
     }
 
     /**
@@ -47,7 +45,7 @@ public class UpdateBatch {
      * @see FieldUpdate
      */
     public static UpdateBatch of(FieldUpdate fieldUpdate) {
-        return new UpdateBatch(new LinkedList<>()).add(fieldUpdate);
+        return new UpdateBatch(new ArrayList<>()).add(fieldUpdate);
     }
 
     List<FieldUpdate> updateList;
@@ -79,7 +77,7 @@ public class UpdateBatch {
      * @param fieldUpdateList The array, which should be added.
      * @return The instance of the UpdateBatch
      */
-    public UpdateBatch addAll(List<FieldUpdate> fieldUpdateList) {
+    public UpdateBatch addAll(Collection<FieldUpdate> fieldUpdateList) {
         updateList.addAll(fieldUpdateList);
         return this;
     }
