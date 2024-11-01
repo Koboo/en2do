@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "eu.koboo"
-version = "1.0.3"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
