@@ -20,6 +20,7 @@ import org.bson.conversions.Bson;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -103,6 +104,13 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 return collection.deleteMany(filter).wasAcknowledged();
             case EXISTS:
                 return collection.countDocuments(filter) > 0;
+            case FILTER:
+                findIterable = repositoryMeta.createIterable((Bson) arguments[0], methodName);
+
+                if (method.getReturnType().isAssignableFrom(Collection.class)) {
+                    return findIterable.into(new ArrayList<>());
+                }
+                return findIterable.first();
             case FIND:
                 findIterable = repositoryMeta.createIterable(filter, methodName);
                 findIterable = repositoryMeta.applySortObject(method, findIterable, arguments);

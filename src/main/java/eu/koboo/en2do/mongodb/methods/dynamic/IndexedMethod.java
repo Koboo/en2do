@@ -74,9 +74,6 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
         }
         Bson retFilter = null;
         switch (filter.getOperator()) {
-            case FILTER:
-                retFilter = (Bson) args[paramsIndexAt];
-                break;
             case EQUALS:
                 retFilter = Filters.eq(queryFieldName, repositoryMeta.getFilterableValue(args[paramsIndexAt]));
                 break;

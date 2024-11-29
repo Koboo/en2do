@@ -34,6 +34,18 @@ public enum MethodOperator {
             throw new MethodFindReturnTypeException(method, entityClass, repoClass);
         }
     }),
+    FILTER("filter", (method, returnType, entityClass, repoClass) -> {
+        boolean isList = !GenericUtils.isNotTypeOf(Collection.class, returnType);
+        Class<?> returnEntityType;
+        if (isList) {
+            returnEntityType = GenericUtils.getGenericTypeOfReturnType(method);
+        } else {
+            returnEntityType = returnType;
+        }
+        if (GenericUtils.isNotTypeOf(entityClass, returnEntityType)) {
+            throw new MethodFindReturnTypeException(method, entityClass, repoClass);
+        }
+    }),
     /**
      * Deletes all entities with the given filters.
      */
