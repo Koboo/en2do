@@ -223,6 +223,7 @@ public class MongoManager {
         registerPredefinedMethod(new MethodExistsById());
         registerPredefinedMethod(new MethodFindAll());
         registerPredefinedMethod(new MethodFindFirstById());
+        registerPredefinedMethod(new MethodFindFirstByFilter());
         registerPredefinedMethod(new MethodGetClass());
         registerPredefinedMethod(new MethodGetCollectionName());
         registerPredefinedMethod(new MethodGetEntityClass());

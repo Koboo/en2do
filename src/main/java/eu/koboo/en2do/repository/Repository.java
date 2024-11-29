@@ -4,6 +4,7 @@ import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Sort;
+import org.bson.conversions.Bson;
 
 import java.util.Collection;
 import java.util.List;
@@ -182,6 +183,14 @@ public interface Repository<E, ID> {
      * @return true, if the operation was successful.
      */
     boolean updateAllFields(UpdateBatch updateBatch);
+
+    /**
+     *
+     * This method uses the Bson object as a filter
+     * @param filter the filter
+     * @return returns the first matching entity
+     */
+    E findFirstByFilter(Bson filter);
 
     /**
      * Allows access to the native mongodb collection,
