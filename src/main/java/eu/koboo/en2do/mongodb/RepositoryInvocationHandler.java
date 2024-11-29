@@ -2,6 +2,7 @@ package eu.koboo.en2do.mongodb;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.UpdateResult;
 import eu.koboo.en2do.mongodb.exception.methods.MethodUnsupportedException;
@@ -105,7 +106,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             case EXISTS:
                 return collection.countDocuments(filter) > 0;
             case FILTER:
-                findIterable = repositoryMeta.createIterable((Bson) arguments[arguments.length - 1], methodName);
+                findIterable = repositoryMeta.createIterable(Filters.and((Bson) arguments[arguments.length - 1], filter), methodName);
 
                 if (method.getReturnType().isAssignableFrom(Collection.class)) {
                     return findIterable.into(new ArrayList<>());
