@@ -105,7 +105,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             case EXISTS:
                 return collection.countDocuments(filter) > 0;
             case FILTER:
-                findIterable = repositoryMeta.createIterable((Bson) arguments[0], methodName);
+                findIterable = repositoryMeta.createIterable((Bson) arguments[arguments.length - 1], methodName);
 
                 if (method.getReturnType().isAssignableFrom(Collection.class)) {
                     return findIterable.into(new ArrayList<>());
