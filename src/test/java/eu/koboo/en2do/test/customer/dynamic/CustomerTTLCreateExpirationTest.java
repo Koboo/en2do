@@ -40,7 +40,7 @@ public class CustomerTTLCreateExpirationTest extends CustomerRepositoryTest {
     @Order(3)
     public void validateExpiration() throws Exception {
         assertTrue(repository.existsById(Const.UNIQUE_ID));
-        Thread.sleep(TimeUnit.SECONDS.toMillis(120));
+        Thread.sleep(TimeUnit.SECONDS.toMillis(20));
         assertFalse(repository.existsById(Const.UNIQUE_ID));
     }
 }

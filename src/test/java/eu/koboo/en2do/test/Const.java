@@ -13,10 +13,6 @@ import java.util.UUID;
 
 public class Const {
 
-    public static boolean isRunningLocally() {
-        return !System.getenv("GITHUB_ACTIONS").equals("true");
-    }
-
     public static final UUID UNIQUE_ID = UUID.fromString("2ce67956-7211-4fec-a7ad-b24f2e355b61");
     public static final int CUSTOMER_ID = 1;
     public static final String FIRST_NAME = "Rainer";
