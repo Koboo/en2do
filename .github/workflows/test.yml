@@ -36,6 +36,6 @@ jobs:
         GITHUB_ACTIONS: true
         EN2DO_DATABASE: ${{secrets.EN2DO_DATABASE}}
         EN2DO_CONNECTSTRING: ${{secrets.EN2DO_CONNECTSTRING}}
-      run: gradle test --no-daemon --stacktrace --info --debug
+      run: gradle test --no-daemon --stacktrace --info 
     - name: Build with Gradle Wrapper and ShadowJar
       run: gradle shadowJar
