@@ -34,6 +34,8 @@ jobs:
     - name: Test with Gradle Wrapper
       env:
         GITHUB_ACTIONS: true
+        EN2DO_DATABASE: ${{secrets.EN2DO_DATABASE}}
+        EN2DO_CONNECTSTRING: ${{secrets.EN2DO_CONNECTSTRING}}
       run: gradle test
     - name: Build with Gradle Wrapper and ShadowJar
       run: gradle shadowJar
