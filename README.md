@@ -2,7 +2,7 @@
 
 ![Discord](https://img.shields.io/discord/1021053609359708211)
 ![Release](https://img.shields.io/github/v/release/Koboo/en2do)
-![Build Status](https://img.shields.io/github/actions/workflow/status/knerio/en2do/test.yml?branch=main)](https://github.com/Knerio/en2do/actions)
+![Build Status](https://img.shields.io/github/actions/workflow/status/knerio/en2do/test.yml?branch=main)
 
 Entity framework for MongoDB in Java 17.
 
