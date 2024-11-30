@@ -29,8 +29,8 @@ dependencies {
     testImplementation("org.slf4j:slf4j-jdk14:2.0.16")
 }
 
-tasks.test {
-    useJUnitPlatform()
+tasks.withType<Test> {
+    useJUnitPlatform() // Make all tests use JUnit 5
 }
 
 java {
