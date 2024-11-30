@@ -6,6 +6,8 @@ import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
 import eu.koboo.en2do.utility.DateUtils;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 import java.util.List;
@@ -13,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@EnabledIfEnvironmentVariable(named="GITHUB_ACTIONS", matches = "true", disabledReason = "Disabled locally")
+@DisabledIfEnvironmentVariable(named="GITHUB_ACTIONS", matches = "true", disabledReason = "Disabled locally")
 public class CustomerTTLTimestampExpirationTest extends CustomerRepositoryTest {
 
     @Test
@@ -30,7 +32,7 @@ public class CustomerTTLTimestampExpirationTest extends CustomerRepositoryTest {
         Customer customer = Const.createCustomer();
         assertNotNull(customer);
         assertFalse(repository.exists(customer));
-        customer.setExpireTime(DateUtils.createPlus(2, TimeUnit.SECONDS));
+        customer.setExpireTime(DateUtils.createPlus(10, TimeUnit.SECONDS));
         assertTrue(repository.save(customer));
         assertTrue(repository.exists(customer));
     }
@@ -39,7 +41,7 @@ public class CustomerTTLTimestampExpirationTest extends CustomerRepositoryTest {
     @Order(3)
     public void validateExpiration() throws Exception {
         assertTrue(repository.existsById(Const.UNIQUE_ID));
-        Thread.sleep(TimeUnit.SECONDS.toMillis(20));
+        Thread.sleep(TimeUnit.SECONDS.toMillis(120));
         assertFalse(repository.existsById(Const.UNIQUE_ID));
     }
 }

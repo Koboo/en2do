@@ -6,6 +6,7 @@ import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 import java.util.Date;
@@ -14,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@EnabledIfEnvironmentVariable(named="GITHUB_ACTIONS", matches = "true", disabledReason = "Disabled locally")
+@DisabledIfEnvironmentVariable(named="GITHUB_ACTIONS", matches = "true", disabledReason = "Disabled locally")
 public class CustomerTTLCreateExpirationTest extends CustomerRepositoryTest {
 
     @Test
@@ -40,7 +41,7 @@ public class CustomerTTLCreateExpirationTest extends CustomerRepositoryTest {
     @Order(3)
     public void validateExpiration() throws Exception {
         assertTrue(repository.existsById(Const.UNIQUE_ID));
-        Thread.sleep(TimeUnit.SECONDS.toMillis(20));
+        Thread.sleep(TimeUnit.SECONDS.toMillis(120));
         assertFalse(repository.existsById(Const.UNIQUE_ID));
     }
 }

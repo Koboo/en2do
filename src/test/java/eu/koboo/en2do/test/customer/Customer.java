@@ -16,7 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor // lombok
 @FieldDefaults(level = AccessLevel.PRIVATE) // lombok
 @ToString // lombok
-@TTLIndex(value = "createTime", ttl = 2) // en2do - Expires 10 seconds after create date
+@TTLIndex(value = "createTime", ttl = 10) // en2do - Expires 10 seconds after create date
 @TTLIndex(value = "expireTime") //  en2do - Expires on "expireDate" clock time
 public class Customer {
 
