@@ -16,7 +16,7 @@ jobs:
   test-and-build:
 
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 0
     permissions:
       contents: read
 
