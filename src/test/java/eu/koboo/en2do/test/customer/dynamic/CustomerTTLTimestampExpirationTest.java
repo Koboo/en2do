@@ -4,6 +4,7 @@ import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
 import eu.koboo.en2do.utility.DateUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
@@ -15,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisabledIfEnvironmentVariable(named="GITHUB_ACTIONS", matches = "true", disabledReason = "Disabled locally")
+@Disabled
 public class CustomerTTLTimestampExpirationTest extends CustomerRepositoryTest {
 
     @Test

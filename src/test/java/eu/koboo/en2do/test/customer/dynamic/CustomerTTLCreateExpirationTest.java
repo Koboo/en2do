@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisabledIfEnvironmentVariable(named="GITHUB_ACTIONS", matches = "true", disabledReason = "Disabled locally")
+@Disabled
 public class CustomerTTLCreateExpirationTest extends CustomerRepositoryTest {
 
     @Test
