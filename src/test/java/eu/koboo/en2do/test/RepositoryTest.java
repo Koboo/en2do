@@ -1,5 +1,6 @@
 package eu.koboo.en2do.test;
 
+import eu.koboo.en2do.Credentials;
 import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.SettingsBuilder;
 import eu.koboo.en2do.repository.Repository;
@@ -26,7 +27,8 @@ public abstract class RepositoryTest<E, ID, R extends Repository<E, ID>> {
         log.info("Starting Unit-Test [" + getClass().getName() + "]");
         SettingsBuilder settingsBuilder = new SettingsBuilder();
 
-        manager = new MongoManager(settingsBuilder);
+
+        manager = new MongoManager(Credentials.fromSystemEnvVars(), settingsBuilder);
         assertNotNull(manager);
         repository = manager.create(repositoryClass());
         assertNotNull(repository);

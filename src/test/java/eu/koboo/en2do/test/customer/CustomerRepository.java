@@ -12,6 +12,7 @@ import eu.koboo.en2do.repository.methods.sort.Sort;
 import eu.koboo.en2do.repository.methods.sort.SortBy;
 import eu.koboo.en2do.repository.methods.transform.NestedField;
 import eu.koboo.en2do.repository.methods.transform.Transform;
+import org.bson.conversions.Bson;
 
 import java.util.List;
 import java.util.UUID;
@@ -109,4 +110,6 @@ public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRep
     List<Customer> findManyByOrdersListEmpty();
 
     List<Customer> findManyByOrdersNotListEmpty();
+
+    Customer filterByLastName(String lastName, Bson filter);
 }
