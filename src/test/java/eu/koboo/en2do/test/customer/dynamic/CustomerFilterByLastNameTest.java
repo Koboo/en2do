@@ -35,7 +35,7 @@ public class CustomerFilterByLastNameTest extends CustomerRepositoryTest {
     @Test
     @Order(3)
     public void countCustomer() {
-        Customer customer = repository.filterByLastName(Const.LAST_NAME, Filters.eq("firstname", Const.FIRST_NAME));
+        Customer customer = repository.filterByLastName(Const.LAST_NAME, Filters.eq("firstName", Const.FIRST_NAME));
         assertNotNull(customer);
         assertEquals(Const.FIRST_NAME, customer.getFirstName());
         assertEquals(Const.LAST_NAME, customer.getLastName());
