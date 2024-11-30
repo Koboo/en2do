@@ -1,8 +1,7 @@
 # _// En2Do_
 
-![Discord](https://img.shields.io/discord/1021053609359708211)
-![Release](https://img.shields.io/github/v/release/Koboo/en2do)
 ![Build Status](https://img.shields.io/github/actions/workflow/status/knerio/en2do/test.yml?branch=main)
+![Release](https://img.shields.io/github/v/release/Knerio/en2do)
 
 Entity framework for MongoDB in Java 17.
 
