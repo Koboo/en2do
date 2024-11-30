@@ -1,6 +1,7 @@
 package eu.koboo.en2do.repository;
 
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Sort;
@@ -185,10 +186,14 @@ public interface Repository<E, ID> {
     boolean updateAllFields(UpdateBatch updateBatch);
 
     /**
-     *
      * This method uses the Bson object as a filter
+     * <pre><code>
+     * // Example usage
+     *
+     * repository.findFirstByFilter(Filters.eq("list.id", "someId")) // finds the entity based on a item in the "list"
+     * </code></pre>
      * @param filter the filter
-     * @return returns the first matching entity
+     * @return the first matching entity
      */
     E findFirstByFilter(Bson filter);
 
