@@ -51,9 +51,9 @@ publishing {
     repositories {
         maven {
             name = "Reposilite"
-            url = URI("https://repo.derioo.de/releases")
+            url = URI(System.getenv("REPOSILITE_URL"))
             credentials {
-                username = "admin"
+                username = System.getenv("REPOSILITE_USER")
                 password = System.getenv("REPOSILITE_TOKEN")
             }
         }
