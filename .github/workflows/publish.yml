@@ -35,7 +35,15 @@ jobs:
 
     # The USERNAME and TOKEN need to correspond to the credentials environment variables used in
     # the publishing section of your build.gradle
-    - name: Publish to GitHub Packages
+    - name: Publish to private repository
       run: gradle publish
       env:
         REPOSILITE_TOKEN: ${{secrets.REPOSILITE_TOKEN}}
+        REPOSILITE_URL: ${{secrets.REPOSILITE_URL}}
+        REPOSILITE_USER: ${{secrets.REPOSILITE_USER}}
+    - name: Publish to varilx repository
+      run: gradle publish
+      env:
+          REPOSILITE_TOKEN: ${{secrets.VARILX_REPOSILITE_TOKEN}}
+          REPOSILITE_URL: ${{secrets.VARILX_REPOSILITE_URL}}
+          REPOSILITE_USER: ${{secrets.VARILX_REPOSILITE_USER}}
