@@ -19,10 +19,10 @@ dependencies {
     api("org.mongodb:mongodb-driver-sync:5.2.1")
     testImplementation("org.mongodb:mongodb-driver-sync:5.2.1")
 
-    compileOnly("org.projectlombok:lombok:1.18.34")
-    annotationProcessor("org.projectlombok:lombok:1.18.34")
-    testImplementation("org.projectlombok:lombok:1.18.34")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.34")
+    compileOnly("org.projectlombok:lombok:1.18.36")
+    annotationProcessor("org.projectlombok:lombok:1.18.36")
+    testImplementation("org.projectlombok:lombok:1.18.36")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.36")
 
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.11.3")
 
