@@ -1,11 +1,4 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
-
-name: Java CI with Gradle
+name: Java CI with Gradle and MongoDB
 
 permissions: write-all
 
@@ -14,28 +7,59 @@ on:
 
 jobs:
   test-and-build:
-
     runs-on: ubuntu-latest
     timeout-minutes: 0
     permissions:
       contents: read
 
+    services:
+      mongodb:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd="mongosh --eval 'db.runCommand({ping: 1})'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
+      - uses: actions/checkout@v4
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@d9c87d481d55275bb5441eef3fe0e46805f9ef70 # v3.5.0
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
 
-    - name: Test with Gradle Wrapper
-      env:
-        GITHUB_ACTIONS: true
-        EN2DO_DATABASE: ${{secrets.EN2DO_DATABASE}}
-        EN2DO_CONNECTSTRING: ${{secrets.EN2DO_CONNECTSTRING}}
-      run: gradle test --no-daemon --stacktrace --info 
-    - name: Build with Gradle Wrapper and ShadowJar
-      run: gradle shadowJar
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@d9c87d481d55275bb5441eef3fe0e46805f9ef70 # v3.5.0
+
+      - name: Wait for MongoDB to Start
+        run: |
+          for i in {1..10}; do
+            if mongosh --host localhost --port 27017 --eval "db.runCommand({ping: 1})"; then
+              echo "MongoDB is ready!";
+              exit 0;
+            fi;
+            sleep 3;
+          done;
+          echo "MongoDB did not become ready in time!" && exit 1;
+
+      - name: Create Test Database
+        run: |
+          mongosh --host localhost --port 27017 <<EOF
+          use testdb
+          db.test.insertOne({ initialized: true });
+          EOF
+
+      - name: Test with Gradle Wrapper
+        env:
+          GITHUB_ACTIONS: true
+          EN2DO_DATABASE: 'testdb' # Example database name
+          EN2DO_CONNECTSTRING: 'mongodb://localhost:27017/testdb' # MongoDB connection string
+        run: gradle test --no-daemon --stacktrace --info 
+
+      - name: Build with Gradle Wrapper and ShadowJar
+        run: gradle shadowJar
+
