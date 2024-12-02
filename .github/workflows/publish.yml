@@ -44,6 +44,6 @@ jobs:
     - name: Publish to varilx repository
       run: gradle publish
       env:
-        REPOSILITE_TOKEN: "Q2sDWnc6uEnRCgqNDDNF"
-        REPOSILITE_URL: "https://reposilite.varilx.de/Derio"
+        REPOSILITE_TOKEN: ${{secrets.VARILX_REPOSILITE_TOKEN}}
+        REPOSILITE_URL: ${{secrets.VARILX_REPOSILITE_URL}} 
         REPOSILITE_USER: "Dario"
