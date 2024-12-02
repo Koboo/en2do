@@ -51,7 +51,7 @@ publishing {
     repositories {
         maven {
             name = "Reposilite"
-            url = URI(System.getenv("REPOSILITE_URL").toString())
+            url = URI((System.getenv("REPOSILITE_URL") ?: "default").toString())
             credentials {
                 username = System.getenv("REPOSILITE_USER")
                 password = System.getenv("REPOSILITE_TOKEN")
