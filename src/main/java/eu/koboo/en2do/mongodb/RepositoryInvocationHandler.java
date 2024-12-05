@@ -22,6 +22,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -108,10 +109,15 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             case FILTER:
                 findIterable = repositoryMeta.createIterable(Filters.and((Bson) arguments[arguments.length - 1], filter), methodName);
 
-                if (Collection.class.isAssignableFrom(method.getReturnType())) {
+                Long methodDefinedEntityCount = indexedMethod.getMethodDefinedEntityCount();
+                if (methodDefinedEntityCount == -1 || methodDefinedEntityCount > 1) {
+                    if (methodDefinedEntityCount != -1) {
+                        findIterable = findIterable.limit(Math.toIntExact(methodDefinedEntityCount));
+                    }
                     return findIterable.into(new ArrayList<>());
+                } else {
+                    return findIterable.first();
                 }
-                return findIterable.first();
             case FIND:
                 findIterable = repositoryMeta.createIterable(filter, methodName);
                 findIterable = repositoryMeta.applySortObject(method, findIterable, arguments);
@@ -121,7 +127,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 // Many = -1 / unlimited
                 // Top = specific count
                 // First = 1 / first entity
-                Long methodDefinedEntityCount = indexedMethod.getMethodDefinedEntityCount();
+                methodDefinedEntityCount = indexedMethod.getMethodDefinedEntityCount();
                 if (methodDefinedEntityCount == -1 || methodDefinedEntityCount > 1) {
                     if (methodDefinedEntityCount != -1) {
                         findIterable = findIterable.limit(Math.toIntExact(methodDefinedEntityCount));
