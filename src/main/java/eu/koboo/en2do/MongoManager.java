@@ -224,6 +224,7 @@ public class MongoManager {
         registerPredefinedMethod(new MethodFindAll());
         registerPredefinedMethod(new MethodFindFirstById());
         registerPredefinedMethod(new MethodFindFirstByFilter());
+        registerPredefinedMethod(new MethodFindManyByFilter());
         registerPredefinedMethod(new MethodGetClass());
         registerPredefinedMethod(new MethodGetCollectionName());
         registerPredefinedMethod(new MethodGetEntityClass());
