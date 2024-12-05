@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class MethodFindManyByFilter extends GlobalPredefinedMethod {
 
     public MethodFindManyByFilter() {
-        super("findFirstByFilter");
+        super("findManyByFilter");
     }
 
     @Override
