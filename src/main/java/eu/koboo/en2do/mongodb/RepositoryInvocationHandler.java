@@ -109,15 +109,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             case FILTER:
                 findIterable = repositoryMeta.createIterable(Filters.and((Bson) arguments[arguments.length - 1], filter), methodName);
 
-                Long methodDefinedEntityCount = indexedMethod.getMethodDefinedEntityCount();
-                if (methodDefinedEntityCount == -1 || methodDefinedEntityCount > 1) {
-                    if (methodDefinedEntityCount != -1) {
-                        findIterable = findIterable.limit(Math.toIntExact(methodDefinedEntityCount));
-                    }
-                    return findIterable.into(new ArrayList<>());
-                } else {
-                    return findIterable.first();
-                }
+                return findIterable.into(new ArrayList<>());
             case FIND:
                 findIterable = repositoryMeta.createIterable(filter, methodName);
                 findIterable = repositoryMeta.applySortObject(method, findIterable, arguments);
@@ -127,7 +119,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 // Many = -1 / unlimited
                 // Top = specific count
                 // First = 1 / first entity
-                methodDefinedEntityCount = indexedMethod.getMethodDefinedEntityCount();
+                Long methodDefinedEntityCount = indexedMethod.getMethodDefinedEntityCount();
                 if (methodDefinedEntityCount == -1 || methodDefinedEntityCount > 1) {
                     if (methodDefinedEntityCount != -1) {
                         findIterable = findIterable.limit(Math.toIntExact(methodDefinedEntityCount));
