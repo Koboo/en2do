@@ -198,6 +198,14 @@ public interface Repository<E, ID> {
     E findFirstByFilter(Bson filter);
 
     /**
+     * Finds all entities, that match the filter
+     * @param filter the filter
+     * @return all matching entities by the filter
+     * @see Repository#findFirstByFilter(Bson)
+     */
+    List<E> findManyByFilter(Bson filter);
+
+    /**
      * Allows access to the native mongodb collection,
      * for more advanced queries or unsupported en2do stuff.
      *
