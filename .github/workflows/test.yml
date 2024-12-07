@@ -61,11 +61,7 @@ jobs:
           EOF
 
       - name: Test with Gradle Wrapper
-        env:
-          GITHUB_ACTIONS: true
-          EN2DO_DATABASE: 'testdb' # Example database name
-          EN2DO_CONNECTSTRING: 'mongodb://localhost:27017/testdb' # MongoDB connection string
-        run: gradle test --no-daemon --stacktrace --info 
+        run: gradle test --no-daemon --stacktrace --info
 
       - name: Build with Gradle Wrapper and ShadowJar
         run: gradle shadowJar

@@ -28,7 +28,7 @@ public abstract class RepositoryTest<E, ID, R extends Repository<E, ID>> {
         SettingsBuilder settingsBuilder = new SettingsBuilder();
 
 
-        manager = new MongoManager(Credentials.fromSystemEnvVars(), settingsBuilder);
+        manager = new MongoManager(Credentials.fromResource(), settingsBuilder);
         assertNotNull(manager);
         repository = manager.create(repositoryClass());
         assertNotNull(repository);

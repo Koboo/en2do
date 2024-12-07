@@ -109,7 +109,10 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             case FILTER:
                 findIterable = repositoryMeta.createIterable(Filters.and((Bson) arguments[arguments.length - 1], filter), methodName);
 
-                return findIterable.into(new ArrayList<>());
+                if (Collection.class.isAssignableFrom(method.getReturnType())) {
+                    return findIterable.into(new ArrayList<>());
+                }
+                return findIterable.first();
             case FIND:
                 findIterable = repositoryMeta.createIterable(filter, methodName);
                 findIterable = repositoryMeta.applySortObject(method, findIterable, arguments);
