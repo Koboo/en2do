@@ -73,6 +73,8 @@ public class MongoManager {
     SettingsBuilder builder;
 
     Map<Class<?>, RepositoryMeta<?, ?, ?>> repositoryMetaRegistry;
+
+    @Getter
     Map<Class<?>, Repository<?, ?>> repositoryRegistry;
     Map<String, GlobalPredefinedMethod> predefinedMethodRegistry;
     ExecutorService executorService;
