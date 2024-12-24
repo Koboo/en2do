@@ -37,7 +37,7 @@ public class GenericUtils {
                     .replaceAll(" ", "");
                 String[] genericTypeClassNameArray = genericTypeString.split(",");
                 for (String genericTypeClassName : genericTypeClassNameArray) {
-                    Class<?> genericTypeClass = Class.forName(genericTypeClassName);
+                    Class<?> genericTypeClass = Class.forName(genericTypeClassName, true, interfaceClass.getClassLoader());
                     genericTypeList.add(genericTypeClass);
                 }
             } catch (ClassNotFoundException e) {
