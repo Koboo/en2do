@@ -17,7 +17,7 @@ import java.util.Set;
 /**
  * This convention implementation disables the saving of methods
  * which start with "get*" or "set*". MongoDB Pojo codec thinks that these methods
- * are property read or write methods, but maybe you don't want to save them.
+ * are property read or write methods, but most of the time you don't want to save them.
  */
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
