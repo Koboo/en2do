@@ -41,6 +41,7 @@ public class GenericUtils {
                     genericTypeList.add(genericTypeClass);
                 }
             } catch (ClassNotFoundException e) {
+                e.printStackTrace();
                 throw new RuntimeException("Couldn't load or find class of type " + implementedClass + ".");
             }
         }
