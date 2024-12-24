@@ -10,7 +10,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CustomerFindFirstByStatusTest extends CustomerRepositoryTest {
+public class CustomerFindFirstByTransformedFieldNameTest extends CustomerRepositoryTest {
 
     @Test
     @Order(1)
@@ -33,7 +33,7 @@ public class CustomerFindFirstByStatusTest extends CustomerRepositoryTest {
     @Test
     @Order(3)
     public void operationTest() {
-        Customer customer = repository.findFirstByStatus("StatusName");
+        Customer customer = repository.findFirstByTransformedFieldName("StatusName");
         assertNotNull(customer);
         assertEquals(Const.CUSTOMER_ID, customer.getCustomerId());
         assertEquals("StatusName", customer.getTransformedFieldName());

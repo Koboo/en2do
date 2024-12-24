@@ -93,7 +93,7 @@ public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRep
 
     boolean updateFieldsByFirstName(String firstName, UpdateBatch updateBatch);
 
-    Customer findFirstByStatus(String status);
+    Customer findFirstByTransformedFieldName(String status);
 
     @NestedField(key = "KeyToIdentify", query = "order.orderText")
     Customer findFirstByUniqueIdAndKeyToIdentify(UUID uniqueId, String orderText);
