@@ -14,7 +14,7 @@ import lombok.experimental.FieldDefaults;
 @Getter
 public class IndexedFilter {
 
-    String bsonName;
+    String bsonFilterFieldKey;
     boolean notFilter;
     FilterOperator operator;
     int nextParameterIndex;

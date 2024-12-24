@@ -45,8 +45,8 @@ public class FieldUtils {
      */
     public Field findFieldByName(String fieldName, Set<Field> fieldSet) {
         for (Field field : fieldSet) {
-            String bsonName = parseBsonName(field);
-            if (!bsonName.equalsIgnoreCase(fieldName)) {
+            String entityFieldName = field.getName();
+            if (!entityFieldName.equals(fieldName)) {
                 continue;
             }
             return field;

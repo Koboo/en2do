@@ -135,8 +135,8 @@ public class MongoManager {
                 .register(internalPropertyCodecProvider)
                 .automatic(true)
                 .conventions(List.of(
-                    new MethodMappingConvention(this, parser),
                     new AnnotationConvention(),
+                    new MethodMappingConvention(this, parser),
                     Conventions.ANNOTATION_CONVENTION,
                     Conventions.SET_PRIVATE_FIELDS_CONVENTION
 //                    Conventions.USE_GETTERS_FOR_SETTERS
@@ -407,7 +407,7 @@ public class MongoManager {
                     // Add safe break to avoid infinite loops
                     safeBreakAmount--;
 
-                    String bsonName = null;
+                    String bsonFilterKey = null;
                     // Check if we can find any nested fields
                     for (NestedField nestedField : nestedFieldSet) {
                         String loweredKey = nestedField.key().toLowerCase(Locale.ROOT);
@@ -415,26 +415,26 @@ public class MongoManager {
                             continue;
                         }
                         loweredStrip = loweredStrip.replaceFirst(loweredKey, "");
-                        bsonName = nestedField.query();
+                        bsonFilterKey = nestedField.query();
                         break;
                     }
 
                     // Check if we can find any direct entity fields
                     Field entityField = null;
                     for (Field field : sortedFieldMap.values()) {
-                        String bsonFieldName = FieldUtils.parseBsonName(field);
-                        String loweredBsonName = bsonFieldName.toLowerCase(Locale.ROOT);
-                        if (!loweredStrip.startsWith(loweredBsonName)) {
+                        String fieldName = field.getName();
+                        String loweredFieldName = fieldName.toLowerCase(Locale.ROOT);
+                        if (!loweredStrip.startsWith(loweredFieldName)) {
                             continue;
                         }
-                        loweredStrip = loweredStrip.replaceFirst(loweredBsonName, "");
+                        loweredStrip = loweredStrip.replaceFirst(loweredFieldName, "");
                         entityField = field;
-                        bsonName = bsonFieldName;
+                        bsonFilterKey = FieldUtils.parseBsonName(field);
                         break;
                     }
 
                     // Check if we found any field.
-                    if (bsonName == null) {
+                    if (bsonFilterKey == null) {
                         throw new MethodFieldNotFoundException(strippedMethodName, method, entityClass, repositoryClass);
                     }
 
@@ -480,7 +480,7 @@ public class MongoManager {
                         Validator.validateTypes(repositoryClass, method, entityField, filterOperator, nextParameterIndex);
                     }
 
-                    IndexedFilter indexedFilter = new IndexedFilter(bsonName, notFilter, filterOperator, nextParameterIndex);
+                    IndexedFilter indexedFilter = new IndexedFilter(bsonFilterKey, notFilter, filterOperator, nextParameterIndex);
                     indexedFilterList.add(indexedFilter);
                     int operatorParameterCount = filterOperator.getExpectedParameterCount();
                     expectedParameterCount += operatorParameterCount;

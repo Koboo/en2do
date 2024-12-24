@@ -68,41 +68,41 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
     @SuppressWarnings("unchecked")
     private Bson processBson(IndexedFilter filter, int paramsIndexAt,
                              Object[] args) throws Exception {
-        String queryFieldName = filter.getBsonName();
+        String bsonFilterFieldKey = filter.getBsonFilterFieldKey();
 
         // Check if the id field of the entity is used.
         // We need to convert the actual field name to mongodb's "_id" of documents
         // to be able to filter the id field.
-        if (queryFieldName.equalsIgnoreCase(repositoryData.getEntityUniqueIdField().getName())) {
-            queryFieldName = "_id";
+        if (bsonFilterFieldKey.equalsIgnoreCase(repositoryData.getEntityUniqueIdField().getName())) {
+            bsonFilterFieldKey = "_id";
         }
 
         Bson retFilter = null;
         switch (filter.getOperator()) {
             case EQUALS:
-                retFilter = Filters.eq(queryFieldName, repositoryData.getFilterableValue(args[paramsIndexAt]));
+                retFilter = Filters.eq(bsonFilterFieldKey, repositoryData.getFilterableValue(args[paramsIndexAt]));
                 break;
             case EQUALS_IGNORE_CASE:
                 String ignCasePatternString = "(?i)^" + repositoryData.getFilterableValue(args[paramsIndexAt]) + "$";
                 Pattern ignCasePattern = Pattern.compile(ignCasePatternString, Pattern.CASE_INSENSITIVE);
-                retFilter = Filters.regex(queryFieldName, ignCasePattern);
+                retFilter = Filters.regex(bsonFilterFieldKey, ignCasePattern);
                 break;
             case CONTAINS:
                 String containsPatternString = ".*" + repositoryData.getFilterableValue(args[paramsIndexAt]) + ".*";
                 Pattern containsPattern = Pattern.compile(containsPatternString, Pattern.CASE_INSENSITIVE);
-                retFilter = Filters.regex(queryFieldName, containsPattern);
+                retFilter = Filters.regex(bsonFilterFieldKey, containsPattern);
                 break;
             case GREATER_THAN:
-                retFilter = Filters.gt(queryFieldName, repositoryData.getFilterableValue(args[paramsIndexAt]));
+                retFilter = Filters.gt(bsonFilterFieldKey, repositoryData.getFilterableValue(args[paramsIndexAt]));
                 break;
             case LESS_THAN:
-                retFilter = Filters.lt(queryFieldName, repositoryData.getFilterableValue(args[paramsIndexAt]));
+                retFilter = Filters.lt(bsonFilterFieldKey, repositoryData.getFilterableValue(args[paramsIndexAt]));
                 break;
             case GREATER_EQUALS:
-                retFilter = Filters.gte(queryFieldName, repositoryData.getFilterableValue(args[paramsIndexAt]));
+                retFilter = Filters.gte(bsonFilterFieldKey, repositoryData.getFilterableValue(args[paramsIndexAt]));
                 break;
             case LESS_EQUALS:
-                retFilter = Filters.lte(queryFieldName, repositoryData.getFilterableValue(args[paramsIndexAt]));
+                retFilter = Filters.lte(bsonFilterFieldKey, repositoryData.getFilterableValue(args[paramsIndexAt]));
                 break;
             case REGEX:
                 // MongoDB supports multiple types of regex filtering, so check which type is provided.
@@ -110,11 +110,11 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 Object value = repositoryData.getFilterableValue(args[paramsIndexAt]);
                 if (value instanceof String) {
                     String regexPatternString = (String) value;
-                    retFilter = Filters.regex(queryFieldName, regexPatternString);
+                    retFilter = Filters.regex(bsonFilterFieldKey, regexPatternString);
                 }
                 if (value instanceof Pattern) {
                     Pattern regexPattern = (Pattern) value;
-                    retFilter = Filters.regex(queryFieldName, regexPattern);
+                    retFilter = Filters.regex(bsonFilterFieldKey, regexPattern);
                 }
                 // No supported type provided, we can't do anything other than throwing exceptions.
                 if (retFilter == null) {
@@ -126,20 +126,20 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 }
                 break;
             case EXISTS:
-                retFilter = Filters.exists(queryFieldName);
+                retFilter = Filters.exists(bsonFilterFieldKey);
                 break;
             case BETWEEN:
                 Object betweenStart = repositoryData.getFilterableValue(args[paramsIndexAt]);
                 Object betweenEnd = args[paramsIndexAt + 1];
                 retFilter = Filters.and(
-                    Filters.gt(queryFieldName, betweenStart), Filters.lt(queryFieldName, betweenEnd)
+                    Filters.gt(bsonFilterFieldKey, betweenStart), Filters.lt(bsonFilterFieldKey, betweenEnd)
                 );
                 break;
             case BETWEEN_EQUALS:
                 Object betweenEqStart = repositoryData.getFilterableValue(args[paramsIndexAt]);
                 Object betweenEqEnd = args[paramsIndexAt + 1];
                 retFilter = Filters.and(
-                    Filters.gte(queryFieldName, betweenEqStart), Filters.lte(queryFieldName, betweenEqEnd)
+                    Filters.gte(bsonFilterFieldKey, betweenEqStart), Filters.lte(bsonFilterFieldKey, betweenEqEnd)
                 );
                 break;
             case IN:
@@ -163,17 +163,17 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                         "https://github.com/Koboo/en2do\n" +
                         "to ensure others don't get this bug and we can't look further into this issue.");
                 }
-                retFilter = Filters.in(queryFieldName, objectArray);
+                retFilter = Filters.in(bsonFilterFieldKey, objectArray);
                 break;
             case HAS_KEY:
                 // We need a separate getFilterableValue here, because we "faked" UUIDs map keys as strings
                 // in the codec. That's why we need the explicit "true" parameter here.
                 Object keyObject = repositoryData.getFilterableValue(args[paramsIndexAt], true);
-                retFilter = Filters.exists(queryFieldName + "." + keyObject);
+                retFilter = Filters.exists(bsonFilterFieldKey + "." + keyObject);
                 break;
             case HAS:
                 Object hasObject = repositoryData.getFilterableValue(args[paramsIndexAt]);
-                retFilter = Filters.in(queryFieldName, hasObject);
+                retFilter = Filters.in(bsonFilterFieldKey, hasObject);
                 break;
             case GEO:
                 // Do not ask about the geo filters.
@@ -183,9 +183,9 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                     case NEAR_SPHERE:
                         Point point = new Point(new Position(geo.getLongitude(), geo.getLatitude()));
                         if (geo.getType() == GeoType.NEAR) {
-                            retFilter = Filters.near(queryFieldName, point, geo.getMaxDistance(), geo.getMinDistance());
+                            retFilter = Filters.near(bsonFilterFieldKey, point, geo.getMaxDistance(), geo.getMinDistance());
                         } else {
-                            retFilter = Filters.nearSphere(queryFieldName, point, geo.getMaxDistance(), geo.getMinDistance());
+                            retFilter = Filters.nearSphere(bsonFilterFieldKey, point, geo.getMaxDistance(), geo.getMinDistance());
                         }
                         break;
                     default:
@@ -193,16 +193,16 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 }
                 break;
             case IS_NULL:
-                retFilter = Filters.eq(queryFieldName, null);
+                retFilter = Filters.eq(bsonFilterFieldKey, null);
                 break;
             case NON_NULL:
-                retFilter = Filters.not(Filters.eq(queryFieldName, null));
+                retFilter = Filters.not(Filters.eq(bsonFilterFieldKey, null));
                 break;
             case IS_TRUE:
-                retFilter = Filters.eq(queryFieldName, true);
+                retFilter = Filters.eq(bsonFilterFieldKey, true);
                 break;
             case IS_FALSE:
-                retFilter = Filters.eq(queryFieldName, false);
+                retFilter = Filters.eq(bsonFilterFieldKey, false);
                 break;
             case LIST_EMPTY:
                 // The thing with "IsListEmpty" check is the following:
@@ -214,9 +214,9 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 // but some tests are not working with that,
                 // so lets just create and use the empty list here.
                 retFilter = Filters.and(
-                    Filters.exists(queryFieldName, true),
-                    Filters.type(queryFieldName, "array"),
-                    Filters.ne(queryFieldName, new ArrayList<Document>())
+                    Filters.exists(bsonFilterFieldKey, true),
+                    Filters.type(bsonFilterFieldKey, "array"),
+                    Filters.ne(bsonFilterFieldKey, new ArrayList<Document>())
                 );
                 break;
             default: // This filter is not supported. Throw exception.
