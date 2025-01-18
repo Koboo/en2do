@@ -4,10 +4,12 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.UpdateResult;
+import eu.koboo.en2do.mongodb.exception.ReportException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodUnsupportedException;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryInvalidCallException;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
 import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
+import eu.koboo.en2do.operators.AmountType;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.methods.async.Async;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
@@ -114,11 +116,25 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 // "Many" = -1 / unlimited
                 // "Top10" = user specific count of "10"
                 // "First" = 1 / first entity
-                Long methodDefinedEntityCount = indexedMethod.getMethodDefinedEntityCount();
-                if (methodDefinedEntityCount == -1 || methodDefinedEntityCount > 1) {
-                    if (methodDefinedEntityCount != -1) {
-                        findIterable = findIterable.limit(Math.toIntExact(methodDefinedEntityCount));
-                    }
+                AmountType amountType = indexedMethod.getAmountType();
+                if (amountType == null) {
+                    throw new ReportException("Your find method lacks of amount specification.\n" +
+                        "This is a very rare case, this should already be checked on start validation.\n");
+                }
+                long entityAmount = indexedMethod.getEntityAmount();
+                switch (amountType) {
+                    case FIRST:
+                        findIterable = findIterable.limit(1);
+                        break;
+                    case ALL:
+                    case MANY:
+                        break;
+                    case TOP:
+                        findIterable = findIterable.limit(Math.toIntExact(entityAmount));
+                        break;
+                }
+
+                if(amountType.isMultipleEntities()) {
                     return findIterable.into(new ArrayList<>());
                 }
                 return findIterable.first();

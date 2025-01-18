@@ -20,9 +20,7 @@ import eu.koboo.en2do.mongodb.methods.dynamic.IndexedFilter;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
 import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
 import eu.koboo.en2do.mongodb.methods.predefined.impl.*;
-import eu.koboo.en2do.operators.Chain;
-import eu.koboo.en2do.operators.FilterOperator;
-import eu.koboo.en2do.operators.MethodOperator;
+import eu.koboo.en2do.operators.*;
 import eu.koboo.en2do.parser.RepositoryParser;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.Repository;
@@ -357,26 +355,44 @@ public class MongoManager {
                 // "Top" - The first X entities
                 // "Many" - All entities
                 // "First" - Only the first entity
-                Long methodDefinedEntityCount = null;
-                if (strippedMethodName.startsWith("Top")) {
-                    strippedMethodName = strippedMethodName.replaceFirst("Top", "");
-                    if (strippedMethodName.startsWith("0")) {
-                        throw new RuntimeException("The number you want to filter can not start with \"0\".");
+                AmountType amountType = AmountType.parseTypeByStringStartsWith(strippedMethodName);
+                long entityAmount = -1;
+                if(amountType != null) {
+                    strippedMethodName = strippedMethodName.replaceFirst(amountType.getOperatorString(), "");
+                    switch (amountType) {
+                        case MANY:
+                        case ALL: entityAmount = 0; break;
+                        case FIRST: entityAmount = 1; break;
+                        case TOP:
+                            entityAmount = AmountType.parseAmountByStringStartsWith(strippedMethodName);
+                            if (entityAmount == 0) {
+                                throw new RuntimeException("The entityAmount 0 is not a valid top number.");
+                            }
+                            strippedMethodName = strippedMethodName.replaceFirst(String.valueOf(entityAmount), "");
+                            break;
                     }
-                    methodDefinedEntityCount = MethodUtils.getPrefixedNumber(strippedMethodName);
-                    if (methodDefinedEntityCount == 0) {
-                        throw new RuntimeException("The number 0 is not a valid top number.");
-                    }
-                    strippedMethodName = strippedMethodName.replaceFirst(String.valueOf(methodDefinedEntityCount), "");
                 }
-                if (strippedMethodName.startsWith("Many")) {
-                    strippedMethodName = strippedMethodName.replaceFirst("Many", "");
-                    methodDefinedEntityCount = -1L;
-                }
-                if (strippedMethodName.startsWith("First")) {
-                    strippedMethodName = strippedMethodName.replaceFirst("First", "");
-                    methodDefinedEntityCount = 1L;
-                }
+
+//                Long methodDefinedEntityCount = null;
+//                if (strippedMethodName.startsWith("Top")) {
+//                    strippedMethodName = strippedMethodName.replaceFirst("Top", "");
+//                    if (strippedMethodName.startsWith("0")) {
+//                        throw new RuntimeException("The number you want to filter can not start with \"0\".");
+//                    }
+//                    methodDefinedEntityCount = MethodUtils.getPrefixedNumber(strippedMethodName);
+//                    if (methodDefinedEntityCount == 0) {
+//                        throw new RuntimeException("The number 0 is not a valid top number.");
+//                    }
+//                    strippedMethodName = strippedMethodName.replaceFirst(String.valueOf(methodDefinedEntityCount), "");
+//                }
+//                if (strippedMethodName.startsWith("Many")) {
+//                    strippedMethodName = strippedMethodName.replaceFirst("Many", "");
+//                    methodDefinedEntityCount = -1L;
+//                }
+//                if (strippedMethodName.startsWith("First")) {
+//                    strippedMethodName = strippedMethodName.replaceFirst("First", "");
+//                    methodDefinedEntityCount = 1L;
+//                }
 
                 // Remove the string "By" from the method name.
                 strippedMethodName = strippedMethodName.replaceFirst("By", "");
@@ -401,7 +417,7 @@ public class MongoManager {
                 Chain chain = null;
 
                 // We are using a while loop. Just to ensure we are not doing
-                // infinite loops, we also track the execution amount using the safeBreakAmount.
+                // infinite loops, we also track the execution entityAmount using the safeBreakAmount.
                 int safeBreakAmount = 200;
                 while (!loweredStrip.equalsIgnoreCase("") && safeBreakAmount > 0) {
                     // Add safe break to avoid infinite loops
@@ -564,7 +580,8 @@ public class MongoManager {
 
                 IndexedMethod<E, ID, R> dynamicMethod = new IndexedMethod<>(
                     method, methodOperator, chain,
-                    methodDefinedEntityCount,
+                    -1L,
+                    amountType, entityAmount,
                     indexedFilterList, repositoryData);
                 repositoryData.registerDynamicMethod(methodName, dynamicMethod);
             }

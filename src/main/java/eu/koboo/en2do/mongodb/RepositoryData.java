@@ -130,13 +130,17 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
 
     public FindIterable<E> applySortAnnotations(Method method, FindIterable<E> findIterable) throws Exception {
         SortBy[] sortAnnotations = method.getAnnotationsByType(SortBy.class);
-        if (sortAnnotations != null) {
+
+        // Try to apply the sort annotations of the method
+        if (sortAnnotations.length > 0) {
             Map<String, Boolean> fieldSortMap = new LinkedHashMap<>();
             for (SortBy sortBy : sortAnnotations) {
                 fieldSortMap.put(sortBy.field(), sortBy.ascending());
             }
             findIterable = sortDirection(findIterable, fieldSortMap);
         }
+
+        // Try to apply the limiting annotations of the method
         if (method.isAnnotationPresent(Limit.class)) {
             Limit limit = method.getAnnotation(Limit.class);
             int value = limit.value();
@@ -145,6 +149,8 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             }
             findIterable = findIterable.limit(value);
         }
+
+        // Try to apply the skipping annotations of the method
         if (method.isAnnotationPresent(Skip.class)) {
             Skip skip = method.getAnnotation(Skip.class);
             int value = skip.value();
@@ -153,6 +159,8 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             }
             findIterable = findIterable.skip(value);
         }
+
+        // Apply the current disk usage settings on the find iterable
         findIterable = findIterable.allowDiskUse(mongoManager.getSettingsBuilder().isAllowDiskUse());
         return findIterable;
     }

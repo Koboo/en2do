@@ -4,8 +4,10 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Position;
 import eu.koboo.en2do.mongodb.RepositoryData;
+import eu.koboo.en2do.mongodb.exception.ReportException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidRegexParameterException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodUnsupportedFilterException;
+import eu.koboo.en2do.operators.AmountType;
 import eu.koboo.en2do.operators.Chain;
 import eu.koboo.en2do.operators.MethodOperator;
 import eu.koboo.en2do.repository.Repository;
@@ -34,6 +36,12 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
 
     @Getter
     Long methodDefinedEntityCount;
+
+    @Getter
+    AmountType amountType;
+
+    @Getter
+    long entityAmount;
 
     List<IndexedFilter> indexedFilterList;
 
@@ -157,11 +165,8 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 }
                 // If you produce this exception, I'm very surprised then I see the code.
                 if (objectArray == null) {
-                    throw new NullPointerException("Your Object array of the \"In\" filter was null.\n" +
-                        "This is a very rare case, since we do stuff, mongodb doesn't really support.\n" +
-                        "Please report your code and other information to\n" +
-                        "https://github.com/Koboo/en2do\n" +
-                        "to ensure others don't get this bug and we can't look further into this issue.");
+                    throw new ReportException("Your Object array of the \"In\" filter was null.\n" +
+                        "This is a very rare case, since we do stuff, mongodb doesn't really support.\n");
                 }
                 retFilter = Filters.in(bsonFilterFieldKey, objectArray);
                 break;
