@@ -20,7 +20,10 @@ import eu.koboo.en2do.mongodb.methods.dynamic.IndexedFilter;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
 import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
 import eu.koboo.en2do.mongodb.methods.predefined.impl.*;
-import eu.koboo.en2do.operators.*;
+import eu.koboo.en2do.operators.AmountType;
+import eu.koboo.en2do.operators.ChainType;
+import eu.koboo.en2do.operators.FilterOperator;
+import eu.koboo.en2do.operators.MethodOperator;
 import eu.koboo.en2do.parser.RepositoryParser;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.Repository;
@@ -357,12 +360,16 @@ public class MongoManager {
                 // "First" - Only the first entity
                 AmountType amountType = AmountType.parseTypeByStringStartsWith(strippedMethodName);
                 long entityAmount = -1;
-                if(amountType != null) {
+                if (amountType != null) {
                     strippedMethodName = strippedMethodName.replaceFirst(amountType.getOperatorString(), "");
                     switch (amountType) {
                         case MANY:
-                        case ALL: entityAmount = 0; break;
-                        case FIRST: entityAmount = 1; break;
+                        case ALL:
+                            entityAmount = 0;
+                            break;
+                        case FIRST:
+                            entityAmount = 1;
+                            break;
                         case TOP:
                             entityAmount = AmountType.parseAmountByStringStartsWith(strippedMethodName);
                             if (entityAmount == 0) {

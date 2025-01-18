@@ -29,7 +29,7 @@ public enum AmountType {
     public static AmountType parseTypeByStringStartsWith(String method) {
         for (AmountType type : VALUES) {
             String typeName = type.getOperatorString();
-            if(!method.startsWith(typeName)) {
+            if (!method.startsWith(typeName)) {
                 continue;
             }
             return type;

@@ -134,7 +134,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                         break;
                 }
 
-                if(amountType.isMultipleEntities()) {
+                if (amountType.isMultipleEntities()) {
                     return findIterable.into(new ArrayList<>());
                 }
                 return findIterable.first();
