@@ -3,7 +3,7 @@
 ![Discord](https://img.shields.io/discord/1021053609359708211)
 ![Maven](https://img.shields.io/maven-central/v/eu.koboo/en2do)
 
-Entity framework for MongoDB in Java 17.
+Entity framework for MongoDB in Java 11.
 
 **_En2Do_** is short for **_Entity-To-Document_**.
 
