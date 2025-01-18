@@ -414,7 +414,7 @@ public class MongoManager {
                 String loweredStrip = strippedMethodName.toLowerCase(Locale.ROOT);
 
                 // Chain represents either AND or OR for all filters.
-                Chain chain = null;
+                ChainType chainType = null;
 
                 // We are using a while loop. Just to ensure we are not doing
                 // infinite loops, we also track the execution entityAmount using the safeBreakAmount.
@@ -480,16 +480,16 @@ public class MongoManager {
 
                     if (loweredStrip.startsWith("and")) {
                         loweredStrip = loweredStrip.replaceFirst("and", "");
-                        if (chain != null && chain != Chain.AND) {
+                        if (chainType != null && chainType != ChainType.AND) {
                             throw new MethodDuplicatedChainException(method, repositoryClass);
                         }
-                        chain = Chain.AND;
+                        chainType = ChainType.AND;
                     } else if (loweredStrip.startsWith("or")) {
                         loweredStrip = loweredStrip.replaceFirst("or", "");
-                        if (chain != null && chain != Chain.OR) {
+                        if (chainType != null && chainType != ChainType.OR) {
                             throw new MethodDuplicatedChainException(method, repositoryClass);
                         }
-                        chain = Chain.OR;
+                        chainType = ChainType.OR;
                     }
 
                     if (entityField != null) {
@@ -503,8 +503,8 @@ public class MongoManager {
                     nextParameterIndex = itemCount + operatorParameterCount;
                     itemCount += 1;
                 }
-                if (chain == null) {
-                    chain = Chain.NONE;
+                if (chainType == null) {
+                    chainType = ChainType.NONE;
                 }
 
                 int methodParameterCount = method.getParameterCount();
@@ -579,7 +579,7 @@ public class MongoManager {
                 }
 
                 IndexedMethod<E, ID, R> dynamicMethod = new IndexedMethod<>(
-                    method, methodOperator, chain,
+                    method, methodOperator, chainType,
                     -1L,
                     amountType, entityAmount,
                     indexedFilterList, repositoryData);

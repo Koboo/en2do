@@ -8,7 +8,7 @@ import eu.koboo.en2do.mongodb.exception.ReportException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidRegexParameterException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodUnsupportedFilterException;
 import eu.koboo.en2do.operators.AmountType;
-import eu.koboo.en2do.operators.Chain;
+import eu.koboo.en2do.operators.ChainType;
 import eu.koboo.en2do.operators.MethodOperator;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.methods.geo.Geo;
@@ -32,7 +32,7 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
     Method method;
     @Getter
     MethodOperator methodOperator;
-    Chain chain;
+    ChainType chainType;
 
     @Getter
     Long methodDefinedEntityCount;
@@ -56,7 +56,7 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
             Bson processedBsonFilter = processBson(indexedFilter, paramStartIndex, arguments);
             bsonFilterSet.add(processedBsonFilter);
         }
-        switch (chain) {
+        switch (chainType) {
             case OR:
                 filter = Filters.or(bsonFilterSet);
                 break;

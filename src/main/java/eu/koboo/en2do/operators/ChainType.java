@@ -1,5 +1,5 @@
 package eu.koboo.en2do.operators;
 
-public enum Chain {
+public enum ChainType {
     AND, OR, NONE
 }
