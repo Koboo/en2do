@@ -79,7 +79,7 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
         return dynamicMethodRegistry.get(methodName);
     }
 
-    public FindIterable<E> createIterable(Bson filter, String methodName) {
+    public FindIterable<E> createFindIterableBase(Bson filter, String methodName) {
         FindIterable<E> findIterable;
         if (filter != null) {
             findIterable = entityCollection.find(filter);

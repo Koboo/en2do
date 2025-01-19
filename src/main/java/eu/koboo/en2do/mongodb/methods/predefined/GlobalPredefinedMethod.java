@@ -39,11 +39,11 @@ public abstract class GlobalPredefinedMethod {
                                                                        Method method,
                                                                        Object[] arguments) throws Exception;
 
-    protected <ID> Bson createIdFilter(ID uniqueId) {
+    protected <ID> Bson createBsonIdFilter(ID uniqueId) {
         return Filters.eq("_id", uniqueId);
     }
 
-    protected Bson createIdExistsFilter() {
+    protected Bson createBsonIdExistsFilter() {
         return Filters.exists("_id");
     }
 

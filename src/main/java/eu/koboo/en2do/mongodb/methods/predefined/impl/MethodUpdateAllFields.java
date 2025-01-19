@@ -26,7 +26,7 @@ public class MethodUpdateAllFields extends GlobalPredefinedMethod {
 
         // Call the UpdateBatch on all documents with the "id" field of the entity,
         // which could be a unique name or the "_id" field.
-        Bson idExistsFilter = createIdExistsFilter();
+        Bson idExistsFilter = createBsonIdExistsFilter();
         UpdateResult result = collection.updateMany(idExistsFilter,
             repositoryData.createUpdateDocument(updateBatch),
             new UpdateOptions().upsert(false));

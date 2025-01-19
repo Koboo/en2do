@@ -106,7 +106,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             case EXISTS:
                 return collection.countDocuments(filter) > 0;
             case FIND:
-                findIterable = repositoryData.createIterable(filter, methodName);
+                findIterable = repositoryData.createFindIterableBase(filter, methodName);
                 findIterable = repositoryData.applySortObject(method, findIterable, arguments);
                 findIterable = repositoryData.applySortAnnotations(method, findIterable);
 
@@ -139,7 +139,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 }
                 return findIterable.first();
             case PAGE:
-                findIterable = repositoryData.createIterable(filter, methodName);
+                findIterable = repositoryData.createFindIterableBase(filter, methodName);
                 findIterable = repositoryData.applyPageObject(method, findIterable, arguments);
                 return findIterable.into(new ArrayList<>());
             case UPDATE_FIELD:

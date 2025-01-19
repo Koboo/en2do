@@ -18,8 +18,8 @@ public class MethodFindFirstById extends GlobalPredefinedMethod {
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method, Object[] arguments) throws Exception {
         ID uniqueId = getGenericUniqueIdByArgument(repositoryData, method, arguments[0]);
-        Bson idFilter = createIdFilter(uniqueId);
-        FindIterable<E> findIterable = repositoryData.createIterable(idFilter, methodName);
+        Bson idFilter = createBsonIdFilter(uniqueId);
+        FindIterable<E> findIterable = repositoryData.createFindIterableBase(idFilter, methodName);
         return findIterable.limit(1).first();
     }
 }

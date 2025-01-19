@@ -21,7 +21,7 @@ public class MethodDelete extends GlobalPredefinedMethod {
         MongoCollection<E> collection = repositoryData.getEntityCollection();
         E entity = getGenericEntity(repositoryData, method, arguments[0]);
         ID uniqueId = getGenericUniqueIdByEntity(repositoryData, method, entity);
-        Bson idFilter = createIdFilter(uniqueId);
+        Bson idFilter = createBsonIdFilter(uniqueId);
         DeleteResult result = collection.deleteOne(idFilter);
         return result.wasAcknowledged();
     }
