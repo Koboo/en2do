@@ -123,6 +123,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 }
                 long entityAmount = indexedMethod.getEntityAmount();
                 switch (amountType) {
+                    case ONE:
                     case FIRST:
                         findIterable = findIterable.limit(1);
                         break;

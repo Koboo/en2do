@@ -13,6 +13,7 @@ import java.util.Locale;
 public enum AmountType {
 
     FIRST(false),
+    ONE(false),
     MANY(true),
     ALL(true),
     TOP(true);

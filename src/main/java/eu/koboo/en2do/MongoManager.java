@@ -374,6 +374,7 @@ public class MongoManager {
                         case ALL:
                             entityAmount = 0;
                             break;
+                        case ONE:
                         case FIRST:
                             entityAmount = 1;
                             break;
