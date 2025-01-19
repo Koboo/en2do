@@ -12,7 +12,6 @@ import org.bson.conversions.Bson;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * This class is a representation of a predefined method from the repository
@@ -48,8 +47,8 @@ public abstract class GlobalPredefinedMethod {
         return Filters.exists("_id");
     }
 
-    protected <E, ID, R extends Repository<E, ID>> ID checkUniqueIdByEntity(RepositoryData<E, ID, R> repositoryData,
-                                                                            Method method, E entity) throws IllegalAccessException {
+    protected <E, ID, R extends Repository<E, ID>> ID getGenericUniqueIdByEntity(RepositoryData<E, ID, R> repositoryData,
+                                                                                 Method method, E entity) throws IllegalAccessException {
         Class<ID> entityIdClass = repositoryData.getEntityUniqueIdClass();
         Field entityIdField = repositoryData.getEntityUniqueIdField();
         ID uniqueId = entityIdClass.cast(entityIdField.get(entity));
@@ -61,8 +60,8 @@ public abstract class GlobalPredefinedMethod {
         return uniqueId;
     }
 
-    protected <E, ID, R extends Repository<E, ID>> ID checkUniqueIdByArgument(RepositoryData<E, ID, R> repositoryData,
-                                                                              Method method, Object argument) {
+    protected <E, ID, R extends Repository<E, ID>> ID getGenericUniqueIdByArgument(RepositoryData<E, ID, R> repositoryData,
+                                                                                   Method method, Object argument) {
         Class<ID> entityIdClass = repositoryData.getEntityUniqueIdClass();
         ID uniqueId = entityIdClass.cast(argument);
         if (uniqueId == null) {
@@ -73,8 +72,8 @@ public abstract class GlobalPredefinedMethod {
         return uniqueId;
     }
 
-    protected <E, ID, R extends Repository<E, ID>> E checkEntity(RepositoryData<E, ID, R> repositoryData,
-                                                                 Method method, Object argument) {
+    protected <E, ID, R extends Repository<E, ID>> E getGenericEntity(RepositoryData<E, ID, R> repositoryData,
+                                                                      Method method, Object argument) {
         Class<E> entityClass = repositoryData.getEntityClass();
         E entity = entityClass.cast(argument);
         if (entity == null) {
@@ -85,8 +84,8 @@ public abstract class GlobalPredefinedMethod {
     }
 
     @SuppressWarnings("unchecked")
-    protected <E, ID, R extends Repository<E, ID>> Collection<E> checkEntityCollection(RepositoryData<E, ID, R> repositoryData,
-                                                                                       Method method, Object argument) {
+    protected <E, ID, R extends Repository<E, ID>> Collection<E> getEntityCollection(RepositoryData<E, ID, R> repositoryData,
+                                                                                     Method method, Object argument) {
         Class<E> entityClass = repositoryData.getEntityClass();
         Collection<E> entity = (Collection<E>) argument;
         if (entity == null) {

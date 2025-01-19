@@ -152,10 +152,10 @@ public class MongoManager {
             .codecRegistry(codecRegistry);
 
         ServerApi serverApi = settingsBuilder.getServerApi();
-        if(serverApi != null) {
+        if (serverApi != null) {
             clientBuilder.serverApi(serverApi);
         }
-        
+
         MongoClientSettings clientSettings = clientBuilder.build();
 
         mongoClient = MongoClients.create(clientSettings);

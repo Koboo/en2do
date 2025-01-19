@@ -25,8 +25,8 @@ public class MethodSave extends GlobalPredefinedMethod {
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method, Object[] arguments) throws Exception {
-        E entity = checkEntity(repositoryData, method, arguments[0]);
-        ID uniqueId = checkUniqueIdByEntity(repositoryData, method, entity);
+        E entity = getGenericEntity(repositoryData, method, arguments[0]);
+        ID uniqueId = getGenericUniqueIdByEntity(repositoryData, method, entity);
         Bson idFilter = createIdFilter(uniqueId);
         MongoCollection<E> entityCollection = repositoryData.getEntityCollection();
         if (entityCollection.countDocuments(idFilter) > 0) {
