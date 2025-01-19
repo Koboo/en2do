@@ -129,8 +129,14 @@ public interface Repository<E, ID> {
      * @param entity The entity, which unique identifier, should be returned
      * @return The unique identifier of the given entity.
      */
-
     ID getUniqueId(E entity);
+
+    /**
+     * This method is used to set the unique identifier of the given entity.
+     *
+     * @param entity The entity, on which the unique identifier should be set
+     */
+    void setUniqueId(E entity, ID uniqueId);
 
     /**
      * This method applies the pagination of all entities of the repository.

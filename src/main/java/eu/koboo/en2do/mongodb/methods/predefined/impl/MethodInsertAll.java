@@ -19,10 +19,17 @@ public class MethodInsertAll extends GlobalPredefinedMethod {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method, Object[] arguments) {
         MongoCollection<E> entityCollection = repositoryData.getEntityCollection();
-        List<E> insertList = checkEntityList(repositoryData, method, arguments[0]);
+
+        Class<E> entityClass = repositoryData.getEntityClass();
+        List<E> insertList = (List<E>) arguments[0];
+        if (insertList == null) {
+            throw new NullPointerException("List of Entities of type " + entityClass.getName() + " as parameter of method " +
+                method.getName() + " is null.");
+        }
         if (insertList.isEmpty()) {
             return true;
         }

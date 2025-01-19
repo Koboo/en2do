@@ -96,28 +96,4 @@ public abstract class GlobalPredefinedMethod {
         return entity;
     }
 
-    @SuppressWarnings("unchecked")
-    protected <E, ID, R extends Repository<E, ID>> List<E> checkEntityList(RepositoryData<E, ID, R> repositoryData,
-                                                                           Method method, Object argument) {
-        Class<E> entityClass = repositoryData.getEntityClass();
-        List<E> entity = (List<E>) argument;
-        if (entity == null) {
-            throw new NullPointerException("List of Entities of type " + entityClass.getName() + " as parameter of method " +
-                method.getName() + " is null.");
-        }
-        return entity;
-    }
-
-    @SuppressWarnings("unchecked")
-    protected <E, ID, R extends Repository<E, ID>> Collection<ID> checkUniqueIdList(RepositoryData<E, ID, R> repositoryData,
-                                                                                    Method method, Object argument) {
-        Class<E> entityClass = repositoryData.getEntityClass();
-        Collection<ID> entity = (Collection<ID>) argument;
-        if (entity == null) {
-            throw new NullPointerException("ID-List of Entities of type " + entityClass.getName() +
-                " as parameter of method " + method.getName() + " is null.");
-        }
-        return entity;
-    }
-
 }

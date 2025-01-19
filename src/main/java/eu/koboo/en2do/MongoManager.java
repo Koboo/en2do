@@ -233,6 +233,7 @@ public class MongoManager {
         registerPredefinedMethod(new MethodPageAll());
         registerPredefinedMethod(new MethodSave());
         registerPredefinedMethod(new MethodSaveAll());
+        registerPredefinedMethod(new MethodSetUniqueId());
         registerPredefinedMethod(new MethodSortAll());
         registerPredefinedMethod(new MethodToString());
         registerPredefinedMethod(new MethodUpdateAllFields());
