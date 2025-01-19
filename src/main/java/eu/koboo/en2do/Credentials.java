@@ -36,7 +36,7 @@ public class Credentials {
     /**
      * The default name of the credentials file.
      */
-    private static final String DEFAULT_CREDENTIALS_FILE_NAME = "credentials.properties";
+    public static final String DEFAULT_CREDENTIALS_FILE_NAME = "credentials.properties";
 
     /**
      * Utility method for reading credentials from an input stream.
