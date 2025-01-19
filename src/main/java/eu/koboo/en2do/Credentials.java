@@ -111,6 +111,23 @@ public class Credentials {
     }
 
     /**
+     * Automatically reading credentials from a file from given file.
+     *
+     * @param file The file with the containing credentials.
+     * @return The new created credentials object.
+     */
+    public static Credentials fromFile(File file) {
+        if (!file.exists()) {
+            return null;
+        }
+        try (InputStream inputStream = new FileInputStream(file)) {
+            return fromStreamProperties(inputStream);
+        } catch (IOException e) {
+            throw new RuntimeException("Couldn't read file from path \"" + file.getAbsolutePath() + "\": ", e);
+        }
+    }
+
+    /**
      * Automatically reading credentials from a file from given filePath.
      *
      * @param filePath The file path with the containing credentials.
