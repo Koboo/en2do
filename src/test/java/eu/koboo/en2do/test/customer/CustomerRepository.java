@@ -21,6 +21,10 @@ import java.util.concurrent.CompletableFuture;
 @Collection("customer_repository")
 public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRepository<Customer, UUID> {
 
+    Customer findOneByUniqueId(UUID id);
+
+    List<Customer> findAllByUniqueIdExists();
+
     Customer findFirstByFirstNameAndUniqueId(String firstName, UUID uniqueId);
 
     Customer findFirstByFirstName(String firstName);
