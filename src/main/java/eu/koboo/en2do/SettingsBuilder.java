@@ -1,5 +1,6 @@
 package eu.koboo.en2do;
 
+import com.mongodb.ServerApi;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
@@ -50,6 +51,14 @@ public class SettingsBuilder {
      * Defines the suffix of every collection
      */
     String collectionSuffix;
+
+    /**
+     * Defines the wanted ServerApi of the mongodb server.
+     * This enables several compatbility settings inside the
+     * mongodb driver itself.
+     * See here: <a href="https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/stable-api">...</a>
+     */
+    ServerApi serverApi;
 
     /**
      * See field documentation.
@@ -130,6 +139,17 @@ public class SettingsBuilder {
      */
     public SettingsBuilder collectionSuffix(String suffix) {
         this.collectionSuffix = suffix;
+        return this;
+    }
+
+    /**
+     * See field documentation.
+     *
+     * @param serverApi The value
+     * @return This builder
+     */
+    public SettingsBuilder serverApi(ServerApi serverApi) {
+        this.serverApi = serverApi;
         return this;
     }
 

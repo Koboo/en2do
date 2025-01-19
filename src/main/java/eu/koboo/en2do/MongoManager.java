@@ -2,6 +2,7 @@ package eu.koboo.en2do;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.ServerApi;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -140,17 +141,22 @@ public class MongoManager {
                     new MethodMappingConvention(this, parser),
                     Conventions.ANNOTATION_CONVENTION,
                     Conventions.SET_PRIVATE_FIELDS_CONVENTION
-//                    Conventions.USE_GETTERS_FOR_SETTERS
                 ))
                 .build())
         );
 
-        MongoClientSettings clientSettings = MongoClientSettings.builder()
+        MongoClientSettings.Builder clientBuilder = MongoClientSettings.builder()
             .applicationName("en2do-client")
             .applyConnectionString(connection)
             .uuidRepresentation(UuidRepresentation.STANDARD)
-            .codecRegistry(codecRegistry)
-            .build();
+            .codecRegistry(codecRegistry);
+
+        ServerApi serverApi = settingsBuilder.getServerApi();
+        if(serverApi != null) {
+            clientBuilder.serverApi(serverApi);
+        }
+        
+        MongoClientSettings clientSettings = clientBuilder.build();
 
         mongoClient = MongoClients.create(clientSettings);
         mongoDatabase = mongoClient.getDatabase(databaseString);
