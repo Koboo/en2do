@@ -2,3 +2,4 @@
 **/.idea/**
 **/build/**
 credentials.properties
+!.idea/icon.svg
