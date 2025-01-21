@@ -11,7 +11,7 @@ import lombok.experimental.FieldDefaults;
 public class Geo {
 
     /**
-     * Use this method to create a new GEo object
+     * Use this method to create a new Geo object
      *
      * @return The new created sort object.
      */

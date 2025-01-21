@@ -17,28 +17,38 @@ public class SettingsBuilder {
      * with the following package prefixes:
      * - "org.mongodb"
      * - "com.mongodb"
+     * If you want to customize logging even more, look into the mongodb logging documentation:
+     * <a href="https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/logging/">Click here</a>
      */
     Level mongoLoggerLevel;
 
     /**
-     * Disables the usage of uuids as keys in any map structure.
+     * Disables the usage of uuids as keys in Map fields.
+     * MongoDB by default does not allow this, but it should be
+     * pretty helpful.
      */
     boolean disallowUUIDKeys;
 
     /**
      * Allows the usage of disk storage for find iterables.
+     * This is needed if the size of your results are too large
+     * for your ram.
      */
     boolean allowDiskUse;
 
     /**
      * Sets the name of the method from the repository into the
-     * mongodb json construct. Can be seen in the mongodb database logs.
+     * mongodb bson construct and can then be seen in the mongodb database logs,
+     * through tools like MongoDB Compass or MongoDB Atlas.
      */
     boolean appendMethodAsComment;
 
     /**
      * This setting enables the conversion and usage of getter/setter methods
      * of entities in bson. Most of the time you don't need to enable this.
+     * If your entity has methods like "entity.isValid()" and that is not a getter
+     * of the field "valid", mongodb would still save it as "valid: {value_of_method}".
+     * To avoid this, the getter/setter mapping is disabled by default.
      */
     boolean enableMethodProperties;
 

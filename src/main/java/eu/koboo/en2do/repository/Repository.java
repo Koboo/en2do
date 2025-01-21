@@ -191,7 +191,7 @@ public interface Repository<E, ID> {
 
     /**
      * Allows access to the native mongodb collection,
-     * for more advanced queries or unsupported en2do stuff.
+     * for more advanced queries or en2do-unsupported mongodb stuff.
      *
      * @return the native mongodb collection object
      */
