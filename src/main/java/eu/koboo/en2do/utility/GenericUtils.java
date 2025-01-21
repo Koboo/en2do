@@ -37,11 +37,15 @@ public class GenericUtils {
                     .replaceAll(" ", "");
                 String[] genericTypeClassNameArray = genericTypeString.split(",");
                 for (String genericTypeClassName : genericTypeClassNameArray) {
-                    Class<?> genericTypeClass = Class.forName(genericTypeClassName);
+                    Class<?> genericTypeClass = Class.forName(
+                        genericTypeClassName,
+                        true,
+                        interfaceClass.getClassLoader()
+                    );
                     genericTypeList.add(genericTypeClass);
                 }
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Couldn't load or find class of type " + implementedClass + ".");
+                throw new RuntimeException("Couldn't load or find class of type " + implementedClass + ".", e);
             }
         }
         return genericTypeMap;

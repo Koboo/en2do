@@ -320,11 +320,6 @@ public class MongoManager {
                     continue;
                 }
 
-                // Skip the methods, which we can "safely" ignore.
-                if (MethodUtils.IGNORED_DEFAULT_METHODS.contains(methodName)) {
-                    continue;
-                }
-
                 // Get the default return type of the method
                 Class<?> returnType = method.getReturnType();
 
@@ -387,27 +382,6 @@ public class MongoManager {
                             break;
                     }
                 }
-
-//                Long methodDefinedEntityCount = null;
-//                if (strippedMethodName.startsWith("Top")) {
-//                    strippedMethodName = strippedMethodName.replaceFirst("Top", "");
-//                    if (strippedMethodName.startsWith("0")) {
-//                        throw new RuntimeException("The number you want to filter can not start with \"0\".");
-//                    }
-//                    methodDefinedEntityCount = MethodUtils.getPrefixedNumber(strippedMethodName);
-//                    if (methodDefinedEntityCount == 0) {
-//                        throw new RuntimeException("The number 0 is not a valid top number.");
-//                    }
-//                    strippedMethodName = strippedMethodName.replaceFirst(String.valueOf(methodDefinedEntityCount), "");
-//                }
-//                if (strippedMethodName.startsWith("Many")) {
-//                    strippedMethodName = strippedMethodName.replaceFirst("Many", "");
-//                    methodDefinedEntityCount = -1L;
-//                }
-//                if (strippedMethodName.startsWith("First")) {
-//                    strippedMethodName = strippedMethodName.replaceFirst("First", "");
-//                    methodDefinedEntityCount = 1L;
-//                }
 
                 // Remove the string "By" from the method name.
                 strippedMethodName = strippedMethodName.replaceFirst("By", "");
