@@ -1,6 +1,5 @@
 package eu.koboo.en2do.test.customer;
 
-import eu.koboo.en2do.repository.AsyncRepository;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.methods.async.Async;
@@ -19,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
 @Collection("customer_repository")
-public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRepository<Customer, UUID> {
+public interface CustomerRepository extends Repository<Customer, UUID> {
 
     Customer findOneByUniqueId(UUID id);
 
@@ -31,9 +30,9 @@ public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRep
 
     long countByFirstName(String firstName);
 
-    @Transform("countByCustomerIdExistsAndCustomerId")
-    @Async
-    CompletableFuture<Long> asyncCountCustomerId(int customerId);
+//    @Transform("countByCustomerIdExistsAndCustomerId")
+//    @Async
+//    CompletableFuture<Long> asyncCountCustomerId(int customerId);
 
     long countByCustomerId(int customerId);
 
