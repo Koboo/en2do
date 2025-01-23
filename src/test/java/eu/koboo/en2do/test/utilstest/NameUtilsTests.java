@@ -1,11 +1,11 @@
-package eu.koboo.en2do.test;
+package eu.koboo.en2do.test.utilstest;
 
 import eu.koboo.en2do.utility.NameUtils;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class NameUtilsTest {
+public class NameUtilsTests {
 
     @Test
     public void testToCamelCaseLower() {
