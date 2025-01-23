@@ -103,8 +103,8 @@ public enum MethodOperator {
      * @param repoClass   THe repository class
      * @throws Exception if the validation is unsuccessful.
      */
-    public void validate(Method method, Class<?> returnType,
-                         Class<?> entityClass, Class<?> repoClass) throws Exception {
+    public void validateReturnType(Method method, Class<?> returnType,
+                                   Class<?> entityClass, Class<?> repoClass) throws Exception {
         returnTypeValidator.check(method, returnType, entityClass, repoClass);
     }
 

@@ -34,6 +34,8 @@ public class MethodMappingConvention implements Convention {
     public void apply(ClassModelBuilder<?> classModelBuilder) {
         // If the setting is enabled, we don't need to remove the method properties
         // from the class model builder.
+        // This convention just checks if it can find any
+        // field by the given property name and if so, it removes it from writing it to the database.
         if (mongoManager.getSettingsBuilder().isEnableMethodProperties()) {
             return;
         }

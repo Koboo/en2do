@@ -126,9 +126,14 @@ public class Validator {
                     continue;
                 }
 
+                // We don't save static fields
+                if(Modifier.isStatic(field.getModifiers())) {
+                    continue;
+                }
+
                 // Ignore all fields annotated with transient,
                 // because we don't want to save that anyway.
-                if (field.isAnnotationPresent(Transient.class)) {
+                if (field.isAnnotationPresent(Transient.class) || Modifier.isTransient(field.getModifiers())) {
                     continue;
                 }
 
