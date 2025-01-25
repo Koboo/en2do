@@ -223,16 +223,17 @@ public class MongoManager {
             // Iterate through the repository methods
             for (Method method : repositoryClass.getMethods()) {
 
-                // Apply transform annotation
                 String methodName = method.getName();
+                // Check if we catch a predefined method name
+                if (predefinedMethodRegistry.isPredefinedMethod(methodName)) {
+                    throw new IllegalStateException("Predefined method '" + methodName + "' has override " +
+                        "in repository " + repositoryClass.getName() + "! That's not allowed!");
+                }
+
+                // Apply transform annotation
                 Transform transform = method.getAnnotation(Transform.class);
                 if (transform != null) {
                     methodName = transform.value();
-                }
-
-                // Check if we catch a method name like a predefined method
-                if (predefinedMethodRegistry.isPredefinedMethod(methodName)) {
-                    continue;
                 }
 
                 // Parse the MethodOperator by the methodName
@@ -324,7 +325,7 @@ public class MongoManager {
                         }
                         loweredStrip = loweredStrip.replaceFirst(loweredFieldName, "");
                         entityField = field;
-                        bsonFilterKey = FieldUtils.parseBsonName(field);
+                        bsonFilterKey = ParseUtils.parseBsonName(field);
                         break;
                     }
 

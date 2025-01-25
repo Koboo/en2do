@@ -53,12 +53,4 @@ public class FieldUtils {
         }
         return null;
     }
-
-    public String parseBsonName(Field field) {
-        TransformField transformField = field.getAnnotation(TransformField.class);
-        if (transformField != null && !transformField.value().trim().equalsIgnoreCase("")) {
-            return transformField.value();
-        }
-        return field.getName();
-    }
 }

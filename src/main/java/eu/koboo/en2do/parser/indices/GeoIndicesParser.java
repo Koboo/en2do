@@ -4,6 +4,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.geojson.Geometry;
 import eu.koboo.en2do.repository.entity.compound.GeoIndex;
+import eu.koboo.en2do.utility.parse.ParseUtils;
 import eu.koboo.en2do.utility.reflection.FieldUtils;
 import org.bson.conversions.Bson;
 
@@ -31,7 +32,7 @@ public class GeoIndicesParser implements IndicesParser {
             if (geoIndex == null) {
                 continue;
             }
-            String fieldName = FieldUtils.parseBsonName(field);
+            String fieldName = ParseUtils.parseBsonName(field);
             Bson indexBson;
             if (geoIndex.sphere()) {
                 indexBson = Indexes.geo2dsphere(fieldName);

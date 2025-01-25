@@ -6,12 +6,14 @@ import eu.koboo.en2do.mongodb.exception.repository.RepositoryInvalidNameExceptio
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameNotFoundException;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.Repository;
+import eu.koboo.en2do.repository.entity.TransformField;
 import eu.koboo.en2do.repository.methods.transform.EmbeddedField;
 import eu.koboo.en2do.utility.Tuple;
 import eu.koboo.en2do.utility.reflection.PrimitiveUtils;
 import lombok.experimental.UtilityClass;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -172,6 +174,14 @@ public class ParseUtils {
             return futureGenericType;
         }
         return (ParameterizedType) innerFutureType;
+    }
+
+    public String parseBsonName(Field field) {
+        TransformField transformField = field.getAnnotation(TransformField.class);
+        if (transformField != null && !transformField.value().trim().equalsIgnoreCase("")) {
+            return transformField.value();
+        }
+        return field.getName();
     }
 
     public Set<EmbeddedField> getEmbeddedFieldsSet(Method method) {

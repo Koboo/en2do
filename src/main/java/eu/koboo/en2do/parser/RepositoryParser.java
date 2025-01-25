@@ -8,6 +8,7 @@ import eu.koboo.en2do.parser.indices.IndicesParser;
 import eu.koboo.en2do.parser.indices.TimeToLiveIndicesParser;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.entity.Id;
+import eu.koboo.en2do.utility.parse.ParseUtils;
 import eu.koboo.en2do.utility.reflection.FieldUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -92,7 +93,7 @@ public class RepositoryParser {
         List<String> fieldBsonList = new LinkedList<>();
         Map<String, Field> unsortedFieldMap = new HashMap<>();
         for (Field field : entityFieldSet) {
-            String bsonName = FieldUtils.parseBsonName(field);
+            String bsonName = ParseUtils.parseBsonName(field);
             fieldBsonList.add(bsonName);
             unsortedFieldMap.put(bsonName, field);
         }
