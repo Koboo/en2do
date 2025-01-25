@@ -1,6 +1,6 @@
 package eu.koboo.en2do.test.utilstest;
 
-import eu.koboo.en2do.utility.PrimitiveUtils;
+import eu.koboo.en2do.utility.reflection.PrimitiveUtils;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

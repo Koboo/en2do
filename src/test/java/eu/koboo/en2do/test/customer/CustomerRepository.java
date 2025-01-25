@@ -2,19 +2,17 @@ package eu.koboo.en2do.test.customer;
 
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.Repository;
-import eu.koboo.en2do.repository.methods.async.Async;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Limit;
 import eu.koboo.en2do.repository.methods.sort.Skip;
 import eu.koboo.en2do.repository.methods.sort.Sort;
 import eu.koboo.en2do.repository.methods.sort.SortBy;
-import eu.koboo.en2do.repository.methods.transform.NestedField;
+import eu.koboo.en2do.repository.methods.transform.EmbeddedField;
 import eu.koboo.en2do.repository.methods.transform.Transform;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
 @Collection("customer_repository")
@@ -98,7 +96,7 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
 
     Customer findFirstByTransformedFieldName(String status);
 
-    @NestedField(key = "KeyToIdentify", query = "order.orderText")
+    @EmbeddedField(key = "KeyToIdentify", query = "order.orderText")
     Customer findFirstByUniqueIdAndKeyToIdentify(UUID uniqueId, String orderText);
 
     Customer findFirstByFirstNameIsNull();
