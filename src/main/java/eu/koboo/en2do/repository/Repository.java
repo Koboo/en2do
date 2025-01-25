@@ -165,15 +165,6 @@ public interface Repository<E, ID> {
     boolean saveAll(Collection<E> entityList);
 
     /**
-     * Inserts all entities of the given List to the database.
-     * (Faster than saveAll)
-     *
-     * @param entityList A List of the entities, which should be saved
-     * @return true, if the entities were successfully saved.
-     */
-    boolean insertAll(List<E> entityList);
-
-    /**
      * This method applies the Sort object of all entities of the repository.
      *
      * @param sort The Sort object, which should be used to sort all entities.
