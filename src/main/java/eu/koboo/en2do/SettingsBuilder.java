@@ -1,6 +1,7 @@
 package eu.koboo.en2do;
 
 import com.mongodb.ServerApi;
+import eu.koboo.en2do.repository.NameConvention;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
@@ -8,8 +9,8 @@ import lombok.experimental.FieldDefaults;
 import java.util.logging.Level;
 
 @SuppressWarnings("unused")
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class SettingsBuilder {
 
     /**
@@ -20,28 +21,28 @@ public class SettingsBuilder {
      * If you want to customize logging even more, look into the mongodb logging documentation:
      * <a href="https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/logging/">Click here</a>
      */
-    Level mongoLoggerLevel;
+    Level mongoLoggerLevel = null;
 
     /**
      * Disables the usage of uuids as keys in Map fields.
      * MongoDB by default does not allow this, but it should be
      * pretty helpful.
      */
-    boolean disallowUUIDKeys;
+    boolean disallowUUIDKeys = false;
 
     /**
      * Allows the usage of disk storage for find iterables.
      * This is needed if the size of your results are too large
      * for your ram.
      */
-    boolean allowDiskUse;
+    boolean allowDiskUse = true;
 
     /**
      * Sets the name of the method from the repository into the
      * mongodb bson construct and can then be seen in the mongodb database logs,
      * through tools like MongoDB Compass or MongoDB Atlas.
      */
-    boolean appendMethodAsComment;
+    boolean appendMethodAsComment = false;
 
     /**
      * This setting enables the conversion and usage of getter/setter methods
@@ -50,17 +51,24 @@ public class SettingsBuilder {
      * of the field "valid", mongodb would still save it as "valid: {value_of_method}".
      * To avoid this, the getter/setter mapping is disabled by default.
      */
-    boolean enableMethodProperties;
+    boolean enableMethodProperties = false;
 
     /**
      * Defines the prefix of every collection
      */
-    String collectionPrefix;
+    String collectionPrefix = null;
 
     /**
      * Defines the suffix of every collection
      */
-    String collectionSuffix;
+    String collectionSuffix = null;
+
+    /**
+     * Enables the automatic generation of collection
+     * names, based on the Repository class name and the given convention.
+     * The repositories still need @Collection, but you can leave it empty.
+     */
+    NameConvention collectionNameConvention = null;
 
     /**
      * Defines the wanted ServerApi of the mongodb server.
@@ -68,7 +76,7 @@ public class SettingsBuilder {
      * mongodb driver itself.
      * See here: <a href="https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/stable-api">...</a>
      */
-    ServerApi serverApi;
+    ServerApi serverApi = null;
 
     /**
      * See field documentation.
@@ -149,6 +157,16 @@ public class SettingsBuilder {
      */
     public SettingsBuilder collectionSuffix(String suffix) {
         this.collectionSuffix = suffix;
+        return this;
+    }
+
+    /**
+     * See field documentation.
+
+     * @return This builder
+     */
+    public SettingsBuilder collectionNameGeneration(NameConvention convention) {
+        this.collectionNameConvention = convention;
         return this;
     }
 

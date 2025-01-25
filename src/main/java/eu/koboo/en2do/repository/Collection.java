@@ -16,5 +16,5 @@ public @interface Collection {
     /**
      * @return The collection name in the mongodb.
      */
-    String value();
+    String value() default "";
 }

@@ -2,9 +2,11 @@ package eu.koboo.en2do.utility.parse;
 
 import com.mongodb.ConnectionString;
 import eu.koboo.en2do.SettingsBuilder;
-import eu.koboo.en2do.mongodb.exception.repository.RepositoryInvalidNameException;
+import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameEmptyException;
+import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameInvalidException;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameNotFoundException;
 import eu.koboo.en2do.repository.Collection;
+import eu.koboo.en2do.repository.NameConvention;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.entity.TransformField;
 import eu.koboo.en2do.repository.methods.transform.EmbeddedField;
@@ -117,36 +119,47 @@ public class ParseUtils {
         return null;
     }
 
-    public String parseCollectionName(SettingsBuilder settingsBuilder,
-                                      Class<?> repositoryClass, Class<?> entityClass) throws Exception {
-
+    private String parseBaseCollectionName(SettingsBuilder settingsBuilder,
+                                 Class<?> repositoryClass, Class<?> entityClass) throws Exception {
         // Parse annotated collection name and create pojo-related mongo collection
         Collection collectionAnnotation = findCollectionAnnotation(repositoryClass, entityClass);
         if (collectionAnnotation == null) {
             throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
         }
 
+        NameConvention convention = settingsBuilder.getCollectionNameConvention();
+        if(convention != null) {
+            return convention.generate(repositoryClass);
+        }
+
         // Check if the collection name is valid and for duplication issues
         String entityCollectionName = collectionAnnotation.value();
         if (entityCollectionName.trim().equalsIgnoreCase("")) {
-            throw new RepositoryInvalidNameException(repositoryClass, Collection.class, entityCollectionName);
+            throw new RepositoryNameEmptyException(repositoryClass, entityCollectionName);
         }
+        return entityCollectionName;
+    }
+
+    public String parseCollectionName(SettingsBuilder settingsBuilder,
+                                      Class<?> repositoryClass, Class<?> entityClass) throws Exception {
+        String collectionBaseName = parseBaseCollectionName(settingsBuilder, repositoryClass, entityClass);
 
         String collectionPrefix = settingsBuilder.getCollectionPrefix();
         if (collectionPrefix != null) {
-            entityCollectionName = collectionPrefix + entityCollectionName;
+            collectionBaseName = collectionPrefix + collectionBaseName;
         }
 
         String collectionSuffix = settingsBuilder.getCollectionSuffix();
         if (collectionSuffix != null) {
-            entityCollectionName = entityCollectionName + collectionSuffix;
+            collectionBaseName = collectionBaseName + collectionSuffix;
         }
 
-        if (!COLLECTION_REGEX_NAME.matcher(entityCollectionName).matches()) {
-            throw new RepositoryInvalidNameException(repositoryClass, Collection.class, entityCollectionName);
+        if (!COLLECTION_REGEX_NAME.matcher(collectionBaseName).matches()) {
+            throw new RepositoryNameInvalidException(repositoryClass,
+                COLLECTION_REGEX_NAME.pattern(), collectionBaseName);
         }
 
-        return entityCollectionName;
+        return collectionBaseName;
     }
 
     public Class<?> parseValidatableReturnType(Method method) {
