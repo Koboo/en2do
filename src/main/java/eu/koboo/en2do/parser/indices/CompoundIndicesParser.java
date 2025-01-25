@@ -6,7 +6,7 @@ import com.mongodb.client.model.Indexes;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryIndexFieldNotFoundException;
 import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
 import eu.koboo.en2do.repository.entity.compound.Index;
-import eu.koboo.en2do.utility.AnnotationUtils;
+import eu.koboo.en2do.utility.reflection.AnnotationUtils;
 import org.bson.conversions.Bson;
 
 import java.lang.reflect.Field;

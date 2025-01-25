@@ -9,9 +9,9 @@ import eu.koboo.en2do.mongodb.exception.methods.MethodUnsupportedException;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryInvalidCallException;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
 import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
+import eu.koboo.en2do.mongodb.methods.predefined.PredefinedMethodRegistry;
 import eu.koboo.en2do.operators.AmountType;
 import eu.koboo.en2do.repository.Repository;
-import eu.koboo.en2do.repository.methods.async.Async;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.transform.Transform;
 import lombok.AccessLevel;
@@ -22,7 +22,6 @@ import org.bson.conversions.Bson;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
@@ -32,7 +31,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
 
     RepositoryData<E, ID, R> repositoryData;
     ExecutorService executorService;
-    Map<String, GlobalPredefinedMethod> predefinedMethodRegistry;
+    PredefinedMethodRegistry methodRegistry;
 
     @Override
     @SuppressWarnings("all")
@@ -47,24 +46,10 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         String methodName = tempMethodName;
 
         // Get and check if a static handler for the methodName is available.
-        GlobalPredefinedMethod methodHandler = predefinedMethodRegistry.get(methodName);
+        GlobalPredefinedMethod methodHandler = methodRegistry.getPredefinedMethod(methodName);
         if (methodHandler != null) {
             // Just handle the arguments and return the object
             return methodHandler.handle(repositoryData, method, arguments);
-        }
-
-        // Check for predefined method with async prefix.
-        boolean isAsyncMethod = method.isAnnotationPresent(Async.class);
-        if (transform == null && isAsyncMethod) {
-            String predefinedName = repositoryData.stripAsyncName(methodName);
-            methodHandler = predefinedMethodRegistry.get(predefinedName);
-            if (methodHandler != null) {
-                // Just handle the arguments and return the object
-                CompletableFuture<Object> future = new CompletableFuture<>();
-                GlobalPredefinedMethod finalMethodHandler = methodHandler;
-                executeFuture(future, () -> finalMethodHandler.handle(repositoryData, method, arguments));
-                return future;
-            }
         }
 
         // No predefined handler found, checking for dynamic methods
@@ -76,8 +61,9 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             throw new MethodUnsupportedException(method, repositoryData.getRepositoryClass());
         }
 
+
         MethodCallable methodCallable = () -> executeMethod(dynamicMethod, arguments, method, methodName);
-        if (isAsyncMethod) {
+        if (CompletableFuture.class.isAssignableFrom(method.getReturnType())) {
             CompletableFuture<Object> future = new CompletableFuture<>();
             executeFuture(future, methodCallable);
             return future;

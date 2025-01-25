@@ -5,8 +5,7 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryTTLFieldNotFoundException;
 import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
-import eu.koboo.en2do.utility.AnnotationUtils;
-import eu.koboo.en2do.utility.GenericUtils;
+import eu.koboo.en2do.utility.reflection.AnnotationUtils;
 
 import java.lang.reflect.Field;
 import java.util.Date;
@@ -26,7 +25,7 @@ public class TimeToLiveIndicesParser implements IndicesParser {
                 if (!entityField.getName().equalsIgnoreCase(ttlField)) {
                     continue;
                 }
-                if (GenericUtils.isNotTypeOf(entityField.getType(), Date.class)) {
+                if (!Date.class.isAssignableFrom(entityField.getType())) {
                     continue;
                 }
                 foundTTLField = true;

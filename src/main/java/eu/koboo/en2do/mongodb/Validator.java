@@ -7,13 +7,12 @@ import eu.koboo.en2do.mongodb.exception.methods.MethodMismatchingTypeException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodParameterNotFoundException;
 import eu.koboo.en2do.mongodb.exception.repository.*;
 import eu.koboo.en2do.operators.FilterOperator;
-import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.entity.TransformField;
 import eu.koboo.en2do.repository.entity.Transient;
 import eu.koboo.en2do.repository.methods.geo.Geo;
-import eu.koboo.en2do.utility.FieldUtils;
-import eu.koboo.en2do.utility.GenericUtils;
+import eu.koboo.en2do.utility.reflection.FieldUtils;
+import eu.koboo.en2do.utility.reflection.PrimitiveUtils;
 import lombok.experimental.UtilityClass;
 import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -23,10 +22,7 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.*;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -210,6 +206,7 @@ public class Validator {
                               int currentParameterIndex) throws Exception {
         int operatorParameterCount = filterOperator.getExpectedParameterCount();
         Class<?> fieldClass = field.getType();
+        fieldClass = PrimitiveUtils.wrapperOf(fieldClass);
         for (int i = 0; i < filterOperator.getExpectedParameterCount(); i++) {
             int paramIndex = currentParameterIndex + i;
             Class<?> paramClass = method.getParameters()[paramIndex].getType();
@@ -218,45 +215,51 @@ public class Validator {
                     (paramIndex + operatorParameterCount),
                     method.getParameterCount());
             }
+            paramClass = PrimitiveUtils.wrapperOf(paramClass);
 
             // Special checks for some operators
             switch (filterOperator) {
                 case REGEX:
                     // Regex filter allows two types as parameters.
-                    if (GenericUtils.isNotTypeOf(String.class, paramClass) && GenericUtils.isNotTypeOf(Pattern.class, paramClass)) {
+                    if (!String.class.isAssignableFrom(paramClass) && !Pattern.class.isAssignableFrom(paramClass)) {
                         throw new MethodInvalidRegexParameterException(method, repositoryClass, paramClass);
                     }
                     break;
                 case IN:
                     if (paramClass.isArray()) {
                         Class<?> arrayType = paramClass.getComponentType();
-                        if (GenericUtils.isNotTypeOf(fieldClass, arrayType)) {
+                        if (!arrayType.isAssignableFrom(fieldClass)) {
                             throw new MethodInvalidListParameterException(method, repositoryClass, fieldClass, arrayType);
                         }
                         break;
                     }
                     // In filter only allows list. Maybe arrays in future releases.
-                    if (!GenericUtils.isNotTypeOf(java.util.Collection.class, paramClass)) {
-                        Class<?> listType = GenericUtils.getGenericTypeOfParameter(method, paramIndex);
-                        if (GenericUtils.isNotTypeOf(fieldClass, listType)) {
+                    if (Collection.class.isAssignableFrom(paramClass)) {
+                        Parameter parameter = method.getParameters()[paramIndex];
+                        Type parameterType = parameter.getParameterizedType();
+                        ParameterizedType type = (ParameterizedType) parameterType;
+                        Class<?> listType = (Class<?>) type.getActualTypeArguments()[0];
+                        if (!listType.isAssignableFrom(fieldClass)) {
                             throw new MethodInvalidListParameterException(method, repositoryClass, fieldClass, listType);
                         }
                         break;
                     }
-                    throw new MethodMismatchingTypeException(method, repositoryClass, java.util.Collection.class, paramClass);
+                    throw new MethodMismatchingTypeException(method, repositoryClass, Collection.class, paramClass);
                 case HAS_KEY:
-                    if (GenericUtils.isNotTypeOf(Map.class, fieldClass)) {
+                    if (!Map.class.isAssignableFrom(fieldClass)) {
                         throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
                     }
-                    Class<?> keyClass = (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
-                    if (GenericUtils.isNotTypeOf(keyClass, paramClass)) {
+                    ParameterizedType hasKeyParameterizedType = (ParameterizedType) field.getGenericType();
+                    Class<?> keyClass = (Class<?>) hasKeyParameterizedType.getActualTypeArguments()[0];
+                    if (!keyClass.isAssignableFrom(paramClass)) {
                         throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
                     }
                     break;
                 case HAS:
-                    if (!GenericUtils.isNotTypeOf(Collection.class, fieldClass)) {
-                        Class<?> listType = GenericUtils.getGenericTypeOfField(field, 0);
-                        if (GenericUtils.isNotTypeOf(paramClass, listType)) {
+                    if (Collection.class.isAssignableFrom(fieldClass)) {
+                        ParameterizedType hasParameterizedType = (ParameterizedType) field.getGenericType();
+                        Class<?> listType = (Class<?>) hasParameterizedType.getActualTypeArguments()[0];
+                        if (!listType.isAssignableFrom(paramClass)) {
                             throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
                         }
                     }
@@ -270,7 +273,7 @@ public class Validator {
                     }
                     break;
                 default:
-                    if (GenericUtils.isNotTypeOf(fieldClass, paramClass)) {
+                    if (!paramClass.isAssignableFrom(fieldClass)) {
                         throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
                     }
                     break;

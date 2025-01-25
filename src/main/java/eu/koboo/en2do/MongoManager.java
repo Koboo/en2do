@@ -15,12 +15,10 @@ import eu.koboo.en2do.mongodb.convention.AnnotationConvention;
 import eu.koboo.en2do.mongodb.convention.MethodMappingConvention;
 import eu.koboo.en2do.mongodb.exception.methods.*;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryIdNotFoundException;
-import eu.koboo.en2do.mongodb.exception.repository.RepositoryInvalidException;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameDuplicateException;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedFilter;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
-import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
-import eu.koboo.en2do.mongodb.methods.predefined.impl.*;
+import eu.koboo.en2do.mongodb.methods.predefined.PredefinedMethodRegistry;
 import eu.koboo.en2do.operators.AmountType;
 import eu.koboo.en2do.operators.ChainType;
 import eu.koboo.en2do.operators.FilterOperator;
@@ -29,15 +27,17 @@ import eu.koboo.en2do.parser.RepositoryParser;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.entity.Id;
-import eu.koboo.en2do.repository.methods.async.Async;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.*;
-import eu.koboo.en2do.repository.methods.transform.NestedField;
+import eu.koboo.en2do.repository.methods.transform.EmbeddedField;
 import eu.koboo.en2do.repository.methods.transform.Transform;
 import eu.koboo.en2do.repository.options.DropEntitiesOnStart;
 import eu.koboo.en2do.repository.options.DropIndexesOnStart;
 import eu.koboo.en2do.utility.*;
+import eu.koboo.en2do.utility.parse.ParseUtils;
+import eu.koboo.en2do.utility.reflection.AnnotationUtils;
+import eu.koboo.en2do.utility.reflection.FieldUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
@@ -47,14 +47,10 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.Conventions;
 import org.bson.codecs.pojo.PojoCodecProvider;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -71,7 +67,7 @@ public class MongoManager {
 
     Map<Class<?>, RepositoryData<?, ?, ?>> repositoryDataByClassMap;
     Map<Class<?>, Repository<?, ?>> repositoryByClassRegistry;
-    Map<String, GlobalPredefinedMethod> predefinedMethodRegistry;
+    PredefinedMethodRegistry predefinedMethodRegistry;
     ExecutorService executorService;
 
     InternalPropertyCodecProvider internalPropertyCodecProvider;
@@ -83,51 +79,15 @@ public class MongoManager {
     @Getter
     MongoDatabase mongoDatabase;
 
-    public MongoManager(Credentials credentials, ExecutorService executorService, SettingsBuilder settingsBuilder) {
-        if (settingsBuilder == null) {
-            settingsBuilder = new SettingsBuilder();
-        }
-        this.settingsBuilder = settingsBuilder;
+    public MongoManager(String connectString, ExecutorService executorService, SettingsBuilder builder) {
+        this.settingsBuilder = ParseUtils.parseSettingsBuilder(builder);
         applyLoggerLevel();
 
         this.parser = new RepositoryParser(settingsBuilder);
         this.repositoryDataByClassMap = new ConcurrentHashMap<>();
         this.repositoryByClassRegistry = new ConcurrentHashMap<>();
-        this.predefinedMethodRegistry = new LinkedHashMap<>();
-        if (executorService == null) {
-            executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
-        }
-        this.executorService = executorService;
-
-        // If no credentials given, try loading them from the default sources,
-        // like resource files, system properties of environment variables.
-        // See Credentials for information about the keys of the properties.
-        // They can differ in every source location.
-        if (credentials == null) {
-            credentials = Credentials.fromFile();
-        }
-        if (credentials == null) {
-            credentials = Credentials.fromResource();
-        }
-        if (credentials == null) {
-            credentials = Credentials.fromSystemProperties();
-        }
-        if (credentials.getConnectString() == null || credentials.getDatabase() == null) {
-            credentials = Credentials.fromSystemEnvVars();
-        }
-
-        String connectString = credentials.getConnectString();
-        if (connectString == null) {
-            throw new NullPointerException("No connectString given! Please make sure to provide a " +
-                "accessible connectString.");
-        }
-        String databaseString = credentials.getDatabase();
-        if (databaseString == null) {
-            throw new NullPointerException("No databaseString given! Please make sure to provide a " +
-                "accessible databaseString.");
-        }
-
-        ConnectionString connection = new ConnectionString(connectString);
+        this.predefinedMethodRegistry = new PredefinedMethodRegistry();
+        this.executorService = ParseUtils.parseExecutorService(executorService);
 
         internalPropertyCodecProvider = new InternalPropertyCodecProvider(this);
 
@@ -145,35 +105,39 @@ public class MongoManager {
                 .build())
         );
 
-        MongoClientSettings.Builder clientBuilder = MongoClientSettings.builder()
+        ConnectionString connectionString = ParseUtils.parseConnectionString(connectString);
+        String database = connectionString.getDatabase();
+        if (database == null || database.isEmpty()) {
+            throw new NullPointerException("database is null or empty in your connection string!");
+        }
+
+        MongoClientSettings.Builder clientSettingsBuilder = MongoClientSettings.builder()
             .applicationName("en2do-client")
-            .applyConnectionString(connection)
+            .applyConnectionString(connectionString)
             .uuidRepresentation(UuidRepresentation.STANDARD)
             .codecRegistry(codecRegistry);
 
         ServerApi serverApi = settingsBuilder.getServerApi();
         if (serverApi != null) {
-            clientBuilder.serverApi(serverApi);
+            clientSettingsBuilder.serverApi(serverApi);
         }
 
-        MongoClientSettings clientSettings = clientBuilder.build();
+        MongoClientSettings clientSettings = clientSettingsBuilder.build();
 
         mongoClient = MongoClients.create(clientSettings);
-        mongoDatabase = mongoClient.getDatabase(databaseString);
-
-        registerPredefinedMethods();
+        mongoDatabase = mongoClient.getDatabase(database);
     }
 
-    public MongoManager(Credentials credentials, SettingsBuilder settingsBuilder) {
-        this(credentials, null, settingsBuilder);
+    public MongoManager(String connectString, SettingsBuilder settingsBuilder) {
+        this(connectString, null, settingsBuilder);
     }
 
     public MongoManager(SettingsBuilder settingsBuilder) {
         this(null, null, settingsBuilder);
     }
 
-    public MongoManager(Credentials credentials) {
-        this(credentials, null, null);
+    public MongoManager(String connectString) {
+        this(connectString, null, null);
     }
 
     public MongoManager() {
@@ -205,46 +169,6 @@ public class MongoManager {
         }
     }
 
-    private void registerPredefinedMethod(GlobalPredefinedMethod predefinedMethod) {
-        String methodName = predefinedMethod.getMethodName();
-        if (predefinedMethodRegistry.containsKey(methodName)) {
-            throw new RuntimeException("Already registered method with name \"" + methodName + "\".");
-        }
-        predefinedMethodRegistry.put(methodName, predefinedMethod);
-    }
-
-    private void registerPredefinedMethods() {
-        // Register the default predefined methods, which can get executed
-        // on every created repository.
-        registerPredefinedMethod(new MethodCountAll());
-        registerPredefinedMethod(new MethodDelete());
-        registerPredefinedMethod(new MethodDeleteAll());
-        registerPredefinedMethod(new MethodDeleteById());
-        registerPredefinedMethod(new MethodDeleteMany());
-        registerPredefinedMethod(new MethodDeleteManyById());
-        registerPredefinedMethod(new MethodDrop());
-        registerPredefinedMethod(new MethodEquals());
-        registerPredefinedMethod(new MethodExists());
-        registerPredefinedMethod(new MethodExistsById());
-        registerPredefinedMethod(new MethodFindAll());
-        registerPredefinedMethod(new MethodFindFirstById());
-        registerPredefinedMethod(new MethodGetClass());
-        registerPredefinedMethod(new MethodGetCollectionName());
-        registerPredefinedMethod(new MethodGetEntityClass());
-        registerPredefinedMethod(new MethodGetEntityUniqueIdClass());
-        registerPredefinedMethod(new MethodGetNativeCollection());
-        registerPredefinedMethod(new MethodGetUniqueId());
-        registerPredefinedMethod(new MethodHashCode());
-        registerPredefinedMethod(new MethodInsertAll());
-        registerPredefinedMethod(new MethodPageAll());
-        registerPredefinedMethod(new MethodSave());
-        registerPredefinedMethod(new MethodSaveAll());
-        registerPredefinedMethod(new MethodSetUniqueId());
-        registerPredefinedMethod(new MethodSortAll());
-        registerPredefinedMethod(new MethodToString());
-        registerPredefinedMethod(new MethodUpdateAllFields());
-    }
-
     @SuppressWarnings("unchecked")
     public <E, ID, R extends Repository<E, ID>> R create(Class<R> repositoryClass) {
         try {
@@ -254,19 +178,16 @@ public class MongoManager {
                 return (R) repositoryByClassRegistry.get(repositoryClass);
             }
 
-            if (!Repository.class.isAssignableFrom(repositoryClass)) {
-                throw new RepositoryInvalidException(repositoryClass);
-            }
-
-            Tuple<Class<?>, Class<?>> genericTypeTuple = parser.parseGenericTypes(repositoryClass, Repository.class);
-            Class<E> entityClass = (Class<E>) genericTypeTuple.getFirst();
-            Class<ID> entityIdClass = (Class<ID>) genericTypeTuple.getSecond();
-
-            // Check if repository and async repository use the same entity and id types.
-            parser.validateRepositoryTypes(repositoryClass, genericTypeTuple);
+            Tuple<Class<?>, Class<?>> typeTuple = ParseUtils.parseGenericTypes(repositoryClass);
+            Class<E> entityClass = (Class<E>) typeTuple.getFirst();
+            Class<ID> entityIdClass = (Class<ID>) typeTuple.getSecond();
 
             // Check if the collection name is valid
-            String entityCollectionName = parser.parseCollectionName(repositoryClass, entityClass);
+            String entityCollectionName = ParseUtils.parseCollectionName(
+                settingsBuilder,
+                repositoryClass,
+                entityClass
+            );
 
             // Check if we already got a repository with that name.
             for (RepositoryData<?, ?, ?> meta : repositoryDataByClassMap.values()) {
@@ -300,49 +221,21 @@ public class MongoManager {
 
             // Iterate through the repository methods
             for (Method method : repositoryClass.getMethods()) {
-                String originalMethodName = method.getName();
 
                 // Apply transform annotation
-                String methodName = originalMethodName;
+                String methodName = method.getName();
                 Transform transform = method.getAnnotation(Transform.class);
                 if (transform != null) {
                     methodName = transform.value();
                 }
 
-                // Check if we catch a predefined method
-                if (predefinedMethodRegistry.containsKey(methodName)) {
-                    continue;
-                }
-
-                // Method was override and transformed. Nice try my friend ;)
-                if (method.isAnnotationPresent(Override.class)
-                    && predefinedMethodRegistry.containsKey(originalMethodName)) {
+                // Check if we catch a method name like a predefined method
+                if (predefinedMethodRegistry.isPredefinedMethod(methodName)) {
                     continue;
                 }
 
                 // Get the default return type of the method
                 Class<?> returnType = method.getReturnType();
-
-                // Check if the method is async and if so,
-                // validate that the return types is a completable future.
-                boolean isAsyncMethod = method.isAnnotationPresent(Async.class);
-                if (isAsyncMethod) {
-                    // Check async method name and if the user tries to
-                    // "fake" one of our predefined methods.
-                    if (methodName.startsWith("async")) {
-                        String predefinedName = repositoryData.stripAsyncName(methodName);
-                        if (predefinedMethodRegistry.containsKey(predefinedName)) {
-                            continue;
-                        }
-                        throw new MethodInvalidAsyncNameException(method, repositoryClass);
-                    }
-                    // Check CompletableFuture return type of async repository methods.
-                    if (GenericUtils.isNotTypeOf(returnType, CompletableFuture.class)) {
-                        throw new MethodInvalidAsyncReturnException(method, repositoryClass);
-                    }
-                    returnType = GenericUtils.getGenericTypeOfReturnType(method);
-                }
-
 
                 // Parse the MethodOperator by the methodName
                 MethodOperator methodOperator = MethodOperator.parseMethodStartsWith(methodName);
@@ -350,16 +243,13 @@ public class MongoManager {
                     throw new MethodNoMethodOperatorException(method, repositoryClass);
                 }
 
-                // Check the returnTypes by using the predefined validator.
-                methodOperator.validate(method, returnType, entityClass, repositoryClass);
+                // Validate the return types of the given method operator.
+                methodOperator.validateReturnType(method, returnType, entityClass, repositoryClass);
 
-                // Remove the leading methodOperator to ensure it doesn't trick the validation
+                // Remove the already parsed and validated methodOperator
                 String strippedMethodName = methodOperator.removeOperatorFrom(methodName);
 
-                // Parse the defined entity count, by checking for the keywords
-                // "Top" - The first X entities
-                // "Many" - All entities
-                // "First" - Only the first entity
+                // Parse the defined entity count, by parsing the type using keywords
                 AmountType amountType = AmountType.parseTypeByStringStartsWith(strippedMethodName);
                 long entityAmount = -1;
                 if (amountType != null) {
@@ -383,30 +273,32 @@ public class MongoManager {
                     }
                 }
 
-                // Remove the string "By" from the method name.
+                // Remove the keyword "By" from the method name.
                 strippedMethodName = strippedMethodName.replaceFirst("By", "");
 
-                // Parse, validate and handle the method name and "compile" it
-                // so en2do can use the extracted information for the internal usage.
-                Set<NestedField> nestedFieldSet = AnnotationUtils.getNestedKeySet(method);
+                // Parse, validate and handle the method name and "compile"/index it
+                // so en2do can use the extracted information for the internal building of bson filters.
+                Set<EmbeddedField> embeddedFieldSet = AnnotationUtils.getEmbeddedFieldsSet(method);
 
                 // Counts for further validation
                 int expectedParameterCount = 0;
                 int nextParameterIndex = 0;
                 int itemCount = 0;
 
-                // The list of the filters of this method.
+                // The list of all filters from the given method.
                 List<IndexedFilter> indexedFilterList = new LinkedList<>();
 
-                // The previous method name, but stripped by the method operator.
-                // So only the filters are left and lower cased.
+                // This String represents only the filters and their respective chains.
+                // The method operator, "by" keyword and amount types are already stripped.
                 String loweredStrip = strippedMethodName.toLowerCase(Locale.ROOT);
 
                 // Chain represents either AND or OR for all filters.
                 ChainType chainType = null;
 
-                // We are using a while loop. Just to ensure we are not doing
-                // infinite loops, we also track the execution entityAmount using the safeBreakAmount.
+                // We are using a while loop here, until we don't any filters left.
+                // Just to ensure we are not doing infinite loops, we use a specified safeBreakAmount.
+                // This also means you can't have more than
+                // 200 filters in a single method, which I think is more than enough.
                 int safeBreakAmount = 200;
                 while (!loweredStrip.equalsIgnoreCase("") && safeBreakAmount > 0) {
                     // Add safe break to avoid infinite loops
@@ -414,13 +306,13 @@ public class MongoManager {
 
                     String bsonFilterKey = null;
                     // Check if we can find any nested fields
-                    for (NestedField nestedField : nestedFieldSet) {
-                        String loweredKey = nestedField.key().toLowerCase(Locale.ROOT);
+                    for (EmbeddedField embeddedField : embeddedFieldSet) {
+                        String loweredKey = embeddedField.key().toLowerCase(Locale.ROOT);
                         if (!loweredStrip.startsWith(loweredKey)) {
                             continue;
                         }
                         loweredStrip = loweredStrip.replaceFirst(loweredKey, "");
-                        bsonFilterKey = nestedField.query();
+                        bsonFilterKey = embeddedField.query();
                         break;
                     }
 
@@ -438,7 +330,7 @@ public class MongoManager {
                         break;
                     }
 
-                    // Check if we found any field.
+                    // Check if we found any key to filter with in bson.
                     if (bsonFilterKey == null) {
                         throw new MethodFieldNotFoundException(strippedMethodName, method, entityClass, repositoryClass);
                     }

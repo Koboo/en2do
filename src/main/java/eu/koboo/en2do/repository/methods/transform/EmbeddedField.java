@@ -4,8 +4,8 @@ import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-@Repeatable(NestedField.NestedKeyArray.class)
-public @interface NestedField {
+@Repeatable(EmbeddedField.EmbeddedKeyArray.class)
+public @interface EmbeddedField {
 
     String key();
 
@@ -13,8 +13,8 @@ public @interface NestedField {
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
-    @interface NestedKeyArray {
+    @interface EmbeddedKeyArray {
 
-        NestedField[] value();
+        EmbeddedField[] value();
     }
 }

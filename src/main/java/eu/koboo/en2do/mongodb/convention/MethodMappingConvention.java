@@ -2,7 +2,7 @@ package eu.koboo.en2do.mongodb.convention;
 
 import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.parser.RepositoryParser;
-import eu.koboo.en2do.utility.FieldUtils;
+import eu.koboo.en2do.utility.reflection.FieldUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

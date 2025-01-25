@@ -1,14 +1,9 @@
-package eu.koboo.en2do;
+package eu.koboo.en2do.utility.parse;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import eu.koboo.en2do.MongoManager;
+import lombok.experimental.UtilityClass;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.util.Locale;
 import java.util.Properties;
@@ -18,20 +13,13 @@ import java.util.Properties;
  * See documentation: <a href="https://koboo.gitbook.io/en2do/get-started/create-the-mongomanager">...</a>
  */
 @SuppressWarnings("unused")
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Getter
-public class Credentials {
+@UtilityClass
+public class ConnectionStringUtils {
 
     /**
      * The default key of the connection string.
      */
-    private static final String CONNECT_KEY = "en2do.connectstring";
-
-    /**
-     * The default key of the database.
-     */
-    private static final String DATABASE_KEY = "en2do.database";
+    private static final String KEY = "en2do.connectstring";
 
     /**
      * The default name of the credentials file.
@@ -44,25 +32,14 @@ public class Credentials {
      * @param inputStream The input stream, which should be read.
      * @return The new created credentials object.
      */
-    private static Credentials fromStreamProperties(InputStream inputStream) {
+    private static String fromStreamProperties(InputStream inputStream) {
         try {
             Properties properties = new Properties();
             properties.load(inputStream);
-            return new Credentials(properties.getProperty(CONNECT_KEY), properties.getProperty(DATABASE_KEY));
+            return properties.getProperty(KEY);
         } catch (IOException e) {
             throw new RuntimeException("Error while loading credentials");
         }
-    }
-
-    /**
-     * Converts the given string to the respective environment variable key,
-     * by using upper-case and replacing dots with underscore.
-     *
-     * @param string the string, which should be converted
-     * @return the converted string.
-     */
-    private static String convertToEnvVarKey(String string) {
-        return string.toUpperCase(Locale.ROOT).replaceFirst("\\.", "_");
     }
 
     /**
@@ -71,7 +48,7 @@ public class Credentials {
      *
      * @return The new created credentials object.
      */
-    public static Credentials fromResource() {
+    public String fromResource() {
         return fromResource("/" + DEFAULT_CREDENTIALS_FILE_NAME);
     }
 
@@ -81,7 +58,7 @@ public class Credentials {
      * @param resourcePath The resource path with the containing credentials.
      * @return The new created credentials object.
      */
-    public static Credentials fromResource(String resourcePath) {
+    public String fromResource(String resourcePath) {
         if (resourcePath == null) {
             throw new RuntimeException("Couldn't read resource from null path!");
         }
@@ -106,7 +83,7 @@ public class Credentials {
      *
      * @return The new created credentials object.
      */
-    public static Credentials fromFile() {
+    public String fromFile() {
         return fromFile(DEFAULT_CREDENTIALS_FILE_NAME);
     }
 
@@ -116,7 +93,7 @@ public class Credentials {
      * @param file The file with the containing credentials.
      * @return The new created credentials object.
      */
-    public static Credentials fromFile(File file) {
+    public String fromFile(File file) {
         if (!file.exists()) {
             return null;
         }
@@ -133,7 +110,7 @@ public class Credentials {
      * @param filePath The file path with the containing credentials.
      * @return The new created credentials object.
      */
-    public static Credentials fromFile(String filePath) {
+    public String fromFile(String filePath) {
         if (filePath == null) {
             throw new RuntimeException("Couldn't read file from null path!");
         }
@@ -153,20 +130,19 @@ public class Credentials {
      *
      * @return The new created credentials object.
      */
-    public static Credentials fromSystemProperties() {
-        return fromSystemProperties(CONNECT_KEY, DATABASE_KEY);
+    public String fromSystemProperties() {
+        return fromSystemProperties(KEY);
     }
 
     /**
      * Automatically reading credentials from the system properties,
      * using custom keys for the connectString and database
      *
-     * @param propertyConnectKey  The property key for the connection string
-     * @param propertyDatabaseKey The property key for the database
+     * @param propertyKey  The property key for the connection string
      * @return The new created credentials object.
      */
-    public static Credentials fromSystemProperties(String propertyConnectKey, String propertyDatabaseKey) {
-        return new Credentials(System.getProperty(propertyConnectKey), System.getProperty(propertyDatabaseKey));
+    public String fromSystemProperties(String propertyKey) {
+        return System.getProperty(propertyKey);
     }
 
     /**
@@ -174,39 +150,19 @@ public class Credentials {
      *
      * @return The new created credentials object.
      */
-    public static Credentials fromSystemEnvVars() {
-        return fromSystemEnvVars(convertToEnvVarKey(CONNECT_KEY), convertToEnvVarKey(DATABASE_KEY));
+    public String fromSystemEnvVars() {
+        String envVarKey = KEY.toUpperCase(Locale.ROOT).replaceFirst("\\.", "_");
+        return System.getenv(envVarKey);
     }
 
     /**
      * Automatically reading credentials from the system environmental variables.
      * using custom keys for the connectString and database
      *
-     * @param envVarConnectKey  The environmental variable key for the connection string
-     * @param envVarDatabaseKey The environmental variable key for the database
+     * @param envVarKey  The environmental variable key for the connection string
      * @return The new created credentials object.
      */
-    public static Credentials fromSystemEnvVars(String envVarConnectKey, String envVarDatabaseKey) {
-        return new Credentials(System.getenv(envVarConnectKey), System.getenv(envVarDatabaseKey));
+    public String fromSystemEnvVars(String envVarKey) {
+        return System.getenv(envVarKey);
     }
-
-    /**
-     * Create a new credentials object by passing the two values directly.
-     *
-     * @param connectString The connection string to the mongodb server.
-     * @param database      The database which should be used.
-     * @return A new created credentials object.
-     */
-    public static Credentials of(String connectString, String database) {
-        return new Credentials(connectString, database);
-    }
-
-    /**
-     * The connection string to the mongodb database server
-     */
-    String connectString;
-    /**
-     * The database, which should be used
-     */
-    String database;
 }

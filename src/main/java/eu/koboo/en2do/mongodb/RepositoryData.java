@@ -108,61 +108,36 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             return findIterable;
         }
         Sort sortOptions = (Sort) lastParamObject;
-        findIterable = sortDirection(findIterable, sortOptions.getFieldDirectionMap());
-
+        Map<String, Boolean> sortDirection = sortOptions.getFieldDirectionMap();
         int limit = sortOptions.getLimit();
-        if (limit != -1) {
-            if (limit < -1 || limit == 0) {
-                throw new MethodInvalidSortLimitException(method, repositoryClass);
-            }
-            findIterable = findIterable.limit(limit);
-        }
         int skip = sortOptions.getSkip();
-        if (skip != -1) {
-            if (skip < -1 || skip == 0) {
-                throw new MethodInvalidSortSkipException(method, repositoryClass);
-            }
-            findIterable = findIterable.skip(skip);
-        }
-        findIterable = findIterable.allowDiskUse(mongoManager.getSettingsBuilder().isAllowDiskUse());
-        return findIterable;
+        return sort(method, findIterable, sortDirection, limit, skip);
     }
 
     public FindIterable<E> applySortAnnotations(Method method, FindIterable<E> findIterable) throws Exception {
         SortBy[] sortAnnotations = method.getAnnotationsByType(SortBy.class);
 
         // Try to apply the sort annotations of the method
-        if (sortAnnotations.length > 0) {
-            Map<String, Boolean> fieldSortMap = new LinkedHashMap<>();
-            for (SortBy sortBy : sortAnnotations) {
-                fieldSortMap.put(sortBy.field(), sortBy.ascending());
-            }
-            findIterable = sortDirection(findIterable, fieldSortMap);
+        Map<String, Boolean> sortDirection = new LinkedHashMap<>();
+        for (SortBy sortBy : sortAnnotations) {
+            sortDirection.put(sortBy.field(), sortBy.ascending());
         }
 
         // Try to apply the limiting annotations of the method
-        if (method.isAnnotationPresent(Limit.class)) {
-            Limit limit = method.getAnnotation(Limit.class);
-            int value = limit.value();
-            if (value <= 0) {
-                throw new MethodInvalidSortLimitException(method, repositoryClass);
-            }
-            findIterable = findIterable.limit(value);
+        int limit = -1;
+        Limit limitAnnotation = method.getAnnotation(Limit.class);
+        if (limitAnnotation != null) {
+            limit = limitAnnotation.value();
         }
 
         // Try to apply the skipping annotations of the method
-        if (method.isAnnotationPresent(Skip.class)) {
-            Skip skip = method.getAnnotation(Skip.class);
-            int value = skip.value();
-            if (value <= 0) {
-                throw new MethodInvalidSortSkipException(method, repositoryClass);
-            }
-            findIterable = findIterable.skip(value);
+        int skip = -1;
+        Skip skipAnnotation = method.getAnnotation(Skip.class);
+        if (skipAnnotation != null) {
+            skip = skipAnnotation.value();
         }
 
-        // Apply the current disk usage settings on the find iterable
-        findIterable = findIterable.allowDiskUse(mongoManager.getSettingsBuilder().isAllowDiskUse());
-        return findIterable;
+        return sort(method, findIterable, sortDirection, limit, skip);
     }
 
     public FindIterable<E> applyPageObject(Method method,
@@ -185,16 +160,34 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
         }
 
         // Let's apply the sorting direction of the pagination object.
-        findIterable = sortDirection(findIterable, pagination.getPageDirectionMap());
-
+        Map<String, Boolean> sortDirectionMap = pagination.getPageDirectionMap();
         int limit = pagination.getEntitiesPerPage();
         int skip = (int) ((pagination.getPage() - 1) * limit);
 
-        findIterable = findIterable
-            .limit(limit)
-            .skip(skip)
-            .allowDiskUse(mongoManager.getSettingsBuilder().isAllowDiskUse());
-        return findIterable;
+        return sort(method, findIterable, sortDirectionMap, limit, skip);
+    }
+
+    public FindIterable<E> sort(Method method, FindIterable<E> findIterable,
+                                Map<String, Boolean> sortDirection, int limit, int skip) throws Exception {
+        if(sortDirection != null && sortDirection.isEmpty()) {
+            findIterable = sortDirection(findIterable, sortDirection);
+        }
+
+        if(skip != -1) {
+            if(skip <= 0) {
+                throw new MethodInvalidSortSkipException(method, repositoryClass);
+            }
+            findIterable = findIterable.skip(skip);
+        }
+
+        if(limit != -1) {
+            if (limit <= 0) {
+                throw new MethodInvalidSortLimitException(method, repositoryClass);
+            }
+            findIterable = findIterable.limit(limit);
+        }
+
+        return findIterable.allowDiskUse(mongoManager.getSettingsBuilder().isAllowDiskUse());
     }
 
     private FindIterable<E> sortDirection(FindIterable<E> findIterable, Map<String, Boolean> fieldSortMap) {
@@ -215,11 +208,6 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             findIterable = findIterable.sort(new BasicDBObject(sortKey, direction));
         }
         return findIterable;
-    }
-
-    public String stripAsyncName(String asyncName) {
-        String predefinedName = asyncName.replaceFirst("async", "");
-        return predefinedName.substring(0, 1).toLowerCase(Locale.ROOT) + predefinedName.substring(1);
     }
 
     public Object getFilterableValue(Object object) {

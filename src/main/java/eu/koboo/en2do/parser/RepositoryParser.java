@@ -7,12 +7,9 @@ import eu.koboo.en2do.parser.indices.CompoundIndicesParser;
 import eu.koboo.en2do.parser.indices.GeoIndicesParser;
 import eu.koboo.en2do.parser.indices.IndicesParser;
 import eu.koboo.en2do.parser.indices.TimeToLiveIndicesParser;
-import eu.koboo.en2do.repository.AsyncRepository;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.entity.Id;
-import eu.koboo.en2do.utility.FieldUtils;
-import eu.koboo.en2do.utility.GenericUtils;
-import eu.koboo.en2do.utility.Tuple;
+import eu.koboo.en2do.utility.reflection.FieldUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -47,71 +44,6 @@ public class RepositoryParser {
         }
         reflectedFieldIndex.clear();
         indicesParserRegistry.clear();
-    }
-
-    public Tuple<Class<?>, Class<?>> parseGenericTypes(Class<?> repositoryClass, Class<?> typeClass) throws Exception {
-        Map<Class<?>, List<Class<?>>> genericTypes = GenericUtils.getGenericTypes(repositoryClass);
-        if (genericTypes.isEmpty()) {
-            throw new RepositoryNoTypeException(repositoryClass);
-        }
-
-        List<Class<?>> classList = genericTypes.get(typeClass);
-        if (classList == null || classList.size() != 2) {
-            throw new RepositoryEntityNotFoundException(repositoryClass);
-        }
-
-        Class<?> entityClass = classList.get(0);
-        Class<?> entityIdClass = classList.get(1);
-        return new Tuple<>(entityClass, entityIdClass);
-    }
-
-    public void validateRepositoryTypes(Class<?> repositoryClass, Tuple<Class<?>, Class<?>> entityTypes) throws Exception {
-        // Doesn't implement async repository, so we can ignore that.
-        if (!AsyncRepository.class.isAssignableFrom(repositoryClass)) {
-            return;
-        }
-        Tuple<Class<?>, Class<?>> asyncTypes = parseGenericTypes(repositoryClass, AsyncRepository.class);
-        Class<?> asyncEntityType = asyncTypes.getFirst();
-        Class<?> entityType = entityTypes.getFirst();
-        if (GenericUtils.isNotTypeOf(asyncEntityType, entityType)) {
-            throw new RepositoryInvalidTypeException(entityType, asyncEntityType, repositoryClass);
-        }
-        Class<?> asyncEntityId = asyncTypes.getSecond();
-        Class<?> entityId = entityTypes.getSecond();
-        if (GenericUtils.isNotTypeOf(asyncEntityId, entityId)) {
-            throw new RepositoryInvalidTypeException(entityId, asyncEntityId, repositoryClass);
-        }
-    }
-
-    public String parseCollectionName(Class<?> repositoryClass, Class<?> entityClass) throws Exception {
-
-        // Parse annotated collection name and create pojo-related mongo collection
-        Collection collectionAnnotation = findCollectionAnnotation(repositoryClass, entityClass);
-        if (collectionAnnotation == null) {
-            throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
-        }
-
-        // Check if the collection name is valid and for duplication issues
-        String entityCollectionName = collectionAnnotation.value();
-        if (entityCollectionName.trim().equalsIgnoreCase("")) {
-            throw new RepositoryInvalidNameException(repositoryClass, Collection.class, entityCollectionName);
-        }
-
-        String collectionPrefix = builder.getCollectionPrefix();
-        if (collectionPrefix != null) {
-            entityCollectionName = collectionPrefix + entityCollectionName;
-        }
-
-        String collectionSuffix = builder.getCollectionSuffix();
-        if (collectionSuffix != null) {
-            entityCollectionName = entityCollectionName + collectionSuffix;
-        }
-
-        if (!COLLECTION_REGEX_NAME.matcher(entityCollectionName).matches()) {
-            throw new RepositoryInvalidNameException(repositoryClass, Collection.class, entityCollectionName);
-        }
-
-        return entityCollectionName;
     }
 
     private Collection findCollectionAnnotation(Class<?>... classes) {

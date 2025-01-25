@@ -1,15 +1,15 @@
 package eu.koboo.en2do.operators;
 
 import eu.koboo.en2do.mongodb.exception.returntype.*;
-import eu.koboo.en2do.utility.GenericUtils;
+import eu.koboo.en2do.utility.parse.ParseUtils;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Represents the MethodOperator of a method inside a repository.
@@ -22,62 +22,81 @@ public enum MethodOperator {
     /**
      * Searches entities with the given filters.
      */
-    FIND("find", (method, returnType, entityClass, repoClass) -> {
-        boolean isList = !GenericUtils.isNotTypeOf(Collection.class, returnType);
-        Class<?> returnEntityType;
-        if (isList) {
-            returnEntityType = GenericUtils.getGenericTypeOfReturnType(method);
-        } else {
-            returnEntityType = returnType;
+    FIND(
+        "find",
+        (method, actualReturnType, entityClass, repositoryClass) -> {
+            Class<?> entityTypeClass = ParseUtils.parseValidatableReturnType(method);
+            if (!entityClass.isAssignableFrom(entityTypeClass)) {
+                throw new MethodFindReturnTypeException(method, entityClass, repositoryClass);
+            }
         }
-        if (GenericUtils.isNotTypeOf(entityClass, returnEntityType)) {
-            throw new MethodFindReturnTypeException(method, entityClass, repoClass);
-        }
-    }),
+    ),
     /**
      * Deletes all entities with the given filters.
      */
-    DELETE("delete", (method, returnType, entityClass, repoClass) -> {
-        if (GenericUtils.isNotTypeOf(Boolean.class, returnType)) {
-            throw new MethodBooleanReturnTypeException(method, repoClass);
+    DELETE(
+        "delete",
+        (method, actualReturnType, entityClass, repositoryClass) -> {
+            Class<?> returnTypeClass = ParseUtils.parseValidatableReturnType(method);
+            if (!Boolean.class.equals(returnTypeClass)) {
+                throw new MethodBooleanReturnTypeException(method, repositoryClass);
+            }
         }
-    }),
+    ),
     /**
      * Checks if any entity exists with the given filters.
      */
-    EXISTS("exists", (method, returnType, entityClass, repoClass) -> {
-        if (GenericUtils.isNotTypeOf(Boolean.class, returnType)) {
-            throw new MethodBooleanReturnTypeException(method, repoClass);
+    EXISTS(
+        "exists",
+        (method, actualReturnType, entityClass, repositoryClass) -> {
+            Class<?> returnTypeClass = ParseUtils.parseValidatableReturnType(method);
+            if (!Boolean.class.equals(returnTypeClass)) {
+                throw new MethodBooleanReturnTypeException(method, repositoryClass);
+            }
         }
-    }),
+    ),
     /**
      * Counts all entities with the given filters.
      */
-    COUNT("count", (method, returnType, entityClass, repoClass) -> {
-        if (GenericUtils.isNotTypeOf(Long.class, returnType)) {
-            throw new MethodLongReturnTypeException(method, repoClass);
+    COUNT(
+        "count",
+        (method, actualReturnType, entityClass, repositoryClass) -> {
+            Class<?> returnTypeClass = ParseUtils.parseValidatableReturnType(method);
+            if (!Long.class.equals(returnTypeClass)) {
+                throw new MethodLongReturnTypeException(method, repositoryClass);
+            }
         }
-    }),
+    ),
     /**
      * Creates pagination on all entities with the given filters.
      */
-    PAGE("page", (method, returnType, entityClass, repoClass) -> {
-        if (GenericUtils.isNotTypeOf(List.class, returnType)) {
-            throw new MethodFindListReturnTypeException(method, entityClass, repoClass);
+    PAGE(
+        "page",
+        (method, actualReturnType, entityClass, repositoryClass) -> {
+            ParameterizedType parameterizedType = ParseUtils.decapsulateFuture(method);
+            Class<?> parameterizedReturnClass = (Class<?>) parameterizedType.getRawType();
+            if(!Collection.class.isAssignableFrom(parameterizedReturnClass)) {
+                throw new MethodFindListReturnTypeException(method, entityClass, repositoryClass);
+            }
+
+            Class<?> returnTypeClass = ParseUtils.parseValidatableReturnType(method);
+            if (!returnTypeClass.isAssignableFrom(entityClass)) {
+                throw new MethodFindListTypeException(method, repositoryClass, returnTypeClass, entityClass);
+            }
         }
-        Class<?> listType = GenericUtils.getGenericTypeOfReturnType(method);
-        if (!listType.isAssignableFrom(entityClass)) {
-            throw new MethodFindListTypeException(method, repoClass, listType, entityClass);
-        }
-    }),
+    ),
     /**
      * Updates specific fields on all entities with the given filters.
      */
-    UPDATE_FIELD("updateFields", (method, returnType, entityClass, repoClass) -> {
-        if (GenericUtils.isNotTypeOf(Boolean.class, returnType)) {
-            throw new MethodBooleanReturnTypeException(method, repoClass);
+    UPDATE_FIELD(
+        "updateFields",
+        (method, actualReturnType, entityClass, repositoryClass) -> {
+            Class<?> returnTypeClass = ParseUtils.parseValidatableReturnType(method);
+            if (!Boolean.class.equals(returnTypeClass)) {
+                throw new MethodBooleanReturnTypeException(method, repositoryClass);
+            }
         }
-    });
+    );
 
     public static final MethodOperator[] VALUES = MethodOperator.values();
 
@@ -98,14 +117,14 @@ public enum MethodOperator {
      * Validates the return type of the specific method operator, using the given parameters.
      *
      * @param method      The method, which should be validated
-     * @param returnType, The return type of the method (Could be overridden, due to async methods)
+     * @param actualReturnType, The return type of the method (Could be overridden, due to async methods)
      * @param entityClass The entity class of the validated repository
-     * @param repoClass   THe repository class
+     * @param repositoryClass   THe repository class
      * @throws Exception if the validation is unsuccessful.
      */
-    public void validateReturnType(Method method, Class<?> returnType,
-                                   Class<?> entityClass, Class<?> repoClass) throws Exception {
-        returnTypeValidator.check(method, returnType, entityClass, repoClass);
+    public void validateReturnType(Method method, Class<?> actualReturnType,
+                                   Class<?> entityClass, Class<?> repositoryClass) throws Exception {
+        returnTypeValidator.check(method, actualReturnType, entityClass, repositoryClass);
     }
 
     /**
