@@ -6,7 +6,7 @@ import com.mongodb.client.model.Indexes;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryIndexFieldNotFoundException;
 import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
 import eu.koboo.en2do.repository.entity.compound.Index;
-import eu.koboo.en2do.utility.reflection.AnnotationUtils;
+import eu.koboo.en2do.utility.parse.ParseUtils;
 import org.bson.conversions.Bson;
 
 import java.lang.reflect.Field;
@@ -19,7 +19,8 @@ public class CompoundIndicesParser implements IndicesParser {
     @Override
     public void parse(Class<?> repositoryClass, Class<?> entityClass, MongoCollection<?> entityCollection,
                       Set<Field> entityFieldSet) throws Exception {
-        Set<CompoundIndex> compoundIndexSet = AnnotationUtils.collectAnnotations(entityClass, CompoundIndex.class);
+        Set<CompoundIndex> compoundIndexSet = ParseUtils.getAllAnnotations(
+            entityClass, CompoundIndex.class);
         for (CompoundIndex compoundIndex : compoundIndexSet) {
             // Checking if the field in the annotation exists in the entity class.
             Index[] fieldIndexes = compoundIndex.value();

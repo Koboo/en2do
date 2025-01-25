@@ -5,7 +5,7 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryTTLFieldNotFoundException;
 import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
-import eu.koboo.en2do.utility.reflection.AnnotationUtils;
+import eu.koboo.en2do.utility.parse.ParseUtils;
 
 import java.lang.reflect.Field;
 import java.util.Date;
@@ -16,7 +16,7 @@ public class TimeToLiveIndicesParser implements IndicesParser {
     @Override
     public void parse(Class<?> repositoryClass, Class<?> entityClass, MongoCollection<?> entityCollection,
                       Set<Field> entityFieldSet) throws Exception {
-        Set<TTLIndex> ttlIndexSet = AnnotationUtils.collectAnnotations(entityClass, TTLIndex.class);
+        Set<TTLIndex> ttlIndexSet = ParseUtils.getAllAnnotations(entityClass, TTLIndex.class);
         for (TTLIndex ttlIndex : ttlIndexSet) {
             // Checking if the field in the annotation exists in the entity class.
             String ttlField = ttlIndex.value();

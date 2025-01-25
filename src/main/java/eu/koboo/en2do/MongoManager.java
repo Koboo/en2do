@@ -36,7 +36,6 @@ import eu.koboo.en2do.repository.options.DropEntitiesOnStart;
 import eu.koboo.en2do.repository.options.DropIndexesOnStart;
 import eu.koboo.en2do.utility.Tuple;
 import eu.koboo.en2do.utility.parse.ParseUtils;
-import eu.koboo.en2do.utility.reflection.AnnotationUtils;
 import eu.koboo.en2do.utility.reflection.FieldUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -277,7 +276,7 @@ public class MongoManager {
 
                 // Parse, validate and handle the method name and "compile"/index it
                 // so en2do can use the extracted information for the internal building of bson filters.
-                Set<EmbeddedField> embeddedFieldSet = AnnotationUtils.getEmbeddedFieldsSet(method);
+                Set<EmbeddedField> embeddedFieldSet = ParseUtils.getEmbeddedFieldsSet(method);
 
                 // Counts for further validation
                 int expectedParameterCount = 0;
