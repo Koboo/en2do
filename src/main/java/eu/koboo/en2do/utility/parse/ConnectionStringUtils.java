@@ -3,7 +3,10 @@ package eu.koboo.en2do.utility.parse;
 import eu.koboo.en2do.MongoManager;
 import lombok.experimental.UtilityClass;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Locale;
 import java.util.Properties;
@@ -138,7 +141,7 @@ public class ConnectionStringUtils {
      * Automatically reading credentials from the system properties,
      * using custom keys for the connectString and database
      *
-     * @param propertyKey  The property key for the connection string
+     * @param propertyKey The property key for the connection string
      * @return The new created credentials object.
      */
     public String fromSystemProperties(String propertyKey) {
@@ -159,7 +162,7 @@ public class ConnectionStringUtils {
      * Automatically reading credentials from the system environmental variables.
      * using custom keys for the connectString and database
      *
-     * @param envVarKey  The environmental variable key for the connection string
+     * @param envVarKey The environmental variable key for the connection string
      * @return The new created credentials object.
      */
     public String fromSystemEnvVars(String envVarKey) {

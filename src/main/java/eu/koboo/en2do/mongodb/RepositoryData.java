@@ -169,18 +169,18 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
 
     public FindIterable<E> sort(Method method, FindIterable<E> findIterable,
                                 Map<String, Boolean> sortDirection, int limit, int skip) throws Exception {
-        if(sortDirection != null && sortDirection.isEmpty()) {
+        if (sortDirection != null && sortDirection.isEmpty()) {
             findIterable = sortDirection(findIterable, sortDirection);
         }
 
-        if(skip != -1) {
-            if(skip <= 0) {
+        if (skip != -1) {
+            if (skip <= 0) {
                 throw new MethodInvalidSortSkipException(method, repositoryClass);
             }
             findIterable = findIterable.skip(skip);
         }
 
-        if(limit != -1) {
+        if (limit != -1) {
             if (limit <= 0) {
                 throw new MethodInvalidSortLimitException(method, repositoryClass);
             }

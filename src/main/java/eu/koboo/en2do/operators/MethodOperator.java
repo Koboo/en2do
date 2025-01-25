@@ -75,7 +75,7 @@ public enum MethodOperator {
         (method, actualReturnType, entityClass, repositoryClass) -> {
             ParameterizedType parameterizedType = ParseUtils.decapsulateFuture(method);
             Class<?> parameterizedReturnClass = (Class<?>) parameterizedType.getRawType();
-            if(!Collection.class.isAssignableFrom(parameterizedReturnClass)) {
+            if (!Collection.class.isAssignableFrom(parameterizedReturnClass)) {
                 throw new MethodFindListReturnTypeException(method, entityClass, repositoryClass);
             }
 
@@ -116,9 +116,9 @@ public enum MethodOperator {
     /**
      * Validates the return type of the specific method operator, using the given parameters.
      *
-     * @param method      The method, which should be validated
+     * @param method            The method, which should be validated
      * @param actualReturnType, The return type of the method (Could be overridden, due to async methods)
-     * @param entityClass The entity class of the validated repository
+     * @param entityClass       The entity class of the validated repository
      * @param repositoryClass   THe repository class
      * @throws Exception if the validation is unsuccessful.
      */

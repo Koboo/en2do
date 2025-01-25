@@ -39,7 +39,7 @@ public class ParseUtils {
     }
 
     public ConnectionString parseConnectionString(String connectString) {
-        if(connectString != null && !connectString.isEmpty()) {
+        if (connectString != null && !connectString.isEmpty()) {
             return new ConnectionString(connectString);
         }
         // If no connection string is given, try loading it from the default sources e.g.:
@@ -50,29 +50,29 @@ public class ParseUtils {
         // The property can differ in any string source.
 
         connectString = ConnectionStringUtils.fromFile();
-        if(connectString != null && !connectString.isEmpty()) {
+        if (connectString != null && !connectString.isEmpty()) {
             return new ConnectionString(connectString);
         }
 
         connectString = ConnectionStringUtils.fromResource();
-        if(connectString != null && !connectString.isEmpty()) {
+        if (connectString != null && !connectString.isEmpty()) {
             return new ConnectionString(connectString);
         }
 
         connectString = ConnectionStringUtils.fromSystemProperties();
-        if(connectString != null && !connectString.isEmpty()) {
+        if (connectString != null && !connectString.isEmpty()) {
             return new ConnectionString(connectString);
         }
 
         connectString = ConnectionStringUtils.fromSystemEnvVars();
-        if(connectString != null && !connectString.isEmpty()) {
+        if (connectString != null && !connectString.isEmpty()) {
             return new ConnectionString(connectString);
         }
         throw new IllegalStateException("Could not resolve any connection string to connect to.");
     }
 
     public Tuple<Class<?>, Class<?>> parseGenericTypes(Class<?> repositoryClass) {
-        if(!Repository.class.isAssignableFrom(repositoryClass)) {
+        if (!Repository.class.isAssignableFrom(repositoryClass)) {
             throw new IllegalArgumentException("Couldn't Repository interface on class: " + repositoryClass.getName());
         }
 
@@ -87,7 +87,7 @@ public class ParseUtils {
         }
 
         Type repositoryType = genericInterfaces[0];
-        if(!(repositoryType instanceof ParameterizedType)) {
+        if (!(repositoryType instanceof ParameterizedType)) {
             throw new IllegalArgumentException("Couldn't find parameterized types of Repository " +
                 "interface on class: " + repositoryClass.getName());
         }
@@ -144,7 +144,7 @@ public class ParseUtils {
     public Class<?> parseValidatableReturnType(Method method) {
         ParameterizedType parameterizedType = decapsulateFuture(method);
         Class<?> entityTypeClass;
-        if(parameterizedType == null) {
+        if (parameterizedType == null) {
             entityTypeClass = method.getReturnType();
         } else {
             entityTypeClass = (Class<?>) parameterizedType.getActualTypeArguments()[0];
@@ -154,8 +154,8 @@ public class ParseUtils {
 
     public ParameterizedType decapsulateFuture(Method method) {
         Class<?> returnType = method.getReturnType();
-        if(!CompletableFuture.class.isAssignableFrom(returnType)) {
-            if(java.util.Collection.class.isAssignableFrom(returnType)) {
+        if (!CompletableFuture.class.isAssignableFrom(returnType)) {
+            if (java.util.Collection.class.isAssignableFrom(returnType)) {
                 return (ParameterizedType) method.getGenericReturnType();
             }
             return null;

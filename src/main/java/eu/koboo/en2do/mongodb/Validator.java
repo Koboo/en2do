@@ -123,7 +123,7 @@ public class Validator {
                 }
 
                 // We don't save static fields
-                if(Modifier.isStatic(field.getModifiers())) {
+                if (Modifier.isStatic(field.getModifiers())) {
                     continue;
                 }
 

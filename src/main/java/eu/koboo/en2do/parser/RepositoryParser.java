@@ -2,7 +2,6 @@ package eu.koboo.en2do.parser;
 
 import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.SettingsBuilder;
-import eu.koboo.en2do.mongodb.exception.repository.*;
 import eu.koboo.en2do.parser.indices.CompoundIndicesParser;
 import eu.koboo.en2do.parser.indices.GeoIndicesParser;
 import eu.koboo.en2do.parser.indices.IndicesParser;

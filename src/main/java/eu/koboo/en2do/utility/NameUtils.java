@@ -63,7 +63,7 @@ public class NameUtils {
                 previousWasUnderscore = true;
                 continue;
             }
-            if(i != 0 && Character.isUpperCase(character) && !previousWasUnderscore) {
+            if (i != 0 && Character.isUpperCase(character) && !previousWasUnderscore) {
                 caseBuilder.append("_");
             }
             previousWasUnderscore = false;

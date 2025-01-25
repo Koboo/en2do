@@ -57,7 +57,7 @@ public class PrimitiveUtils {
         if (primitiveClass.equals(void.class)) {
             return Void.class;
         }
-        if(!primitiveClass.isPrimitive()) {
+        if (!primitiveClass.isPrimitive()) {
             return primitiveClass;
         }
         return null;
