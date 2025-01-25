@@ -24,7 +24,7 @@ public enum MethodOperator {
      */
     FIND(
         "find",
-        (method, actualReturnType, entityClass, repositoryClass) -> {
+        (method, entityClass, repositoryClass) -> {
             Class<?> entityTypeClass = ParseUtils.parseValidatableReturnType(method);
             if (!entityClass.isAssignableFrom(entityTypeClass)) {
                 throw new MethodFindReturnTypeException(method, entityClass, repositoryClass);
@@ -36,7 +36,7 @@ public enum MethodOperator {
      */
     DELETE(
         "delete",
-        (method, actualReturnType, entityClass, repositoryClass) -> {
+        (method, entityClass, repositoryClass) -> {
             Class<?> returnTypeClass = ParseUtils.parseValidatableReturnType(method);
             if (!Boolean.class.equals(returnTypeClass)) {
                 throw new MethodBooleanReturnTypeException(method, repositoryClass);
@@ -48,7 +48,7 @@ public enum MethodOperator {
      */
     EXISTS(
         "exists",
-        (method, actualReturnType, entityClass, repositoryClass) -> {
+        (method, entityClass, repositoryClass) -> {
             Class<?> returnTypeClass = ParseUtils.parseValidatableReturnType(method);
             if (!Boolean.class.equals(returnTypeClass)) {
                 throw new MethodBooleanReturnTypeException(method, repositoryClass);
@@ -60,7 +60,7 @@ public enum MethodOperator {
      */
     COUNT(
         "count",
-        (method, actualReturnType, entityClass, repositoryClass) -> {
+        (method, entityClass, repositoryClass) -> {
             Class<?> returnTypeClass = ParseUtils.parseValidatableReturnType(method);
             if (!Long.class.equals(returnTypeClass)) {
                 throw new MethodLongReturnTypeException(method, repositoryClass);
@@ -72,7 +72,7 @@ public enum MethodOperator {
      */
     PAGE(
         "page",
-        (method, actualReturnType, entityClass, repositoryClass) -> {
+        (method, entityClass, repositoryClass) -> {
             ParameterizedType parameterizedType = ParseUtils.decapsulateFuture(method);
             Class<?> parameterizedReturnClass = (Class<?>) parameterizedType.getRawType();
             if (!Collection.class.isAssignableFrom(parameterizedReturnClass)) {
@@ -90,7 +90,7 @@ public enum MethodOperator {
      */
     UPDATE_FIELD(
         "updateFields",
-        (method, actualReturnType, entityClass, repositoryClass) -> {
+        (method, entityClass, repositoryClass) -> {
             Class<?> returnTypeClass = ParseUtils.parseValidatableReturnType(method);
             if (!Boolean.class.equals(returnTypeClass)) {
                 throw new MethodBooleanReturnTypeException(method, repositoryClass);
@@ -117,14 +117,13 @@ public enum MethodOperator {
      * Validates the return type of the specific method operator, using the given parameters.
      *
      * @param method            The method, which should be validated
-     * @param actualReturnType, The return type of the method (Could be overridden, due to async methods)
      * @param entityClass       The entity class of the validated repository
      * @param repositoryClass   THe repository class
      * @throws Exception if the validation is unsuccessful.
      */
-    public void validateReturnType(Method method, Class<?> actualReturnType,
+    public void validateReturnType(Method method,
                                    Class<?> entityClass, Class<?> repositoryClass) throws Exception {
-        returnTypeValidator.check(method, actualReturnType, entityClass, repositoryClass);
+        returnTypeValidator.check(method, entityClass, repositoryClass);
     }
 
     /**

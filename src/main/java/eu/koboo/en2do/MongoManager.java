@@ -236,9 +236,6 @@ public class MongoManager {
                     continue;
                 }
 
-                // Get the default return type of the method
-                Class<?> returnType = method.getReturnType();
-
                 // Parse the MethodOperator by the methodName
                 MethodOperator methodOperator = MethodOperator.parseMethodStartsWith(methodName);
                 if (methodOperator == null) {
@@ -246,7 +243,7 @@ public class MongoManager {
                 }
 
                 // Validate the return types of the given method operator.
-                methodOperator.validateReturnType(method, returnType, entityClass, repositoryClass);
+                methodOperator.validateReturnType(method, entityClass, repositoryClass);
 
                 // Remove the already parsed and validated methodOperator
                 String strippedMethodName = methodOperator.removeOperatorFrom(methodName);
