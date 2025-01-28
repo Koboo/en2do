@@ -1,11 +1,12 @@
 package eu.koboo.en2do.mongodb.exception.methods;
 
+import eu.koboo.en2do.mongodb.exception.RepositoryMethodException;
+
 import java.lang.reflect.Method;
 
-public class MethodDuplicatedChainException extends Exception {
+public class MethodDuplicatedChainException extends RepositoryMethodException {
 
-    public MethodDuplicatedChainException(Method method, Class<?> repoClass) {
-        super("It's not allowed to use \"And\" + \"Or\" operation in one method. Please look into the method \"" +
-            method.getName() + "\" of the repository " + repoClass.getName() + ".");
+    public MethodDuplicatedChainException(Class<?> repositoryClass, Method method) {
+        super("It's not allowed to mix \"And\" + \"Or\" operation in one method.", repositoryClass, method);
     }
 }

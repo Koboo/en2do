@@ -1,9 +1,11 @@
 package eu.koboo.en2do.mongodb.exception.repository;
 
-public class RepositorySetterNotFoundException extends Exception {
+import eu.koboo.en2do.mongodb.exception.RepositoryTypeException;
 
-    public RepositorySetterNotFoundException(Class<?> typeClass, Class<?> repoClass, String fieldName) {
-        super("The class " + typeClass.getName() + " used in repository " + repoClass.getName() + " " +
-            "uses a invalid or no setter method for the field \"" + fieldName + "\"!");
+public class RepositorySetterNotFoundException extends RepositoryTypeException {
+
+    public RepositorySetterNotFoundException(Class<?> typeClass, Class<?> repositoryClass, String fieldName) {
+        super("No setter method for the field \"" + fieldName + "\"!",
+            repositoryClass, typeClass);
     }
 }

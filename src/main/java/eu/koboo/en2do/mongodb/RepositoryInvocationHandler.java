@@ -6,7 +6,7 @@ import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.UpdateResult;
 import eu.koboo.en2do.mongodb.exception.ReportException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodUnsupportedException;
-import eu.koboo.en2do.mongodb.exception.repository.RepositoryInvalidCallException;
+import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidCallException;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
 import eu.koboo.en2do.mongodb.methods.predefined.GlobalPredefinedMethod;
 import eu.koboo.en2do.mongodb.methods.predefined.PredefinedMethodRegistry;
@@ -140,7 +140,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             default:
                 // Couldn't find any match method operator, but that shouldn't happen.
                 // If this exception is thrown, I forgot something to implement :D
-                throw new RepositoryInvalidCallException(method, repositoryData.getRepositoryClass());
+                throw new MethodInvalidCallException(method, repositoryData.getRepositoryClass());
         }
     }
 

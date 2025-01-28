@@ -4,17 +4,17 @@ import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-@Repeatable(EmbeddedField.EmbeddedKeyArray.class)
-public @interface EmbeddedField {
+@Repeatable(NestedBsonKey.NestedBsonKeyArray.class)
+public @interface NestedBsonKey {
 
-    String key();
+    String id();
 
-    String query();
+    String bson();
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
-    @interface EmbeddedKeyArray {
+    @interface NestedBsonKeyArray {
 
-        EmbeddedField[] value();
+        NestedBsonKey[] value();
     }
 }

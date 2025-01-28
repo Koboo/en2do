@@ -1,11 +1,10 @@
-package eu.koboo.en2do.parser.indices;
+package eu.koboo.en2do.parser.repository.indices;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.geojson.Geometry;
 import eu.koboo.en2do.repository.entity.compound.GeoIndex;
 import eu.koboo.en2do.utility.parse.ParseUtils;
-import eu.koboo.en2do.utility.reflection.FieldUtils;
 import org.bson.conversions.Bson;
 
 import java.lang.reflect.Field;

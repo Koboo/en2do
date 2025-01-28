@@ -1,12 +1,13 @@
 package eu.koboo.en2do.mongodb.exception.methods;
 
+import eu.koboo.en2do.mongodb.exception.RepositoryMethodException;
+
 import java.lang.reflect.Method;
 
-public class MethodMismatchingTypeException extends Exception {
+public class MethodMismatchingTypeException extends RepositoryMethodException {
 
-    public MethodMismatchingTypeException(Method method, Class<?> repoClass, Class<?> fieldClass, Class<?> paramClass) {
+    public MethodMismatchingTypeException(Class<?> repositoryClass, Method method, Class<?> fieldClass, Class<?> paramClass) {
         super("The field in the entity is type \"" + fieldClass.getSimpleName() + "\" and the parameter type is " +
-            "\"" + paramClass.getSimpleName() + "\". Mismatching parameter types in \"" + method.getName() + "\" " +
-            "of repository " + repoClass.getName() + ".");
+            "\"" + paramClass.getSimpleName() + "\". Mismatching parameter types!", repositoryClass, method);
     }
 }

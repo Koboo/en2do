@@ -127,8 +127,8 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 // No supported type provided, we can't do anything other than throwing exceptions.
                 if (retFilter == null) {
                     throw new MethodInvalidRegexParameterException(
-                        method,
                         repositoryData.getRepositoryClass(),
+                        method,
                         value.getClass()
                     );
                 }

@@ -1,4 +1,4 @@
-package eu.koboo.en2do.parser.indices;
+package eu.koboo.en2do.parser.repository.indices;
 
 import com.mongodb.client.MongoCollection;
 

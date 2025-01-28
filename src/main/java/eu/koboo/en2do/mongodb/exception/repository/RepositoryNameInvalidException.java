@@ -1,12 +1,12 @@
 package eu.koboo.en2do.mongodb.exception.repository;
 
-public class RepositoryNameInvalidException extends Exception {
+import eu.koboo.en2do.mongodb.exception.RepositoryException;
+
+public class RepositoryNameInvalidException extends RepositoryException {
 
     public RepositoryNameInvalidException(Class<?> repositoryClass, String regex, String collectionName) {
         super("Invalid collection name! \n" +
-            "  - Repository: " + repositoryClass.getName() + "\n" +
             "  - Checked regex: " + regex + "\n" +
-            "  - Invalid name: " + collectionName + "\n"
-        );
+            "  - Invalid name: " + collectionName, repositoryClass);
     }
 }

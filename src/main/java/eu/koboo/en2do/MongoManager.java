@@ -14,7 +14,7 @@ import eu.koboo.en2do.mongodb.codec.InternalPropertyCodecProvider;
 import eu.koboo.en2do.mongodb.convention.AnnotationConvention;
 import eu.koboo.en2do.mongodb.convention.MethodMappingConvention;
 import eu.koboo.en2do.mongodb.exception.methods.*;
-import eu.koboo.en2do.mongodb.exception.repository.RepositoryIdNotFoundException;
+import eu.koboo.en2do.mongodb.exception.repository.RepositoryTypeIdNotFoundException;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameDuplicateException;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedFilter;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
@@ -23,15 +23,13 @@ import eu.koboo.en2do.operators.AmountType;
 import eu.koboo.en2do.operators.ChainType;
 import eu.koboo.en2do.operators.FilterOperator;
 import eu.koboo.en2do.operators.MethodOperator;
-import eu.koboo.en2do.parser.RepositoryParser;
-import eu.koboo.en2do.repository.Collection;
+import eu.koboo.en2do.indexer.MethodIndexer;
+import eu.koboo.en2do.parser.repository.RepositoryParser;
 import eu.koboo.en2do.repository.Repository;
-import eu.koboo.en2do.repository.entity.Id;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.*;
-import eu.koboo.en2do.repository.methods.transform.EmbeddedField;
-import eu.koboo.en2do.repository.methods.transform.Transform;
+import eu.koboo.en2do.repository.methods.transform.NestedBsonKey;
 import eu.koboo.en2do.repository.options.DropEntitiesOnStart;
 import eu.koboo.en2do.repository.options.DropIndexesOnStart;
 import eu.koboo.en2do.utility.Tuple;
@@ -193,19 +191,18 @@ public class MongoManager {
             // Check if we already got a repository with that name.
             for (RepositoryData<?, ?, ?> meta : repositoryDataByClassMap.values()) {
                 if (meta.getCollectionName().equalsIgnoreCase(entityCollectionName)) {
-                    throw new RepositoryNameDuplicateException(repositoryClass, Collection.class);
+                    throw new RepositoryNameDuplicateException(repositoryClass, entityCollectionName);
                 }
             }
 
             Validator.validateCompatibility(codecRegistry, repositoryClass, entityClass);
 
-            // Collect all fields recursively to ensure,
-            // we'll get the even the fields from the inheritance between object
+            // Collect all fields recursively to ensure we inherited fields too
             Set<Field> entityFieldSet = parser.parseEntityFields(entityClass);
 
             Field entityUniqueIdField = parser.parseEntityIdField(entityClass);
             if (entityUniqueIdField == null) {
-                throw new RepositoryIdNotFoundException(entityClass, Id.class);
+                throw new RepositoryTypeIdNotFoundException(repositoryClass, entityClass);
             }
 
             // Creating the native mongodb collection object,
@@ -230,54 +227,16 @@ public class MongoManager {
                         "in repository " + repositoryClass.getName() + "! That's not allowed!");
                 }
 
-                // Apply transform annotation
-                Transform transform = method.getAnnotation(Transform.class);
-                if (transform != null) {
-                    methodName = transform.value();
-                }
+                MethodIndexer<E, ID, R> methodIndexer = new MethodIndexer<>(repositoryData, method);
 
                 // Parse the MethodOperator by the methodName
-                MethodOperator methodOperator = MethodOperator.parseMethodStartsWith(methodName);
-                if (methodOperator == null) {
-                    throw new MethodNoMethodOperatorException(method, repositoryClass);
-                }
-
-                // Validate the return types of the given method operator.
-                methodOperator.validateReturnType(method, entityClass, repositoryClass);
-
-                // Remove the already parsed and validated methodOperator
-                String strippedMethodName = methodOperator.removeOperatorFrom(methodName);
+                MethodOperator methodOperator = methodIndexer.parseMethodOperator();
 
                 // Parse the defined entity count, by parsing the type using keywords
-                AmountType amountType = AmountType.parseTypeByStringStartsWith(strippedMethodName);
-                long entityAmount = -1;
-                if (amountType != null) {
-                    strippedMethodName = strippedMethodName.replaceFirst(amountType.getOperatorString(), "");
-                    switch (amountType) {
-                        case MANY:
-                        case ALL:
-                            entityAmount = 0;
-                            break;
-                        case ONE:
-                        case FIRST:
-                            entityAmount = 1;
-                            break;
-                        case TOP:
-                            entityAmount = AmountType.parseAmountByStringStartsWith(strippedMethodName);
-                            if (entityAmount == 0) {
-                                throw new RuntimeException("The entityAmount 0 is not a valid top number.");
-                            }
-                            strippedMethodName = strippedMethodName.replaceFirst(String.valueOf(entityAmount), "");
-                            break;
-                    }
-                }
+                AmountType amountType = methodIndexer.parseAmountType();
+                long entityAmount = methodIndexer.parseEntityAmount(amountType);
 
-                // Remove the keyword "By" from the method name.
-                strippedMethodName = strippedMethodName.replaceFirst("By", "");
-
-                // Parse, validate and handle the method name and "compile"/index it
-                // so en2do can use the extracted information for the internal building of bson filters.
-                Set<EmbeddedField> embeddedFieldSet = ParseUtils.getEmbeddedFieldsSet(method);
+                methodIndexer.removeFilterStartIndicator();
 
                 // Counts for further validation
                 int expectedParameterCount = 0;
@@ -289,12 +248,12 @@ public class MongoManager {
 
                 // This String represents only the filters and their respective chains.
                 // The method operator, "by" keyword and amount types are already stripped.
-                String loweredStrip = strippedMethodName.toLowerCase(Locale.ROOT);
+                methodIndexer.createLoweredParsableMethodName();
 
                 // Chain represents either AND or OR for all filters.
                 ChainType chainType = null;
 
-                // We are using a while loop here, until we don't any filters left.
+                // We are using a while loop here, until we don't have any filters left.
                 // Just to ensure we are not doing infinite loops, we use a specified safeBreakAmount.
                 // This also means you can't have more than
                 // 200 filters in a single method, which I think is more than enough.
@@ -305,13 +264,13 @@ public class MongoManager {
 
                     String bsonFilterKey = null;
                     // Check if we can find any nested fields
-                    for (EmbeddedField embeddedField : embeddedFieldSet) {
-                        String loweredKey = embeddedField.key().toLowerCase(Locale.ROOT);
+                    for (NestedBsonKey nestedBsonKey : embeddedFieldSet) {
+                        String loweredKey = nestedBsonKey.id().toLowerCase(Locale.ROOT);
                         if (!loweredStrip.startsWith(loweredKey)) {
                             continue;
                         }
                         loweredStrip = loweredStrip.replaceFirst(loweredKey, "");
-                        bsonFilterKey = embeddedField.query();
+                        bsonFilterKey = nestedBsonKey.bson();
                         break;
                     }
 
@@ -373,7 +332,7 @@ public class MongoManager {
                     }
 
                     if (entityField != null) {
-                        Validator.validateTypes(repositoryClass, method, entityField, filterOperator, nextParameterIndex);
+                        Validator.validateParameterTypes(repositoryClass, method, entityField, filterOperator, nextParameterIndex);
                     }
 
                     IndexedFilter indexedFilter = new IndexedFilter(bsonFilterKey, notFilter, filterOperator, nextParameterIndex);
@@ -508,6 +467,10 @@ public class MongoManager {
         settingsBuilder.merge(newBuilder);
         applyLoggerLevel();
         return this;
+    }
+
+    public Set<Repository<?, ?>> getAllRepositories() {
+        return Set.copyOf(repositoryByClassRegistry.values());
     }
 
     private void applyLoggerLevel() {

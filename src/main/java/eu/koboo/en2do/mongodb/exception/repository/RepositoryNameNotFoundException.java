@@ -1,9 +1,10 @@
 package eu.koboo.en2do.mongodb.exception.repository;
 
-public class RepositoryNameNotFoundException extends Exception {
+import eu.koboo.en2do.mongodb.exception.RepositoryException;
 
-    public RepositoryNameNotFoundException(Class<?> repoClass, Class<?> collectionClass) {
-        super("No or invalid collection name given through " + collectionClass.getName() + " annotation in " + repoClass.getName() + "! " +
-            "That's a required annotation.");
+public class RepositoryNameNotFoundException extends RepositoryException {
+
+    public RepositoryNameNotFoundException(Class<?> repository) {
+        super("No @collection annotation!", repository);
     }
 }

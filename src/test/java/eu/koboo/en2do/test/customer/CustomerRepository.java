@@ -8,7 +8,7 @@ import eu.koboo.en2do.repository.methods.sort.Limit;
 import eu.koboo.en2do.repository.methods.sort.Skip;
 import eu.koboo.en2do.repository.methods.sort.Sort;
 import eu.koboo.en2do.repository.methods.sort.SortBy;
-import eu.koboo.en2do.repository.methods.transform.EmbeddedField;
+import eu.koboo.en2do.repository.methods.transform.NestedBsonKey;
 import eu.koboo.en2do.repository.methods.transform.Transform;
 
 import java.util.List;
@@ -96,7 +96,7 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
 
     Customer findFirstByTransformedFieldName(String status);
 
-    @EmbeddedField(key = "KeyToIdentify", query = "order.orderText")
+    @NestedBsonKey(id = "KeyToIdentify", bson = "order.orderText")
     Customer findFirstByUniqueIdAndKeyToIdentify(UUID uniqueId, String orderText);
 
     Customer findFirstByFirstNameIsNull();

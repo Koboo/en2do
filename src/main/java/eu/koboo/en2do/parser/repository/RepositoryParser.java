@@ -1,11 +1,11 @@
-package eu.koboo.en2do.parser;
+package eu.koboo.en2do.parser.repository;
 
 import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.SettingsBuilder;
-import eu.koboo.en2do.parser.indices.CompoundIndicesParser;
-import eu.koboo.en2do.parser.indices.GeoIndicesParser;
-import eu.koboo.en2do.parser.indices.IndicesParser;
-import eu.koboo.en2do.parser.indices.TimeToLiveIndicesParser;
+import eu.koboo.en2do.parser.repository.indices.CompoundIndicesParser;
+import eu.koboo.en2do.parser.repository.indices.GeoIndicesParser;
+import eu.koboo.en2do.parser.repository.indices.IndicesParser;
+import eu.koboo.en2do.parser.repository.indices.TimeToLiveIndicesParser;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.entity.Id;
 import eu.koboo.en2do.utility.parse.ParseUtils;

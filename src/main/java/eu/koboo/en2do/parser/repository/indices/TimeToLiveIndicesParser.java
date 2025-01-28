@@ -1,9 +1,9 @@
-package eu.koboo.en2do.parser.indices;
+package eu.koboo.en2do.parser.repository.indices;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import eu.koboo.en2do.mongodb.exception.repository.RepositoryTTLFieldNotFoundException;
+import eu.koboo.en2do.mongodb.exception.repository.RepositoryTypeIndexTTLException;
 import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
 import eu.koboo.en2do.utility.parse.ParseUtils;
 
@@ -32,7 +32,7 @@ public class TimeToLiveIndicesParser implements IndicesParser {
                 break;
             }
             if (!foundTTLField) {
-                throw new RepositoryTTLFieldNotFoundException(repositoryClass, ttlField);
+                throw new RepositoryTypeIndexTTLException(repositoryClass, ttlField);
             }
             IndexOptions indexOptions = new IndexOptions()
                 .expireAfter(ttlIndex.ttl(), ttlIndex.time());

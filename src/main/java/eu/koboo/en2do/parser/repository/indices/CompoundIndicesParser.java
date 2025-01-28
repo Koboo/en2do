@@ -1,9 +1,9 @@
-package eu.koboo.en2do.parser.indices;
+package eu.koboo.en2do.parser.repository.indices;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import eu.koboo.en2do.mongodb.exception.repository.RepositoryIndexFieldNotFoundException;
+import eu.koboo.en2do.mongodb.exception.repository.RepositoryTypeIndexCompoundException;
 import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
 import eu.koboo.en2do.repository.entity.compound.Index;
 import eu.koboo.en2do.utility.parse.ParseUtils;
@@ -26,7 +26,7 @@ public class CompoundIndicesParser implements IndicesParser {
             Index[] fieldIndexes = compoundIndex.value();
             for (Index fieldIndex : fieldIndexes) {
                 if (entityFieldSet.stream().map(Field::getName).noneMatch(fieldName -> fieldIndex.value().equalsIgnoreCase(fieldName))) {
-                    throw new RepositoryIndexFieldNotFoundException(repositoryClass, fieldIndex.value());
+                    throw new RepositoryTypeIndexCompoundException(repositoryClass, entityClass, fieldIndex.value());
                 }
             }
             // Validated all fields and creating the indexes on the collection.

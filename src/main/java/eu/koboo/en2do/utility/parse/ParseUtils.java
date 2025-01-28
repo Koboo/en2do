@@ -9,8 +9,8 @@ import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.NameConvention;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.entity.TransformField;
-import eu.koboo.en2do.repository.methods.transform.EmbeddedField;
 import eu.koboo.en2do.utility.Tuple;
+import eu.koboo.en2do.utility.reflection.FieldUtils;
 import eu.koboo.en2do.utility.reflection.PrimitiveUtils;
 import lombok.experimental.UtilityClass;
 
@@ -19,10 +19,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -124,7 +121,7 @@ public class ParseUtils {
         // Parse annotated collection name and create pojo-related mongo collection
         Collection collectionAnnotation = findCollectionAnnotation(repositoryClass, entityClass);
         if (collectionAnnotation == null) {
-            throw new RepositoryNameNotFoundException(repositoryClass, Collection.class);
+            throw new RepositoryNameNotFoundException(repositoryClass);
         }
 
         NameConvention convention = settingsBuilder.getCollectionNameConvention();
@@ -195,11 +192,6 @@ public class ParseUtils {
             return transformField.value();
         }
         return field.getName();
-    }
-
-    public Set<EmbeddedField> getEmbeddedFieldsSet(Method method) {
-        EmbeddedField[] annotationsByType = method.getAnnotationsByType(EmbeddedField.class);
-        return new LinkedHashSet<>(Arrays.asList(annotationsByType));
     }
 
     /**

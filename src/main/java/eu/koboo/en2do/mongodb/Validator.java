@@ -54,16 +54,13 @@ public class Validator {
      * @param <E>             The generic type of the entity
      * @param <ID>            The generic type of the id of the entity
      * @param <R>             The generic type of the repository
-     * @throws Exception if type class is not valid.
      */
     public <E, ID, R extends Repository<E, ID>> void validateCompatibility(
-        CodecRegistry codecRegistry, Class<R> repositoryClass, Class<?> typeClass) throws Exception {
+        CodecRegistry codecRegistry,
+        Class<R> repositoryClass,
+        Class<?> typeClass) {
         if (typeClass == null) {
             throw new RuntimeException("Class for validation is null! Please open an issue on github!");
-        }
-        // It's a primitive? No validation needed for that.
-        if (typeClass.isPrimitive()) {
-            return;
         }
         // Probably a generic type. I'm NOT validating every "Object" type for you.
         // Keep track of your own code.
@@ -78,8 +75,7 @@ public class Validator {
 
         // Validating the no-args public constructor for the given type class
         boolean hasValidConstructor = false;
-        Constructor<?>[] entityConstructors = typeClass.getConstructors();
-        for (Constructor<?> constructor : entityConstructors) {
+        for (Constructor<?> constructor : typeClass.getConstructors()) {
             if (!Modifier.isPublic(constructor.getModifiers())) {
                 continue;
             }
@@ -90,13 +86,13 @@ public class Validator {
             break;
         }
         if (!hasValidConstructor) {
-            throw new RepositoryConstructorException(typeClass, repositoryClass);
+            throw new RepositoryTypeConstructorException(typeClass, repositoryClass);
         }
 
         // No fields found? That's too bad. We need something to save.
         Set<Field> fieldSet = FieldUtils.collectFields(typeClass);
         if (fieldSet.isEmpty()) {
-            throw new RepositoryNoFieldsException(typeClass, repositoryClass);
+            throw new RepositoryTypeFieldInvalidException(typeClass, repositoryClass);
         }
 
         try {
@@ -135,7 +131,7 @@ public class Validator {
 
                 // Final fields are strictly prohibited.
                 if (Modifier.isFinal(field.getModifiers())) {
-                    throw new RepositoryFinalFieldException(field, repositoryClass);
+                    throw new RepositoryTypeFieldFinalFinalException(typeClass, repositoryClass, field);
                 }
 
                 // Check the declaration of the setter method.
@@ -145,10 +141,10 @@ public class Validator {
                     throw new RepositorySetterNotFoundException(typeClass, repositoryClass, field.getName());
                 }
                 if (writeMethod.getParameterCount() != 1) {
-                    throw new RepositoryInvalidSetterException(typeClass, repositoryClass, field.getName());
+                    throw new RepositorySetterInvalidException(typeClass, repositoryClass, field.getName());
                 }
                 if (!Modifier.isPublic(writeMethod.getModifiers())) {
-                    throw new RepositoryInvalidSetterException(typeClass, repositoryClass, field.getName());
+                    throw new RepositorySetterInvalidException(typeClass, repositoryClass, field.getName());
                 }
 
                 // Check the declaration of the getter method.
@@ -158,10 +154,10 @@ public class Validator {
                     throw new RepositoryGetterNotFoundException(typeClass, repositoryClass, field.getName());
                 }
                 if (readMethod.getParameterCount() != 0) {
-                    throw new RepositoryInvalidGetterException(typeClass, repositoryClass, field.getName());
+                    throw new RepositoryGetterInvalidException(typeClass, repositoryClass, field.getName());
                 }
                 if (!Modifier.isPublic(readMethod.getModifiers())) {
-                    throw new RepositoryInvalidGetterException(typeClass, repositoryClass, field.getName());
+                    throw new RepositoryGetterInvalidException(typeClass, repositoryClass, field.getName());
                 }
 
                 // Validate the typeClass recursively.
@@ -170,14 +166,14 @@ public class Validator {
                 // Check for duplicated field names.
                 String lowerCaseName = field.getName().toLowerCase(Locale.ROOT);
                 if (fieldNameSet.contains(lowerCaseName)) {
-                    throw new RepositoryDuplicatedFieldException(field, repositoryClass);
+                    throw new RepositoryTypeFieldDuplicatedException(field, repositoryClass, typeClass);
                 }
                 fieldNameSet.add(lowerCaseName);
 
                 // Check if the field has a valid TransformField annotation
                 TransformField transformField = field.getAnnotation(TransformField.class);
                 if (transformField != null && transformField.value().trim().equalsIgnoreCase("")) {
-                    throw new RepositoryInvalidFieldNameException(typeClass, repositoryClass, field.getName());
+                    throw new RepositoryTypeFieldTransformException(typeClass, repositoryClass, field.getName());
                 }
 
                 // Define the bson document field name by checking for the transform field annotation.
@@ -190,7 +186,7 @@ public class Validator {
 
                 // Check for duplicated field names, again.
                 if (bsonNameSet.contains(bsonName.toLowerCase(Locale.ROOT))) {
-                    throw new RepositoryDuplicatedFieldException(field, repositoryClass);
+                    throw new RepositoryTypeFieldDuplicatedException(field, repositoryClass, typeClass);
                 }
                 bsonNameSet.add(bsonName.toLowerCase(Locale.ROOT));
             }
@@ -198,12 +194,15 @@ public class Validator {
             fieldSet.clear();
             bsonNameSet.clear();
         } catch (IntrospectionException e) {
-            throw new RepositoryBeanInfoNotFoundException(typeClass, repositoryClass, e);
+            throw new RepositoryTypeBeanInfoException(typeClass, repositoryClass, e);
         }
     }
 
-    public void validateTypes(Class<?> repositoryClass, Method method, Field field, FilterOperator filterOperator,
-                              int currentParameterIndex) throws Exception {
+    public void validateParameterTypes(Class<?> repositoryClass,
+                                       Method method,
+                                       Field field,
+                                       FilterOperator filterOperator,
+                                       int currentParameterIndex) {
         int operatorParameterCount = filterOperator.getExpectedParameterCount();
         Class<?> fieldClass = field.getType();
         fieldClass = PrimitiveUtils.wrapperOf(fieldClass);
@@ -211,7 +210,7 @@ public class Validator {
             int paramIndex = currentParameterIndex + i;
             Class<?> paramClass = method.getParameters()[paramIndex].getType();
             if (paramClass == null) {
-                throw new MethodParameterNotFoundException(method, repositoryClass,
+                throw new MethodParameterNotFoundException(repositoryClass, method,
                     (paramIndex + operatorParameterCount),
                     method.getParameterCount());
             }
@@ -222,14 +221,14 @@ public class Validator {
                 case REGEX:
                     // Regex filter allows two types as parameters.
                     if (!String.class.isAssignableFrom(paramClass) && !Pattern.class.isAssignableFrom(paramClass)) {
-                        throw new MethodInvalidRegexParameterException(method, repositoryClass, paramClass);
+                        throw new MethodInvalidRegexParameterException(repositoryClass, method, paramClass);
                     }
                     break;
                 case IN:
                     if (paramClass.isArray()) {
                         Class<?> arrayType = paramClass.getComponentType();
                         if (!arrayType.isAssignableFrom(fieldClass)) {
-                            throw new MethodInvalidListParameterException(method, repositoryClass, fieldClass, arrayType);
+                            throw new MethodInvalidListParameterException(repositoryClass, method, fieldClass, arrayType);
                         }
                         break;
                     }
@@ -240,19 +239,19 @@ public class Validator {
                         ParameterizedType type = (ParameterizedType) parameterType;
                         Class<?> listType = (Class<?>) type.getActualTypeArguments()[0];
                         if (!listType.isAssignableFrom(fieldClass)) {
-                            throw new MethodInvalidListParameterException(method, repositoryClass, fieldClass, listType);
+                            throw new MethodInvalidListParameterException(repositoryClass, method, fieldClass, listType);
                         }
                         break;
                     }
-                    throw new MethodMismatchingTypeException(method, repositoryClass, Collection.class, paramClass);
+                    throw new MethodMismatchingTypeException(repositoryClass, method, Collection.class, paramClass);
                 case HAS_KEY:
                     if (!Map.class.isAssignableFrom(fieldClass)) {
-                        throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
+                        throw new MethodMismatchingTypeException(repositoryClass, method, fieldClass, paramClass);
                     }
                     ParameterizedType hasKeyParameterizedType = (ParameterizedType) field.getGenericType();
                     Class<?> keyClass = (Class<?>) hasKeyParameterizedType.getActualTypeArguments()[0];
                     if (!keyClass.isAssignableFrom(paramClass)) {
-                        throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
+                        throw new MethodMismatchingTypeException(repositoryClass, method, fieldClass, paramClass);
                     }
                     break;
                 case HAS:
@@ -260,7 +259,7 @@ public class Validator {
                         ParameterizedType hasParameterizedType = (ParameterizedType) field.getGenericType();
                         Class<?> listType = (Class<?>) hasParameterizedType.getActualTypeArguments()[0];
                         if (!listType.isAssignableFrom(paramClass)) {
-                            throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
+                            throw new MethodMismatchingTypeException(repositoryClass, method, fieldClass, paramClass);
                         }
                     }
                     break;
@@ -269,12 +268,12 @@ public class Validator {
                         throw new RuntimeException("Field is not of type geometry!");
                     }
                     if (!Geo.class.isAssignableFrom(paramClass)) {
-                        throw new MethodMismatchingTypeException(method, repositoryClass, Geo.class, paramClass);
+                        throw new MethodMismatchingTypeException(repositoryClass, method, Geo.class, paramClass);
                     }
                     break;
                 default:
                     if (!paramClass.isAssignableFrom(fieldClass)) {
-                        throw new MethodMismatchingTypeException(method, repositoryClass, fieldClass, paramClass);
+                        throw new MethodMismatchingTypeException(repositoryClass, method, fieldClass, paramClass);
                     }
                     break;
             }

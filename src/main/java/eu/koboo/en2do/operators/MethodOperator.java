@@ -27,9 +27,12 @@ public enum MethodOperator {
         (method, entityClass, repositoryClass) -> {
             Class<?> entityTypeClass = ParseUtils.parseValidatableReturnType(method);
             if (!entityClass.isAssignableFrom(entityTypeClass)) {
-                throw new MethodFindReturnTypeException(method, entityClass, repositoryClass);
+                String entityName = entityTypeClass.getSimpleName();
+                throw new MethodReturnTypeException(repositoryClass, method,
+                    "Collection<" + entityName + "> or " + entityName);
             }
-        }
+        },
+        0
     ),
     /**
      * Deletes all entities with the given filters.
@@ -39,9 +42,10 @@ public enum MethodOperator {
         (method, entityClass, repositoryClass) -> {
             Class<?> returnTypeClass = ParseUtils.parseValidatableReturnType(method);
             if (!Boolean.class.equals(returnTypeClass)) {
-                throw new MethodBooleanReturnTypeException(method, repositoryClass);
+                throw new MethodReturnTypeException(repositoryClass, method, "boolean");
             }
-        }
+        },
+        0
     ),
     /**
      * Checks if any entity exists with the given filters.
@@ -51,9 +55,10 @@ public enum MethodOperator {
         (method, entityClass, repositoryClass) -> {
             Class<?> returnTypeClass = ParseUtils.parseValidatableReturnType(method);
             if (!Boolean.class.equals(returnTypeClass)) {
-                throw new MethodBooleanReturnTypeException(method, repositoryClass);
+                throw new MethodReturnTypeException(repositoryClass, method, "boolean");
             }
-        }
+        },
+        0
     ),
     /**
      * Counts all entities with the given filters.
@@ -63,9 +68,10 @@ public enum MethodOperator {
         (method, entityClass, repositoryClass) -> {
             Class<?> returnTypeClass = ParseUtils.parseValidatableReturnType(method);
             if (!Long.class.equals(returnTypeClass)) {
-                throw new MethodLongReturnTypeException(method, repositoryClass);
+                throw new MethodReturnTypeException(repositoryClass, method, "long");
             }
-        }
+        },
+        0
     ),
     /**
      * Creates pagination on all entities with the given filters.
@@ -76,14 +82,17 @@ public enum MethodOperator {
             ParameterizedType parameterizedType = ParseUtils.decapsulateFuture(method);
             Class<?> parameterizedReturnClass = (Class<?>) parameterizedType.getRawType();
             if (!Collection.class.isAssignableFrom(parameterizedReturnClass)) {
-                throw new MethodFindListReturnTypeException(method, entityClass, repositoryClass);
+                throw new MethodReturnTypeException(repositoryClass, method, "Collection<?>");
             }
 
             Class<?> returnTypeClass = ParseUtils.parseValidatableReturnType(method);
             if (!returnTypeClass.isAssignableFrom(entityClass)) {
-                throw new MethodFindListTypeException(method, repositoryClass, returnTypeClass, entityClass);
+                String entityName = entityClass.getSimpleName();
+                throw new MethodReturnTypeException(repositoryClass, method,
+                    "Collection<" + entityName + ">");
             }
-        }
+        },
+        1
     ),
     /**
      * Updates specific fields on all entities with the given filters.
@@ -93,25 +102,17 @@ public enum MethodOperator {
         (method, entityClass, repositoryClass) -> {
             Class<?> returnTypeClass = ParseUtils.parseValidatableReturnType(method);
             if (!Boolean.class.equals(returnTypeClass)) {
-                throw new MethodBooleanReturnTypeException(method, repositoryClass);
+                throw new MethodReturnTypeException(repositoryClass, method, "Boolean");
             }
-        }
+        },
+        1
     );
 
     public static final MethodOperator[] VALUES = MethodOperator.values();
 
     String keyword;
     ReturnTypeValidator returnTypeValidator;
-
-    /**
-     * Replaces the method operator keyword from the given text and returns it.
-     *
-     * @param textWithOperator The text, with the method operator at the start
-     * @return The text, without the method operator
-     */
-    public String removeOperatorFrom(String textWithOperator) {
-        return textWithOperator.replaceFirst(getKeyword(), "");
-    }
+    int additionalParameters;
 
     /**
      * Validates the return type of the specific method operator, using the given parameters.
@@ -119,27 +120,9 @@ public enum MethodOperator {
      * @param method            The method, which should be validated
      * @param entityClass       The entity class of the validated repository
      * @param repositoryClass   THe repository class
-     * @throws Exception if the validation is unsuccessful.
      */
     public void validateReturnType(Method method,
-                                   Class<?> entityClass, Class<?> repositoryClass) throws Exception {
+                                   Class<?> entityClass, Class<?> repositoryClass) {
         returnTypeValidator.check(method, entityClass, repositoryClass);
-    }
-
-    /**
-     * Parses the method operator by the name of the method. It just checks if the method is starting
-     * with any method operator of the enumeration.
-     *
-     * @param methodNamePart The name of the method.
-     * @return The MethodOperator if any is found, otherwise null.
-     */
-    public static MethodOperator parseMethodStartsWith(String methodNamePart) {
-        for (MethodOperator operator : VALUES) {
-            if (!methodNamePart.startsWith(operator.getKeyword())) {
-                continue;
-            }
-            return operator;
-        }
-        return null;
     }
 }
