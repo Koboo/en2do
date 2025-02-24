@@ -28,7 +28,7 @@ dependencies {
     testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
     // Test-Suite runtime
-    def jupiterVersion = "5.11.4"
+    def jupiterVersion = "5.12.0"
     testImplementation("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
 
     // SLF4j logger for test-suite
