@@ -1,11 +1,13 @@
 package eu.koboo.en2do.mongodb.exception.methods;
 
+import eu.koboo.en2do.mongodb.exception.RepositoryMethodException;
+
 import java.lang.reflect.Method;
 
-public class MethodSortFieldNotFoundException extends Exception {
+public class MethodSortFieldNotFoundException extends RepositoryMethodException {
 
-    public MethodSortFieldNotFoundException(String fieldName, Method method, Class<?> entityClass, Class<?> repoClass) {
-        super("Couldn't find field \"" + fieldName + "\" specified by sorting in " + entityClass.getName() + ". " +
-            "Used in method \"" + method.getName() + "\" of " + repoClass.getName());
+    public MethodSortFieldNotFoundException(Class<?> repoClass, Method method, String fieldName) {
+        super("Couldn't find field \"" + fieldName + "\" specified by sorting annotation!",
+            repoClass, method);
     }
 }

@@ -1,11 +1,13 @@
 package eu.koboo.en2do.mongodb.exception.methods;
 
+import eu.koboo.en2do.mongodb.exception.RepositoryMethodException;
+
 import java.lang.reflect.Method;
 
-public class MethodInvalidCallException extends Exception {
+public class MethodInvalidCallException extends RepositoryMethodException {
 
-    public MethodInvalidCallException(Method method, Class<?> repoClass) {
-        super("Invalid method call, because of missing operator in method " +
-            method.getName() + " of repository " + repoClass.getName() + ".");
+    public MethodInvalidCallException(Class<?> repositoryClass, Method method) {
+        super("Invalid method call, because of missing operator!",
+            repositoryClass, method);
     }
 }

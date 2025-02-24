@@ -1,11 +1,13 @@
 package eu.koboo.en2do.mongodb.exception.methods;
 
+import eu.koboo.en2do.mongodb.exception.RepositoryMethodException;
+
 import java.lang.reflect.Method;
 
-public class MethodMixedSortException extends Exception {
+public class MethodMixedSortException extends RepositoryMethodException {
 
-    public MethodMixedSortException(Method method, Class<?> repoClass, Class<?> sortObj, Class<?> sortAnno) {
-        super("Method \"" + method.getName() + "\" of repository " + repoClass.getName() + " mixed sorting with object " +
-            sortObj.getName() + " and annotation " + sortAnno.getName() + "! That's not allowed.");
+    public MethodMixedSortException(Class<?> repoClass, Method method) {
+        super("Mixed Sort object and annotation! That's not allowed.",
+            repoClass, method);
     }
 }
