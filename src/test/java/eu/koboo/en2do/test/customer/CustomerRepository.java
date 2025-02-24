@@ -13,6 +13,7 @@ import eu.koboo.en2do.repository.methods.transform.Transform;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
 @Collection("customer_repository")
@@ -110,4 +111,10 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
     List<Customer> findManyByOrdersListEmpty();
 
     List<Customer> findManyByOrdersNotListEmpty();
+
+    @Transform("findFirstByUniqueId")
+    CompletableFuture<Customer> findFirstAsync(UUID id);
+
+    @Transform("findAllByUniqueIdExists")
+    CompletableFuture<List<Customer>> findAllAsync();
 }

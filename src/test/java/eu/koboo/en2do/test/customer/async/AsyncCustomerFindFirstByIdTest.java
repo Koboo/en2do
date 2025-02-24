@@ -1,8 +1,8 @@
 package eu.koboo.en2do.test.customer.async;
 
 import eu.koboo.en2do.test.Const;
-import eu.koboo.en2do.test.customer.AsyncCustomerRepositoryTest;
 import eu.koboo.en2do.test.customer.Customer;
+import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +11,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class AsyncCustomerFindFirstByIdTest extends AsyncCustomerRepositoryTest {
+public class AsyncCustomerFindFirstByIdTest extends CustomerRepositoryTest {
 
     @Test
     @Order(1)
@@ -33,7 +33,7 @@ public class AsyncCustomerFindFirstByIdTest extends AsyncCustomerRepositoryTest 
     @Test
     @Order(3)
     public void findCustomerById() {
-        repository.findFirstByUniqueId(Const.UNIQUE_ID)
+        repository.findFirstAsync(Const.UNIQUE_ID)
             .whenComplete((customer, throwable) -> {
                 assertNotNull(customer);
                 UUID uniqueId = customer.getUniqueId();
