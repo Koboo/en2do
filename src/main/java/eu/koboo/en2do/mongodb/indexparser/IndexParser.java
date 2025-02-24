@@ -10,7 +10,8 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class IndexParser {

@@ -162,7 +162,7 @@ public class SettingsBuilder {
 
     /**
      * See field documentation.
-
+     *
      * @return This builder
      */
     public SettingsBuilder collectionNameGeneration(NameConvention convention) {

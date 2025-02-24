@@ -8,7 +8,7 @@ public class MethodInvalidListParameterException extends RepositoryMethodExcepti
 
     public MethodInvalidListParameterException(Class<?> repositoryClass, Method method, Class<?> fieldClass, Class<?> paramClass) {
         super("The List parameter of the filter method \"In\" uses invalid types! The List uses type \"" + paramClass.getName() + "\", " +
-            "but expected a List using type \"" + fieldClass.getName() + "\".",
+                "but expected a List using type \"" + fieldClass.getName() + "\".",
             repositoryClass, method);
     }
 }

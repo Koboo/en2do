@@ -6,7 +6,7 @@ import java.lang.reflect.Method;
 
 public class MethodInvalidSortSkipException extends RepositoryMethodException {
 
-    public MethodInvalidSortSkipException(Class<?> repoClass,  Method method) {
+    public MethodInvalidSortSkipException(Class<?> repoClass, Method method) {
         super("You're not allowed to use a skip size of less or equal to \"0\"!",
             repoClass, method);
     }

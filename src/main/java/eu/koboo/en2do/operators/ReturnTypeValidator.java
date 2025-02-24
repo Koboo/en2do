@@ -11,9 +11,9 @@ public interface ReturnTypeValidator {
     /**
      * Gets executed on the validation of the repository.
      *
-     * @param method      The method, which should be validated
-     * @param entityClass The class of the entity of the repository
-     * @param repositoryClass   The class of the repository
+     * @param method          The method, which should be validated
+     * @param entityClass     The class of the entity of the repository
+     * @param repositoryClass The class of the repository
      */
     void check(Method method, Class<?> entityClass, Class<?> repositoryClass);
 }

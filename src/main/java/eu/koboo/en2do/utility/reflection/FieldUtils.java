@@ -1,6 +1,5 @@
 package eu.koboo.en2do.utility.reflection;
 
-import eu.koboo.en2do.repository.entity.TransformField;
 import lombok.experimental.UtilityClass;
 
 import java.lang.reflect.Field;
@@ -28,7 +27,7 @@ public class FieldUtils {
      */
     public <E> Set<Field> collectFields(Class<E> typeClass) {
         Set<Field> fieldSet = FIELD_CACHE.get(typeClass);
-        if(fieldSet != null && !fieldSet.isEmpty()) {
+        if (fieldSet != null && !fieldSet.isEmpty()) {
             return fieldSet;
         }
         Set<Field> fields = new HashSet<>();

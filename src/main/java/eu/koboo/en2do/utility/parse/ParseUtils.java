@@ -2,15 +2,7 @@ package eu.koboo.en2do.utility.parse;
 
 import com.mongodb.ConnectionString;
 import eu.koboo.en2do.SettingsBuilder;
-import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameEmptyException;
-import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameInvalidException;
-import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameNotFoundException;
-import eu.koboo.en2do.repository.Collection;
-import eu.koboo.en2do.repository.NameConvention;
-import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.entity.TransformField;
-import eu.koboo.en2do.utility.Tuple;
-import eu.koboo.en2do.utility.reflection.FieldUtils;
 import eu.koboo.en2do.utility.reflection.PrimitiveUtils;
 import lombok.experimental.UtilityClass;
 
@@ -19,7 +11,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -124,7 +118,7 @@ public class ParseUtils {
      * @return The Set with all found annotations of type A
      */
     public <E, A extends Annotation> Set<A> getAllAnnotations(Class<E> entityClass,
-                                                               Class<A> annotationClass) {
+                                                              Class<A> annotationClass) {
         Set<A> annotationSet = new HashSet<>();
         Class<?> clazz = entityClass;
         while (clazz != Object.class) {

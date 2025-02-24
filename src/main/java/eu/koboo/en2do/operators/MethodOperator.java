@@ -1,6 +1,6 @@
 package eu.koboo.en2do.operators;
 
-import eu.koboo.en2do.mongodb.exception.returntype.*;
+import eu.koboo.en2do.mongodb.exception.returntype.MethodReturnTypeException;
 import eu.koboo.en2do.utility.parse.ParseUtils;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -117,9 +117,9 @@ public enum MethodOperator {
     /**
      * Validates the return type of the specific method operator, using the given parameters.
      *
-     * @param method            The method, which should be validated
-     * @param entityClass       The entity class of the validated repository
-     * @param repositoryClass   THe repository class
+     * @param method          The method, which should be validated
+     * @param entityClass     The entity class of the validated repository
+     * @param repositoryClass THe repository class
      */
     public void validateReturnType(Method method,
                                    Class<?> entityClass, Class<?> repositoryClass) {
