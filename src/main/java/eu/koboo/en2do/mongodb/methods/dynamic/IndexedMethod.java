@@ -225,7 +225,7 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 );
                 break;
             default: // This filter is not supported. Throw exception.
-                throw new MethodUnsupportedFilterException(method, repositoryData.getRepositoryClass());
+                throw new MethodUnsupportedFilterException(repositoryData.getRepositoryClass(), method);
         }
 
         // Applying negotiating of the filter, if needed

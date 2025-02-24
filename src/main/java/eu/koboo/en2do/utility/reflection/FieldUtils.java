@@ -6,7 +6,9 @@ import lombok.experimental.UtilityClass;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A utility class for everything related to fields.
@@ -14,6 +16,8 @@ import java.util.Set;
 @UtilityClass
 @SuppressWarnings("unused")
 public class FieldUtils {
+
+    private static final Map<Class<?>, Set<Field>> FIELD_CACHE = new ConcurrentHashMap<>();
 
     /**
      * This method is used to scan a class for all fields.
@@ -23,6 +27,10 @@ public class FieldUtils {
      * @return The Set with all found fields of the given class.
      */
     public <E> Set<Field> collectFields(Class<E> typeClass) {
+        Set<Field> fieldSet = FIELD_CACHE.get(typeClass);
+        if(fieldSet != null && !fieldSet.isEmpty()) {
+            return fieldSet;
+        }
         Set<Field> fields = new HashSet<>();
         Class<?> clazz = typeClass;
         while (clazz != Object.class) {
@@ -33,6 +41,7 @@ public class FieldUtils {
             }
             fields.addAll(Arrays.asList(declaredFields));
         }
+        FIELD_CACHE.put(typeClass, fields);
         return fields;
     }
 

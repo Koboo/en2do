@@ -1,4 +1,4 @@
-package eu.koboo.en2do.parser.repository.indices;
+package eu.koboo.en2do.mongodb.indexparser.indices;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.IndexOptions;
@@ -14,8 +14,7 @@ import java.util.Set;
 public class TimeToLiveIndicesParser implements IndicesParser {
 
     @Override
-    public void parse(Class<?> repositoryClass, Class<?> entityClass, MongoCollection<?> entityCollection,
-                      Set<Field> entityFieldSet) throws Exception {
+    public void parse(Class<?> repositoryClass, Class<?> entityClass, MongoCollection<?> entityCollection, Set<Field> entityFieldSet) {
         Set<TTLIndex> ttlIndexSet = ParseUtils.getAllAnnotations(entityClass, TTLIndex.class);
         for (TTLIndex ttlIndex : ttlIndexSet) {
             // Checking if the field in the annotation exists in the entity class.
@@ -32,7 +31,7 @@ public class TimeToLiveIndicesParser implements IndicesParser {
                 break;
             }
             if (!foundTTLField) {
-                throw new RepositoryTypeIndexTTLException(repositoryClass, ttlField);
+                throw new RepositoryTypeIndexTTLException(repositoryClass, entityClass, ttlField);
             }
             IndexOptions indexOptions = new IndexOptions()
                 .expireAfter(ttlIndex.ttl(), ttlIndex.time());

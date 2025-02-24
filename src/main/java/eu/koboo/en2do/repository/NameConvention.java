@@ -1,8 +1,7 @@
 package eu.koboo.en2do.repository;
 
-import eu.koboo.en2do.utility.NameUtils;
+import eu.koboo.en2do.utility.NameCasingUtils;
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
@@ -12,9 +11,12 @@ import java.util.function.Function;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum NameConvention {
 
-    CAMEL_CASE_LOWER(NameUtils::toCamelCaseLower),
-    CAMEL_CASE_UPPER(NameUtils::toCamelCaseUpper),
-    SNAKE_CASE(NameUtils::toSnakeCase),
+    CAMEL_CASE_LOWER(NameCasingUtils::toCamelCase),
+    CAMEL_CASE_UPPER(NameCasingUtils::toPascalCase),
+    SNAKE_CASE(NameCasingUtils::toSnakeCase),
+    FLAT_CASE(NameCasingUtils::toFlatCase),
+    MACRO_CASE(NameCasingUtils::toMacroCase),
+    KEBAB_CASE(NameCasingUtils::toKebabCase),
     ;
 
     Function<String, String> generateFunction;

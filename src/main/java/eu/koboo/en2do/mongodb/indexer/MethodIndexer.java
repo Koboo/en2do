@@ -1,16 +1,20 @@
-package eu.koboo.en2do.indexer;
+package eu.koboo.en2do.mongodb.indexer;
 
+import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.mongodb.Validator;
 import eu.koboo.en2do.mongodb.exception.RepositoryMethodException;
-import eu.koboo.en2do.mongodb.exception.methods.MethodDuplicatedChainException;
-import eu.koboo.en2do.mongodb.exception.methods.MethodFieldNotFoundException;
-import eu.koboo.en2do.mongodb.exception.methods.MethodNoMethodOperatorException;
+import eu.koboo.en2do.mongodb.exception.methods.*;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedFilter;
+import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
+import eu.koboo.en2do.mongodb.methods.predefined.PredefinedMethodRegistry;
 import eu.koboo.en2do.operators.AmountType;
 import eu.koboo.en2do.operators.ChainType;
 import eu.koboo.en2do.operators.FilterOperator;
 import eu.koboo.en2do.operators.MethodOperator;
 import eu.koboo.en2do.repository.Repository;
+import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
+import eu.koboo.en2do.repository.methods.pagination.Pagination;
+import eu.koboo.en2do.repository.methods.sort.*;
 import eu.koboo.en2do.repository.methods.transform.NestedBsonKey;
 import eu.koboo.en2do.repository.methods.transform.Transform;
 import lombok.AccessLevel;
@@ -23,6 +27,7 @@ import java.util.*;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
 
+    final PredefinedMethodRegistry predefinedMethodRegistry;
     final RepositoryIndexer<E, ID, R> repositoryIndexer;
     final Class<R> repositoryClass;
     final Class<E> entityClass;
@@ -41,7 +46,10 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
     String parsableMethodName;
     String parsableLoweredName;
 
-    public MethodIndexer(RepositoryIndexer<E, ID, R> repositoryIndexer, Method method) {
+    public MethodIndexer(PredefinedMethodRegistry predefinedMethodRegistry,
+                         RepositoryIndexer<E, ID, R> repositoryIndexer,
+                         Method method) {
+        this.predefinedMethodRegistry = predefinedMethodRegistry;
         this.repositoryIndexer = repositoryIndexer;
         this.repositoryClass = repositoryIndexer.getRepositoryClass();
         this.entityClass = repositoryIndexer.getEntityClass();
@@ -57,7 +65,7 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
         }
 
         // Check if we catch a predefined method name
-        if (repositoryIndexer.getPredefinedMethodRegistry().isPredefinedMethod(parsableMethodName)) {
+        if (predefinedMethodRegistry.isPredefinedMethod(parsableMethodName)) {
             throw new RepositoryMethodException("Override on predefined method!", repositoryClass, method);
         }
 
@@ -69,6 +77,9 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
         removeFilterStartIndicator();
 
         this.indexedFilters = parseFilters();
+
+        validateParameterCount();
+        validateParameterTypes();
     }
 
     public MethodOperator parseMethodOperator() {
@@ -101,7 +112,7 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
     }
 
     public long parseEntityAmount() {
-        if(amountType == null) {
+        if (amountType == null) {
             return -1;
         }
         switch (amountType) {
@@ -135,10 +146,6 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
         return new LinkedHashSet<>(Arrays.asList(annotationsByType));
     }
 
-    public void createLoweredParsableMethodName() {
-        parsableLoweredName = parsableMethodName.toLowerCase(Locale.ROOT);
-    }
-
     public String parseNextBsonKey() {
         String bsonFilterKey = null;
         // Check if we can find any nested fields
@@ -168,7 +175,7 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
 
         // Check if we found any key to filter with in bson.
         if (bsonFilterKey == null) {
-            throw new MethodFieldNotFoundException(parsableLoweredName, method, entityClass, repositoryClass);
+            throw new MethodFieldNotFoundException(repositoryClass, method, parsableLoweredName);
         }
         return bsonFilterKey;
     }
@@ -215,6 +222,8 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
     }
 
     private List<IndexedFilter> parseFilters() {
+        parsableLoweredName = parsableMethodName.toLowerCase(Locale.ROOT);
+
         int nextParameterIndex = 0;
         int indexedFilterAmount = 0;
 
@@ -228,15 +237,15 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
             String bsonFilterKey = parseNextBsonKey();
             boolean notFilter = parseNextNegateFilter();
 
+            FilterOperator filterOperator = parseNextFilterOperator();
+
             ChainType nextChainType = parseNextChainType();
-            if(chainType == null) {
+            if (chainType == null) {
                 chainType = nextChainType;
             }
-            if(nextChainType != null && chainType != nextChainType) {
+            if (nextChainType != null && chainType != nextChainType) {
                 throw new MethodDuplicatedChainException(repositoryClass, method);
             }
-
-            FilterOperator filterOperator = parseNextFilterOperator();
 
             Field directEntityField = parseFieldByBsonKey(bsonFilterKey);
             if (directEntityField != null) {
@@ -256,17 +265,103 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
         return indexedFilterList;
     }
 
-    private void validateParameters() {
+    private int getExpectedParameterCount() {
         int expectedParameterAmount = methodOperator.getAdditionalParameters();
         for (IndexedFilter indexedFilter : indexedFilters) {
             expectedParameterAmount += indexedFilter.getOperator().getExpectedParameterCount();
         }
+        return expectedParameterAmount;
+    }
 
+    private void validateParameterCount() {
+        int expectedParameterAmount = getExpectedParameterCount();
         int actualParameterAmount = method.getParameterCount();
-        if(expectedParameterAmount == actualParameterAmount) {
+        if (expectedParameterAmount == actualParameterAmount) {
+            return;
+        }
+        if (actualParameterAmount == 0) {
+            if (methodOperator == MethodOperator.PAGE) {
+                throw new MethodPageRequiredException(repositoryClass, method);
+            }
             return;
         }
 
+        if (actualParameterAmount > 0) {
+            // Subtract 1 from parameterCount. This object could be a Sort or Pagination object.
+            // That means, the expectedParameterCount is less than the actualParameterCount.
+            int lastParameterIndex = (expectedParameterAmount + 1);
+            Class<?> lastMethodParameter = method.getParameterTypes()[actualParameterAmount - 1];
+            if (lastMethodParameter.isAssignableFrom(Sort.class)) {
+                if (methodOperator == MethodOperator.PAGE) {
+                    throw new MethodSortNotAllowedException(repositoryClass, method);
+                }
+                if (lastParameterIndex != actualParameterAmount) {
+                    throw new MethodParameterCountException(repositoryClass, method, lastParameterIndex);
+                }
+            }
+            if (lastMethodParameter.isAssignableFrom(Pagination.class)) {
+                if (methodOperator != MethodOperator.PAGE) {
+                    throw new MethodPageNotAllowedException(repositoryClass, method);
+                }
+                if (lastParameterIndex != actualParameterAmount) {
+                    throw new MethodParameterCountException(repositoryClass, method, lastParameterIndex);
+                }
+            }
+            if (lastMethodParameter.isAssignableFrom(UpdateBatch.class)) {
+                if (methodOperator != MethodOperator.UPDATE_FIELD) {
+                    throw new MethodBatchNotAllowedException(repositoryClass, method);
+                }
+                if (lastParameterIndex != actualParameterAmount) {
+                    throw new MethodParameterCountException(repositoryClass, method, lastParameterIndex);
+                }
+            }
+            return;
+        }
+        throw new MethodParameterCountException(repositoryClass, method, expectedParameterAmount);
+    }
 
+    void validateParameterTypes() {
+        // Check if the method has the Sort annotation set.
+        SortBy sortAnnotation = method.getAnnotation(SortBy.class);
+        if (sortAnnotation != null) {
+            if (methodOperator == MethodOperator.PAGE) {
+                throw new MethodSortNotAllowedException(repositoryClass, method);
+            }
+            String sortFieldName = sortAnnotation.field();
+            Field field = parseFieldByBsonKey(sortFieldName);
+            if (field == null) {
+                throw new MethodSortFieldNotFoundException(repositoryClass, method, sortFieldName);
+            }
+        }
+        int actualParameterCount = method.getParameterCount();
+        if (actualParameterCount > 0) {
+            Class<?> lastMethodParameter = method.getParameterTypes()[actualParameterCount - 1];
+            // Check if both Sort types are used.
+            // This is not allowed, even if it is possible internally.
+            // En2do is capable of handling it, but I don't know the result.
+            // Probably one sort would get an override by the other one.
+            boolean hasAnySortAnnotation = method.isAnnotationPresent(Limit.class)
+                || method.isAnnotationPresent(Skip.class)
+                || method.isAnnotationPresent(SortBy.class)
+                || method.isAnnotationPresent(SortByArray.class);
+            if (hasAnySortAnnotation && lastMethodParameter.isAssignableFrom(Sort.class)) {
+                throw new MethodMixedSortException(repositoryClass, method);
+            }
+            // We can't check the field, because it's a parameter, we can only check it, on executing
+            // while runtime, so good luck to you my dear ;)
+        }
+    }
+
+    public void indexMethod(RepositoryData<E, ID, R> repositoryData) {
+        IndexedMethod<E, ID, R> indexedMethod = new IndexedMethod<>(
+            method,
+            methodOperator,
+            chainType,
+            -1L,
+            amountType,
+            entityAmount,
+            indexedFilters,
+            repositoryData);
+        repositoryData.registerDynamicMethod(method.getName(), indexedMethod);
     }
 }

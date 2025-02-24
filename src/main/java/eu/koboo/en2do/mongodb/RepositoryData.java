@@ -4,6 +4,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.MongoManager;
+import eu.koboo.en2do.mongodb.indexer.RepositoryIndexer;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidPageException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidSortLimitException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidSortSkipException;
@@ -32,39 +33,36 @@ import java.util.*;
 public class RepositoryData<E, ID, R extends Repository<E, ID>> {
 
     MongoManager mongoManager;
+    RepositoryIndexer<E, ID, R> indexer;
     String collectionName;
     MongoCollection<E> entityCollection;
     Class<R> repositoryClass;
     Class<E> entityClass;
-    Set<Field> entityFieldSet;
     Class<ID> entityUniqueIdClass;
     Field entityUniqueIdField;
 
     @Getter(AccessLevel.NONE)
     Map<String, IndexedMethod<E, ID, R>> dynamicMethodRegistry;
 
-    public RepositoryData(MongoManager mongoManager, Class<R> repositoryClass, Class<E> entityClass,
-                          Set<Field> entityFieldSet,
-                          Class<ID> entityUniqueIdClass, Field entityUniqueIdField,
-                          MongoCollection<E> entityCollection, String collectionName) {
+    public RepositoryData(MongoManager mongoManager,
+                          RepositoryIndexer<E, ID, R> indexer,
+                          MongoCollection<E> entityCollection) {
         this.mongoManager = mongoManager;
-        this.collectionName = collectionName;
+        this.indexer = indexer;
+        this.collectionName = indexer.getCollectionName();
         this.entityCollection = entityCollection;
 
-        this.repositoryClass = repositoryClass;
-        this.entityClass = entityClass;
+        this.repositoryClass = indexer.getRepositoryClass();
+        this.entityClass = indexer.getEntityClass();
 
-        this.entityFieldSet = entityFieldSet;
-
-        this.entityUniqueIdClass = entityUniqueIdClass;
-        this.entityUniqueIdField = entityUniqueIdField;
+        this.entityUniqueIdClass = indexer.getIdClass();
+        this.entityUniqueIdField = indexer.getIdField();
 
         this.dynamicMethodRegistry = new HashMap<>();
     }
 
     public void destroy() {
         dynamicMethodRegistry.clear();
-        entityFieldSet.clear();
     }
 
     public void registerDynamicMethod(String methodName, IndexedMethod<E, ID, R> dynamicMethod) {
@@ -156,7 +154,7 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
         // We do not allow pages lower or equal to zero. The results
         // would just be empty, so we throw an exception to not allow that.
         if (pagination.getPage() <= 0) {
-            throw new MethodInvalidPageException(method, repositoryClass);
+            throw new MethodInvalidPageException(repositoryClass, method);
         }
 
         // Let's apply the sorting direction of the pagination object.
@@ -175,14 +173,14 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
 
         if (skip != -1) {
             if (skip <= 0) {
-                throw new MethodInvalidSortSkipException(method, repositoryClass);
+                throw new MethodInvalidSortSkipException(repositoryClass, method);
             }
             findIterable = findIterable.skip(skip);
         }
 
         if (limit != -1) {
             if (limit <= 0) {
-                throw new MethodInvalidSortLimitException(method, repositoryClass);
+                throw new MethodInvalidSortLimitException(repositoryClass, method);
             }
             findIterable = findIterable.limit(limit);
         }

@@ -1,4 +1,4 @@
-package eu.koboo.en2do.parser.repository.indices;
+package eu.koboo.en2do.mongodb.indexparser.indices;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.IndexOptions;
@@ -18,7 +18,7 @@ public class CompoundIndicesParser implements IndicesParser {
 
     @Override
     public void parse(Class<?> repositoryClass, Class<?> entityClass, MongoCollection<?> entityCollection,
-                      Set<Field> entityFieldSet) throws Exception {
+                      Set<Field> entityFieldSet) {
         Set<CompoundIndex> compoundIndexSet = ParseUtils.getAllAnnotations(
             entityClass, CompoundIndex.class);
         for (CompoundIndex compoundIndex : compoundIndexSet) {

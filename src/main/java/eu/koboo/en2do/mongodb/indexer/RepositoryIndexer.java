@@ -1,7 +1,9 @@
-package eu.koboo.en2do.indexer;
+package eu.koboo.en2do.mongodb.indexer;
 
+import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.SettingsBuilder;
+import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.mongodb.Validator;
 import eu.koboo.en2do.mongodb.exception.RepositoryException;
 import eu.koboo.en2do.mongodb.exception.repository.*;
@@ -194,5 +196,13 @@ public class RepositoryIndexer<E, ID, R extends Repository<E, ID>> {
             return field;
         }
         throw new RepositoryTypeIdNotFoundException(repositoryClass, entityClass);
+    }
+
+    public RepositoryData<E, ID, R> index(MongoCollection<E> entityCollection) {
+        return new RepositoryData<>(
+            mongoManager,
+            this,
+            entityCollection
+        );
     }
 }

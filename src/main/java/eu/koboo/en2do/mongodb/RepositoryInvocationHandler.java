@@ -36,14 +36,8 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
     @Override
     @SuppressWarnings("all")
     public Object invoke(Object proxy, Method method, Object[] arguments) throws Throwable {
-
         // Create value of the final methodName
-        String tempMethodName = method.getName();
-        Transform transform = method.getAnnotation(Transform.class);
-        if (transform != null) {
-            tempMethodName = transform.value();
-        }
-        String methodName = tempMethodName;
+        String methodName = method.getName();
 
         // Get and check if a static handler for the methodName is available.
         GlobalPredefinedMethod methodHandler = methodRegistry.getPredefinedMethod(methodName);
@@ -58,7 +52,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
         IndexedMethod<E, ID, R> dynamicMethod = repositoryData.lookupDynamicMethod(methodName);
         if (dynamicMethod == null) {
             // No handling found for method with this name.
-            throw new MethodUnsupportedException(method, repositoryData.getRepositoryClass());
+            throw new MethodUnsupportedException(repositoryData.getRepositoryClass(), method);
         }
 
 
@@ -140,7 +134,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             default:
                 // Couldn't find any match method operator, but that shouldn't happen.
                 // If this exception is thrown, I forgot something to implement :D
-                throw new MethodInvalidCallException(method, repositoryData.getRepositoryClass());
+                throw new MethodInvalidCallException(repositoryData.getRepositoryClass(), method);
         }
     }
 
