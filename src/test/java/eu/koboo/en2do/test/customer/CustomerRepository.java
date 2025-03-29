@@ -29,9 +29,8 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
 
     long countByFirstName(String firstName);
 
-//    @Transform("countByCustomerIdExistsAndCustomerId")
-//    @Async
-//    CompletableFuture<Long> asyncCountCustomerId(int customerId);
+    @Transform("countByCustomerIdExistsAndCustomerId")
+    CompletableFuture<Long> asyncCountCustomerId(int customerId);
 
     long countByCustomerId(int customerId);
 
