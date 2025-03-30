@@ -1,11 +1,14 @@
 version: '3.8'
+name: en2do-development
 services:
-  mongodb:
-    image: mongo:6-jammy
-    ports:
-      - '27017:27017'
-    volumes:
-      - database:/data
+    mongodb:
+        container_name: mongodb-6
+        restart: always
+        image: mongo:6-jammy
+        ports:
+            - '27017:27017'
+        volumes:
+            - database:/data
 volumes:
-  database:
-    driver: local
+    database:
+        driver: local
