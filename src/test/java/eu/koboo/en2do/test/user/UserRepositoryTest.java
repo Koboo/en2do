@@ -24,6 +24,7 @@ public class UserRepositoryTest extends RepositoryTest<User, UUID, UserRepositor
         user.setUniqueId(userId);
         user.setUserName("TestName");
         user.setEmail("test@test.com");
+        user.setSuperUser(true);
 
         repository.save(user);
     }

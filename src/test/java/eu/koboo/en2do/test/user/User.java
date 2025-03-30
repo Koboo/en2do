@@ -19,6 +19,9 @@ public class User {
 
     String userName;
     String email;
+    // That property won't be saved, if method properties are disabled,
+    // because mongodb maps it to "superUser" instead of "isSuperUser".
+    boolean isSuperUser = false;
 
     Date registrationDate;
     Date lastLoginDate;
