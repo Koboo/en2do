@@ -169,7 +169,7 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
     }
 
     public FindIterable<E> sort(Method method, FindIterable<E> findIterable,
-                                Map<String, Boolean> sortDirection, int limit, int skip) throws Exception {
+                                Map<String, Boolean> sortDirection, int limit, int skip) {
         if (sortDirection != null && sortDirection.isEmpty()) {
             findIterable = sortDirection(findIterable, sortDirection);
         }
@@ -193,7 +193,7 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
 
     private FindIterable<E> sortDirection(FindIterable<E> findIterable, Map<String, Boolean> fieldSortMap) {
         if (findIterable == null) {
-            return findIterable;
+            return null;
         }
 
         if (fieldSortMap == null || fieldSortMap.isEmpty()) {

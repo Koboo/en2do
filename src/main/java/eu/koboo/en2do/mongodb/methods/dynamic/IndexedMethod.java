@@ -75,7 +75,7 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
 
     @SuppressWarnings("unchecked")
     private Bson processBson(IndexedFilter filter, int paramsIndexAt,
-                             Object[] args) throws Exception {
+                             Object[] args) {
         String bsonFilterFieldKey = filter.getBsonFilterFieldKey();
 
         // Check if the id field of the entity is used.

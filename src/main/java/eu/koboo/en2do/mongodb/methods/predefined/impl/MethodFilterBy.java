@@ -17,7 +17,7 @@ public class MethodFilterBy extends GlobalPredefinedMethod {
 
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
-                                                              Method method, Object[] arguments) throws Exception {
+                                                              Method method, Object[] arguments) {
         Object filterArg = arguments[0];
         if(!(filterArg instanceof Bson)) {
             throw new IllegalArgumentException();

@@ -72,7 +72,7 @@ public class SettingsBuilder {
 
     /**
      * Defines the wanted ServerApi of the mongodb server.
-     * This enables several compatbility settings inside the
+     * This enables several compatibility settings inside the
      * mongodb driver itself.
      * See here: <a href="https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/stable-api">...</a>
      */

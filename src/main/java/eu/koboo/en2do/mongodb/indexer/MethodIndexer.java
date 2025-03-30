@@ -27,7 +27,6 @@ import java.util.*;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
 
-    final PredefinedMethodRegistry predefinedMethodRegistry;
     final RepositoryIndexer<E, ID, R> repositoryIndexer;
     final Class<R> repositoryClass;
     final Class<E> entityClass;
@@ -49,7 +48,6 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
     public MethodIndexer(PredefinedMethodRegistry predefinedMethodRegistry,
                          RepositoryIndexer<E, ID, R> repositoryIndexer,
                          Method method) {
-        this.predefinedMethodRegistry = predefinedMethodRegistry;
         this.repositoryIndexer = repositoryIndexer;
         this.repositoryClass = repositoryIndexer.getRepositoryClass();
         this.entityClass = repositoryIndexer.getEntityClass();
