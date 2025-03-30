@@ -3,7 +3,8 @@
 ![Discord](https://img.shields.io/discord/1021053609359708211)
 ![Maven](https://img.shields.io/maven-central/v/eu.koboo/en2do)
 
-**_en2do_** is short for **_Entity-To-Document_**, is heavily inspired by [Spring Data](https://spring.io/projects/spring-data) and
+**_en2do_** is short for **_Entity-To-Document_**, is heavily inspired
+by [Spring Data](https://spring.io/projects/spring-data) and
 only works with MongoDB.
 
 ## Links
@@ -18,22 +19,25 @@ only works with MongoDB.
 en2do is published on [maven central](https://central.sonatype.com/).
 
 ### Maven
+
 ```xml
 <dependency>
     <groupId>eu.koboo</groupId>
     <artifactId>en2do</artifactId>
-    <version>3.1.10</version>
+    <version>3.2.0</version>
 </dependency>
 ```
 
 ### Gradle Groovy
+
 ```groovy
-implementation 'eu.koboo:en2do:3.1.10'
+implementation 'eu.koboo:en2do:3.2.0'
 ```
 
 ### Gradle Kotlin
+
 ```groovy
-implementation("eu.koboo:en2do:3.1.10")
+implementation("eu.koboo:en2do:3.2.0")
 ```
 
 ### References
