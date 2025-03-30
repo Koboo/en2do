@@ -16,7 +16,7 @@ public final class ClientConfiguratorServerApi implements ClientConfigurator {
 
     @Override
     public void configure(MongoClientSettings.Builder settingsBuilder) {
-        if(serverApi == null) {
+        if (serverApi == null) {
             throw new NullPointerException("serverApi is null");
         }
         settingsBuilder.serverApi(serverApi);

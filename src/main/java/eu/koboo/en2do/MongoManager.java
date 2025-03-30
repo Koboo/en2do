@@ -103,7 +103,7 @@ public final class MongoManager {
             .codecRegistry(codecRegistry);
 
         Set<ClientConfigurator> clientConfiguratorSet = settingsBuilder.getClientConfiguratorSet();
-        if(clientConfiguratorSet != null && !clientConfiguratorSet.isEmpty()) {
+        if (clientConfiguratorSet != null && !clientConfiguratorSet.isEmpty()) {
             for (ClientConfigurator clientConfigurator : clientConfiguratorSet) {
                 clientConfigurator.configure(clientSettingsBuilder);
             }
