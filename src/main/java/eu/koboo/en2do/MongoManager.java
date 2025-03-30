@@ -82,10 +82,11 @@ public class MongoManager {
                 .register(internalPropertyCodecProvider)
                 .automatic(true)
                 .conventions(List.of(
-                    new AnnotationConvention(),
-                    new MethodMappingConvention(this, parser),
                     Conventions.ANNOTATION_CONVENTION,
-                    Conventions.SET_PRIVATE_FIELDS_CONVENTION
+                    Conventions.SET_PRIVATE_FIELDS_CONVENTION,
+                    Conventions.USE_GETTERS_FOR_SETTERS,
+                    new AnnotationConvention(),
+                    new MethodMappingConvention(this)
                 ))
                 .build())
         );
