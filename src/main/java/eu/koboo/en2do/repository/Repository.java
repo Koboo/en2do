@@ -4,6 +4,7 @@ import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Sort;
+import org.bson.conversions.Bson;
 
 import java.util.Collection;
 import java.util.List;
@@ -179,6 +180,15 @@ public interface Repository<E, ID> {
      * @return true, if the operation was successful.
      */
     boolean updateAllFields(UpdateBatch updateBatch);
+
+    /**
+     * This method uses the native mongodb bson object to filter.
+     * This allows dynamic filter construction
+     * instead of hard defining methods in the repository.
+     *
+     * @return The list of entities, based on the given filter.
+     */
+    List<E> filterBy(Bson bsonFilter);
 
     /**
      * Allows access to the native mongodb collection,

@@ -28,6 +28,7 @@ public class PredefinedMethodRegistry {
         registerPredefinedMethod(new MethodExists());
         registerPredefinedMethod(new MethodExistsById());
         registerPredefinedMethod(new MethodFindAll());
+        registerPredefinedMethod(new MethodFilterBy());
         registerPredefinedMethod(new MethodFindFirstById());
         registerPredefinedMethod(new MethodGetClass());
         registerPredefinedMethod(new MethodGetCollectionName());
