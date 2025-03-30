@@ -1,7 +1,6 @@
 package eu.koboo.en2do.mongodb.convention;
 
 import eu.koboo.en2do.MongoManager;
-import eu.koboo.en2do.mongodb.indexparser.IndexParser;
 import eu.koboo.en2do.utility.reflection.FieldUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,6 @@ import java.util.Set;
 public class MethodMappingConvention implements Convention {
 
     MongoManager mongoManager;
-    IndexParser parser;
 
     /**
      * @param classModelBuilder the ClassModelBuilder to apply the convention to
