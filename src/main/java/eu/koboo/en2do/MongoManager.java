@@ -2,6 +2,7 @@ package eu.koboo.en2do;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.MongoCompressor;
 import com.mongodb.ServerApi;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -106,6 +107,11 @@ public class MongoManager {
         ServerApi serverApi = settingsBuilder.getServerApi();
         if (serverApi != null) {
             clientSettingsBuilder.serverApi(serverApi);
+        }
+
+        Set<MongoCompressor> mongoCompressors = settingsBuilder.getCompressorSet();
+        if(mongoCompressors != null && !mongoCompressors.isEmpty()) {
+            clientSettingsBuilder.compressorList(List.copyOf(mongoCompressors));
         }
 
         MongoClientSettings clientSettings = clientSettingsBuilder.build();

@@ -1,11 +1,16 @@
 package eu.koboo.en2do;
 
+import com.mongodb.MongoCompressor;
 import com.mongodb.ServerApi;
 import eu.koboo.en2do.repository.NameConvention;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 
 @SuppressWarnings("unused")
@@ -77,6 +82,12 @@ public class SettingsBuilder {
      * See here: <a href="https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/stable-api">...</a>
      */
     ServerApi serverApi = null;
+
+    /**
+     * Defines the compressors, which can be used by the MongoClient.
+     * See here: <a href=https://www.mongodb.com/docs/drivers/java/sync/current/connection/specify-connection-options/network-compression/#specify-compression-algorithms>...</a>
+     */
+    Set<MongoCompressor> compressorSet = null;
 
     /**
      * See field documentation.
@@ -178,6 +189,11 @@ public class SettingsBuilder {
      */
     public SettingsBuilder serverApi(ServerApi serverApi) {
         this.serverApi = serverApi;
+        return this;
+    }
+
+    public SettingsBuilder compressors(Collection<MongoCompressor> compressorCollection) {
+        this.compressorSet = new HashSet<>(compressorCollection);
         return this;
     }
 
