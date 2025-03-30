@@ -1,14 +1,11 @@
 package eu.koboo.en2do;
 
-import com.mongodb.MongoCompressor;
-import com.mongodb.ServerApi;
 import eu.koboo.en2do.repository.NameConvention;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -16,7 +13,7 @@ import java.util.logging.Level;
 @SuppressWarnings("unused")
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class SettingsBuilder {
+public final class SettingsBuilder {
 
     /**
      * Defines the logger level for the mongodb loggers
@@ -76,18 +73,12 @@ public class SettingsBuilder {
     NameConvention collectionNameConvention = null;
 
     /**
-     * Defines the wanted ServerApi of the mongodb server.
-     * This enables several compatibility settings inside the
-     * mongodb driver itself.
-     * See here: <a href="https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/stable-api">...</a>
+     * A collection of all client configurator, which are
+     * executed, to allow access on the native MongoClientSettings.Builder instance
+     * before the MongoClient is created.
+     * USE WITH CAUTION. You could mess up the en2do configurations.
      */
-    ServerApi serverApi = null;
-
-    /**
-     * Defines the compressors, which can be used by the MongoClient.
-     * See here: <a href=https://www.mongodb.com/docs/drivers/java/sync/current/connection/specify-connection-options/network-compression/#specify-compression-algorithms>...</a>
-     */
-    Set<MongoCompressor> compressorSet = null;
+    Set<ClientConfigurator> clientConfiguratorSet = null;
 
     /**
      * See field documentation.
@@ -184,16 +175,28 @@ public class SettingsBuilder {
     /**
      * See field documentation.
      *
-     * @param serverApi The value
+     * @param configurator The value
      * @return This builder
      */
-    public SettingsBuilder serverApi(ServerApi serverApi) {
-        this.serverApi = serverApi;
+    public SettingsBuilder clientConfigurator(ClientConfigurator configurator) {
+        if (clientConfiguratorSet == null) {
+            clientConfiguratorSet = new HashSet<>();
+        }
+        clientConfiguratorSet.add(configurator);
         return this;
     }
 
-    public SettingsBuilder compressors(Collection<MongoCompressor> compressorCollection) {
-        this.compressorSet = new HashSet<>(compressorCollection);
+    /**
+     * See field documentation.
+     *
+     * @param configurators The value
+     * @return This builder
+     */
+    public SettingsBuilder clientConfigurators(Collection<ClientConfigurator> configurators) {
+        if (clientConfiguratorSet == null) {
+            clientConfiguratorSet = new HashSet<>();
+        }
+        clientConfiguratorSet.addAll(configurators);
         return this;
     }
 

@@ -2,8 +2,6 @@ package eu.koboo.en2do;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
-import com.mongodb.MongoCompressor;
-import com.mongodb.ServerApi;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -45,7 +43,7 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @SuppressWarnings("unused")
-public class MongoManager {
+public final class MongoManager {
 
     @Getter
     SettingsBuilder settingsBuilder;
@@ -104,14 +102,11 @@ public class MongoManager {
             .uuidRepresentation(UuidRepresentation.STANDARD)
             .codecRegistry(codecRegistry);
 
-        ServerApi serverApi = settingsBuilder.getServerApi();
-        if (serverApi != null) {
-            clientSettingsBuilder.serverApi(serverApi);
-        }
-
-        Set<MongoCompressor> mongoCompressors = settingsBuilder.getCompressorSet();
-        if(mongoCompressors != null && !mongoCompressors.isEmpty()) {
-            clientSettingsBuilder.compressorList(List.copyOf(mongoCompressors));
+        Set<ClientConfigurator> clientConfiguratorSet = settingsBuilder.getClientConfiguratorSet();
+        if(clientConfiguratorSet != null && !clientConfiguratorSet.isEmpty()) {
+            for (ClientConfigurator clientConfigurator : clientConfiguratorSet) {
+                clientConfigurator.configure(clientSettingsBuilder);
+            }
         }
 
         MongoClientSettings clientSettings = clientSettingsBuilder.build();
