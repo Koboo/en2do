@@ -8,8 +8,6 @@ import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.util.Collection;
 
 /**
  * Represents the MethodOperator of a method inside a repository.
@@ -72,27 +70,6 @@ public enum MethodOperator {
             }
         },
         0
-    ),
-    /**
-     * Creates pagination on all entities with the given filters.
-     */
-    PAGE(
-        "page",
-        (method, entityClass, repositoryClass) -> {
-            ParameterizedType parameterizedType = ParseUtils.decapsulateFuture(method);
-            Class<?> parameterizedReturnClass = (Class<?>) parameterizedType.getRawType();
-            if (!Collection.class.isAssignableFrom(parameterizedReturnClass)) {
-                throw new MethodReturnTypeException(repositoryClass, method, "Collection<?>");
-            }
-
-            Class<?> returnTypeClass = ParseUtils.parseValidatableReturnType(method);
-            if (!returnTypeClass.isAssignableFrom(entityClass)) {
-                String entityName = entityClass.getSimpleName();
-                throw new MethodReturnTypeException(repositoryClass, method,
-                    "Collection<" + entityName + ">");
-            }
-        },
-        1
     ),
     /**
      * Updates specific fields on all entities with the given filters.

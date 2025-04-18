@@ -142,17 +142,18 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
     }
 
     public FindIterable<E> applyPageObject(Method method,
-                                           FindIterable<E> findIterable, Object[] args) throws Exception {
-        // Pagination should always be the last parameter of the method.
-        // But of whatever reason, we could do something in the validation wrong,
-        // so we catch the class casting exception anyway.
-        Object parameterObject = args[args.length - 1];
-        Pagination pagination;
-        try {
-            pagination = (Pagination) parameterObject;
-        } catch (ClassCastException e) {
-            throw new RuntimeException("Invalid Pagination object " + parameterObject.getClass() + ": ", e);
+                                           FindIterable<E> findIterable,
+                                           Object[] args) {
+        // Check if the last parameter of the method is a Pagination object,
+        // and if so, we apply the pagination options to the findIterable.
+        if(args == null || args.length == 0) {
+            return findIterable;
         }
+        Object parameterObject = args[args.length - 1];
+        if(!(parameterObject instanceof Pagination)) {
+            return findIterable;
+        }
+        Pagination pagination = (Pagination) parameterObject;
 
         // We do not allow pages lower or equal to zero. The results
         // would just be empty, so we throw an exception to not allow that.
@@ -175,14 +176,14 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
         }
 
         if (skip != -1) {
-            if (skip <= 0) {
+            if (skip < 0) {
                 throw new MethodInvalidSortSkipException(repositoryClass, method);
             }
             findIterable = findIterable.skip(skip);
         }
 
         if (limit != -1) {
-            if (limit <= 0) {
+            if (limit < 0) {
                 throw new MethodInvalidSortLimitException(repositoryClass, method);
             }
             findIterable = findIterable.limit(limit);

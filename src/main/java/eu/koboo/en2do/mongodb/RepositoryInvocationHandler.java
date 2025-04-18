@@ -88,6 +88,7 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 findIterable = repositoryData.createFindIterableBase(filter, methodName);
                 findIterable = repositoryData.applySortObject(method, findIterable, arguments);
                 findIterable = repositoryData.applySortAnnotations(method, findIterable);
+                findIterable = repositoryData.applyPageObject(method, findIterable, arguments);
 
                 // Because it's a find method, we always got an entity defined count.
                 // This specifically defines the amount of returned entities.
@@ -118,10 +119,6 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                     return findIterable.into(new ArrayList<>());
                 }
                 return findIterable.first();
-            case PAGE:
-                findIterable = repositoryData.createFindIterableBase(filter, methodName);
-                findIterable = repositoryData.applyPageObject(method, findIterable, arguments);
-                return findIterable.into(new ArrayList<>());
             case UPDATE_FIELD:
                 UpdateBatch updateBatch = (UpdateBatch) arguments[arguments.length - 1];
                 UpdateResult result = collection.updateMany(

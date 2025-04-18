@@ -274,76 +274,67 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
     }
 
     private int getExpectedParameterCount() {
-        int expectedParameterAmount = methodOperator.getAdditionalParameters();
+        int operatorExpectedParameterCount = methodOperator.getAdditionalParameters();
         for (IndexedFilter indexedFilter : indexedFilters) {
-            expectedParameterAmount += indexedFilter.getOperator().getExpectedParameterCount();
+            operatorExpectedParameterCount += indexedFilter.getOperator().getExpectedParameterCount();
         }
-        return expectedParameterAmount;
+        return operatorExpectedParameterCount;
     }
 
     private void validateParameterCount() {
-        int expectedParameterAmount = getExpectedParameterCount();
-        int actualParameterAmount = method.getParameterCount();
-        if (expectedParameterAmount == actualParameterAmount) {
-            return;
-        }
-        if (actualParameterAmount == 0) {
-            if (methodOperator == MethodOperator.PAGE) {
-                throw new MethodPageRequiredException(repositoryClass, method);
-            }
-            return;
-        }
+        int expectedParameterCount = getExpectedParameterCount();
+        int methodParameterCount = method.getParameterCount();
 
-        if (actualParameterAmount > 0) {
+        if (methodParameterCount > 0) {
             // Subtract 1 from parameterCount. This object could be a Sort or Pagination object.
-            // That means, the expectedParameterCount is less than the actualParameterCount.
-            int lastParameterIndex = (expectedParameterAmount + 1);
-            Class<?> lastMethodParameter = method.getParameterTypes()[actualParameterAmount - 1];
-            if (lastMethodParameter.isAssignableFrom(Sort.class)) {
-                if (methodOperator == MethodOperator.PAGE) {
+            // That means the expectedParameterCount is less than the methodParameterCount.
+            int optionalExpectedParameterCount = (expectedParameterCount + 1);
+            Class<?> lastParameterType = method.getParameterTypes()[methodParameterCount - 1];
+            if (lastParameterType.isAssignableFrom(Sort.class)) {
+                if (methodOperator != MethodOperator.FIND) {
                     throw new MethodSortNotAllowedException(repositoryClass, method);
                 }
-                if (lastParameterIndex != actualParameterAmount) {
-                    throw new MethodParameterCountException(repositoryClass, method, lastParameterIndex);
+                if (optionalExpectedParameterCount != methodParameterCount) {
+                    throw new MethodParameterCountException(repositoryClass, method, optionalExpectedParameterCount);
                 }
             }
-            if (lastMethodParameter.isAssignableFrom(Pagination.class)) {
-                if (methodOperator != MethodOperator.PAGE) {
+            if (lastParameterType.isAssignableFrom(Pagination.class)) {
+                if (methodOperator != MethodOperator.FIND) {
                     throw new MethodPageNotAllowedException(repositoryClass, method);
                 }
-                if (lastParameterIndex != actualParameterAmount) {
-                    throw new MethodParameterCountException(repositoryClass, method, lastParameterIndex);
+                if (optionalExpectedParameterCount != methodParameterCount) {
+                    throw new MethodParameterCountException(repositoryClass, method, optionalExpectedParameterCount);
                 }
             }
-            if (lastMethodParameter.isAssignableFrom(UpdateBatch.class)) {
+            if (lastParameterType.isAssignableFrom(UpdateBatch.class)) {
                 if (methodOperator != MethodOperator.UPDATE_FIELD) {
                     throw new MethodBatchNotAllowedException(repositoryClass, method);
                 }
-                if (lastParameterIndex != actualParameterAmount) {
-                    throw new MethodParameterCountException(repositoryClass, method, lastParameterIndex);
+                if (expectedParameterCount != methodParameterCount) {
+                    throw new MethodParameterCountException(repositoryClass, method, optionalExpectedParameterCount);
                 }
             }
             return;
         }
-        throw new MethodParameterCountException(repositoryClass, method, expectedParameterAmount);
+        if (expectedParameterCount == methodParameterCount) {
+            return;
+        }
+        throw new MethodParameterCountException(repositoryClass, method, expectedParameterCount);
     }
 
     void validateParameterTypes() {
         // Check if the method has the Sort annotation set.
         SortBy sortAnnotation = method.getAnnotation(SortBy.class);
         if (sortAnnotation != null) {
-            if (methodOperator == MethodOperator.PAGE) {
-                throw new MethodSortNotAllowedException(repositoryClass, method);
-            }
             String sortFieldName = sortAnnotation.field();
             Field field = parseFieldByBsonKey(sortFieldName);
             if (field == null) {
                 throw new MethodSortFieldNotFoundException(repositoryClass, method, sortFieldName);
             }
         }
-        int actualParameterCount = method.getParameterCount();
-        if (actualParameterCount > 0) {
-            Class<?> lastMethodParameter = method.getParameterTypes()[actualParameterCount - 1];
+        int methodParameterCount = method.getParameterCount();
+        if (methodParameterCount > 0) {
+            Class<?> lastMethodParameter = method.getParameterTypes()[methodParameterCount - 1];
             // Check if both Sort types are used.
             // This is not allowed, even if it is possible internally.
             // En2do is capable of handling it, but I don't know the result.
