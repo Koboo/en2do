@@ -90,7 +90,8 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
     @Transform("findManyByStreet")
     List<Customer> myTransformedMethod2(String street);
 
-    List<Customer> pageByCustomerIdNot(int customerId, Pagination sorter);
+    @Transform("findManyByCustomerIdNot")
+    List<Customer> paginationTest(int customerId, Pagination pagination);
 
     boolean updateFieldsByFirstName(String firstName, UpdateBatch updateBatch);
 
@@ -112,7 +113,7 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
     List<Customer> findManyByOrdersNotListEmpty();
 
     // Async methods don't have to end with "Async".
-    // The two methods below, are transformed, because their names
+    // The two methods below are transformed because their names
     // would clash with the predefined methods of the repository.
     @Transform("findFirstByUniqueId")
     CompletableFuture<Customer> findFirstAsync(UUID id);
