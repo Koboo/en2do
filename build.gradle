@@ -42,9 +42,13 @@ test {
     useJUnitPlatform()
 }
 
-compileJava {
+java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
+    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+}
+
+compileJava {
     options.fork = true
     options.encoding = 'UTF-8'
     options.release.set(11)
