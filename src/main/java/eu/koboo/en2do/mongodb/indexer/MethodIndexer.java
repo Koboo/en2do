@@ -53,7 +53,7 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
         this.entityClass = repositoryIndexer.getEntityClass();
         this.method = method;
 
-        this.nestedBsonKeySet = parseInnerKeys();
+        this.nestedBsonKeySet = parseInnerNestedBsonKeys();
 
         // Resolve the method name, which should be parsed
         parsableMethodName = method.getName();
@@ -80,7 +80,7 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
         validateParameterTypes();
     }
 
-    public MethodOperator parseMethodOperator() {
+    private MethodOperator parseMethodOperator() {
         // Parse the MethodOperator by the methodName
         for (MethodOperator operator : MethodOperator.VALUES) {
             String keyword = operator.getKeyword();
@@ -97,7 +97,7 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
         throw new MethodNoMethodOperatorException(repositoryClass, method);
     }
 
-    public AmountType parseAmountType() {
+    private AmountType parseAmountType() {
         for (AmountType amountType : AmountType.VALUES) {
             String keyword = amountType.getKeyword();
             if (!parsableMethodName.startsWith(keyword)) {
@@ -109,7 +109,7 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
         return null;
     }
 
-    public long parseEntityAmount() {
+    private long parseEntityAmount() {
         if (amountType == null) {
             return -1;
         }
@@ -134,17 +134,17 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
         }
     }
 
-    public void removeFilterStartIndicator() {
+    private void removeFilterStartIndicator() {
         // Remove the keyword "By" from the method name.
         parsableMethodName = parsableMethodName.replaceFirst("By", "");
     }
 
-    public Set<NestedBsonKey> parseInnerKeys() {
+    private Set<NestedBsonKey> parseInnerNestedBsonKeys() {
         NestedBsonKey[] annotationsByType = method.getAnnotationsByType(NestedBsonKey.class);
         return new LinkedHashSet<>(Arrays.asList(annotationsByType));
     }
 
-    public String parseNextBsonKey() {
+    private String parseNextBsonKey() {
         String bsonFilterKey = null;
         // Check if we can find any nested fields
         for (NestedBsonKey nestedBsonKey : nestedBsonKeySet) {
