@@ -17,11 +17,13 @@ import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.*;
 import eu.koboo.en2do.repository.methods.transform.NestedBsonKey;
 import eu.koboo.en2do.repository.methods.transform.Transform;
+import eu.koboo.en2do.utility.parse.ParseUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -111,7 +113,13 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
             parsableMethodName = parsableMethodName.replaceFirst(keyword, "");
             return amountType;
         }
-        return null;
+        // Couldn't find an AmountType by their respective keyword.
+        // Let's try to find an AmountType by the return type. THe return type
+        // is already validated and can only be a single entity or a list/collection of entities.
+        if(ParseUtils.isReturnTypeOfCollection(method)) {
+            return AmountType.MANY;
+        }
+        return AmountType.FIRST;
     }
 
     private long parseEntityAmount() {

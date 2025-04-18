@@ -83,6 +83,11 @@ public class ParseUtils {
         return PrimitiveUtils.wrapperOf(entityTypeClass);
     }
 
+    public boolean isReturnTypeOfCollection(Method method) {
+        ParameterizedType parameterizedType = decapsulateFuture(method);
+        return parameterizedType != null;
+    }
+
     public ParameterizedType decapsulateFuture(Method method) {
         Class<?> returnType = method.getReturnType();
         if (!CompletableFuture.class.isAssignableFrom(returnType)) {
