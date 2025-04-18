@@ -98,6 +98,11 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
     }
 
     private AmountType parseAmountType() {
+        // Only find makes use of the AmountType.
+        // Ignore if we got a different MethodOperator.
+        if(methodOperator != MethodOperator.FIND) {
+            return null;
+        }
         for (AmountType amountType : AmountType.VALUES) {
             String keyword = amountType.getKeyword();
             if (!parsableMethodName.startsWith(keyword)) {
@@ -110,6 +115,11 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
     }
 
     private long parseEntityAmount() {
+        // Only find makes use of the AmountType.
+        // Ignore if we got a different MethodOperator.
+        if(methodOperator != MethodOperator.FIND) {
+            return -1;
+        }
         if (amountType == null) {
             return -1;
         }
