@@ -146,11 +146,11 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
                                            Object[] args) {
         // Check if the last parameter of the method is a Pagination object,
         // and if so, we apply the pagination options to the findIterable.
-        if(args == null || args.length == 0) {
+        if (args == null || args.length == 0) {
             return findIterable;
         }
         Object parameterObject = args[args.length - 1];
-        if(!(parameterObject instanceof Pagination)) {
+        if (!(parameterObject instanceof Pagination)) {
             return findIterable;
         }
         Pagination pagination = (Pagination) parameterObject;

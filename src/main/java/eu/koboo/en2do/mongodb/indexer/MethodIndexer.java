@@ -23,7 +23,6 @@ import lombok.experimental.FieldDefaults;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -102,7 +101,7 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
     private AmountType parseAmountType() {
         // Only find makes use of the AmountType.
         // Ignore if we got a different MethodOperator.
-        if(methodOperator != MethodOperator.FIND) {
+        if (methodOperator != MethodOperator.FIND) {
             return null;
         }
         for (AmountType amountType : AmountType.VALUES) {
@@ -116,7 +115,7 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
         // Couldn't find an AmountType by their respective keyword.
         // Let's try to find an AmountType by the return type. THe return type
         // is already validated and can only be a single entity or a list/collection of entities.
-        if(ParseUtils.isReturnTypeOfCollection(method)) {
+        if (ParseUtils.isReturnTypeOfCollection(method)) {
             return AmountType.MANY;
         }
         return AmountType.FIRST;
@@ -125,7 +124,7 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
     private long parseEntityAmount() {
         // Only find makes use of the AmountType.
         // Ignore if we got a different MethodOperator.
-        if(methodOperator != MethodOperator.FIND) {
+        if (methodOperator != MethodOperator.FIND) {
             return -1;
         }
         if (amountType == null) {
