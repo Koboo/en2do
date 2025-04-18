@@ -34,7 +34,7 @@ dependencies {
     testImplementation("org.junit.platform:junit-platform-launcher:1.12.2")
 
     // SLF4j logger for test-suite
-    def slf4jVersion = "2.0.16"
+    def slf4jVersion = "2.0.17"
     testImplementation("org.slf4j:slf4j-jdk14:$slf4jVersion")
 }
 
