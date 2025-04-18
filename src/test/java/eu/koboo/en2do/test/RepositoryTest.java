@@ -1,13 +1,16 @@
 package eu.koboo.en2do.test;
 
+import com.mongodb.MongoCompressor;
 import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.SettingsBuilder;
+import eu.koboo.en2do.configurators.ClientConfiguratorCompressors;
 import eu.koboo.en2do.repository.Repository;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.java.Log;
 import org.junit.jupiter.api.*;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,6 +28,8 @@ public abstract class RepositoryTest<E, ID, R extends Repository<E, ID>> {
     public void setup() {
         log.info("Starting Unit-Test: " + getClass().getSimpleName());
         SettingsBuilder settingsBuilder = new SettingsBuilder()
+            .clientConfigurator(new ClientConfiguratorCompressors(Collections.singletonList(MongoCompressor.createZlibCompressor())))
+            .appendMethodNameAsQueryComment()
             .disableMongoDBLogger();
 
         manager = new MongoManager(settingsBuilder);
