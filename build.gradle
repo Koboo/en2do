@@ -31,6 +31,7 @@ dependencies {
     def jupiterVersion = "5.12.0"
     testImplementation("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
+    testImplementation("org.junit.platform:junit-platform-launcher:1.12.2")
 
     // SLF4j logger for test-suite
     def slf4jVersion = "2.0.16"
