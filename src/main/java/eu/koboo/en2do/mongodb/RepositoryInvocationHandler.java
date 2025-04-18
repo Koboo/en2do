@@ -90,15 +90,15 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 findIterable = repositoryData.applySortAnnotations(method, findIterable);
                 findIterable = repositoryData.applyPageObject(method, findIterable, arguments);
 
-                // Because it's a find method, we always got an entity defined count.
-                // This specifically defines the amount of returned entities.
+                // Because it's a find method, we always got an entity-defined count.
+                // This specifically defines the number of returned entities.
                 // See below:
                 // "Many" = -1 / unlimited
-                // "Top10" = user specific count of "10"
+                // "Top10" = user-specific count of "10"
                 // "First" = 1 / first entity
                 AmountType amountType = indexedMethod.getAmountType();
                 if (amountType == null) {
-                    throw new ReportException("Your find method lacks of amount specification.\n" +
+                    throw new ReportException("Your find method lacks of an amount specification.\n" +
                         "This is a very rare case, this should already be checked on start validation.\n");
                 }
                 long entityAmount = indexedMethod.getEntityAmount();
