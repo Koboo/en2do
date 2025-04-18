@@ -23,12 +23,12 @@ public interface Repository<E, ID> {
     /**
      * This method counts all documents of the collection in the mongodb.
      *
-     * @return The amount of total entities in this repository.
+     * @return The number of total entities in this repository.
      */
     long countAll();
 
     /**
-     * This method deletes the given entity, by filtering with the entity's "@Id" field/unique identifier.
+     * This method deletes the given entity by filtering with the entity's "@Id" field/unique identifier.
      *
      * @param entity The entity, which should be deleted.
      * @return true, if the entity was deleted successfully.
@@ -37,7 +37,7 @@ public interface Repository<E, ID> {
 
     /**
      * This method deletes all entities of the repository.
-     * Difference between drop is, that the indices stay the same.
+     * The difference between deleteAll() and drop() is that the indices stay the same.
      *
      * @return true, if entities were successfully deleted.
      */
@@ -160,7 +160,7 @@ public interface Repository<E, ID> {
     /**
      * Saves all entities of the given List to the database.
      *
-     * @param entityList A List of the entities, which should be saved
+     * @param entityList A List of the entities which should be saved
      * @return true, if the entities were successfully saved.
      */
     boolean saveAll(Collection<E> entityList);
