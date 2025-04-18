@@ -10,7 +10,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class GeoTest extends RepositoryTest<GeoEntity, UUID, GeoEntityRepository> {
+public class GeoQueryTest extends RepositoryTest<GeoEntity, UUID, GeoEntityRepository> {
 
     static final GeoEntity ENTITY;
 
