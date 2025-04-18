@@ -1,9 +1,11 @@
 package eu.koboo.en2do.mongodb.exception.repository;
 
-public class RepositoryGetterNotFoundException extends Exception {
+import eu.koboo.en2do.mongodb.exception.RepositoryTypeException;
 
-    public RepositoryGetterNotFoundException(Class<?> typeClass, Class<?> repoClass, String fieldName) {
-        super("The class " + typeClass.getName() + " used in repository " + repoClass.getName() + " " +
-            "uses a invalid or no getter method for the field \"" + fieldName + "\"!");
+public class RepositoryGetterNotFoundException extends RepositoryTypeException {
+
+    public RepositoryGetterNotFoundException(Class<?> typeClass, Class<?> repositoryClass, String fieldName) {
+        super("No getter method for the field \"" + fieldName + "\"!",
+            repositoryClass, typeClass);
     }
 }

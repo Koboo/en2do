@@ -1,16 +1,14 @@
 package eu.koboo.en2do.test.customer;
 
-import eu.koboo.en2do.repository.AsyncRepository;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.Repository;
-import eu.koboo.en2do.repository.methods.async.Async;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Limit;
 import eu.koboo.en2do.repository.methods.sort.Skip;
 import eu.koboo.en2do.repository.methods.sort.Sort;
 import eu.koboo.en2do.repository.methods.sort.SortBy;
-import eu.koboo.en2do.repository.methods.transform.NestedField;
+import eu.koboo.en2do.repository.methods.transform.NestedBsonKey;
 import eu.koboo.en2do.repository.methods.transform.Transform;
 
 import java.util.List;
@@ -19,7 +17,11 @@ import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
 @Collection("customer_repository")
-public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRepository<Customer, UUID> {
+public interface CustomerRepository extends Repository<Customer, UUID> {
+
+    Customer findOneByUniqueId(UUID id);
+
+    List<Customer> findAllByUniqueIdExists();
 
     Customer findFirstByFirstNameAndUniqueId(String firstName, UUID uniqueId);
 
@@ -28,7 +30,6 @@ public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRep
     long countByFirstName(String firstName);
 
     @Transform("countByCustomerIdExistsAndCustomerId")
-    @Async
     CompletableFuture<Long> asyncCountCustomerId(int customerId);
 
     long countByCustomerId(int customerId);
@@ -47,17 +48,17 @@ public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRep
 
     Customer findFirstByBalanceGreaterEq(double balance);
 
-    Customer findFirstByBalanceLessEq(double balance);
+    Customer findByBalanceLessEq(double balance);
 
     Customer findFirstByFirstNameRegex(String namePart);
 
     Customer findFirstByFirstNameExists();
 
-    List<Customer> findManyByFirstNameExists();
+    List<Customer> findByFirstNameExists();
 
     List<Customer> findTop20ByFirstNameExists();
 
-    Customer findFirstByFirstNameContains(String partOfFirstName);
+    Customer findByFirstNameContains(String partOfFirstName);
 
     List<Customer> findManyByBalanceBetweenAndCustomerId(double from, double to, int customerId);
 
@@ -89,13 +90,14 @@ public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRep
     @Transform("findManyByStreet")
     List<Customer> myTransformedMethod2(String street);
 
-    List<Customer> pageByCustomerIdNot(int customerId, Pagination sorter);
+    @Transform("findManyByCustomerIdNot")
+    List<Customer> paginationTest(int customerId, Pagination pagination);
 
     boolean updateFieldsByFirstName(String firstName, UpdateBatch updateBatch);
 
     Customer findFirstByTransformedFieldName(String status);
 
-    @NestedField(key = "KeyToIdentify", query = "order.orderText")
+    @NestedBsonKey(id = "KeyToIdentify", bson = "order.orderText")
     Customer findFirstByUniqueIdAndKeyToIdentify(UUID uniqueId, String orderText);
 
     Customer findFirstByFirstNameIsNull();
@@ -109,4 +111,13 @@ public interface CustomerRepository extends Repository<Customer, UUID>, AsyncRep
     List<Customer> findManyByOrdersListEmpty();
 
     List<Customer> findManyByOrdersNotListEmpty();
+
+    // Async methods don't have to end with "Async".
+    // The two methods below are transformed because their names
+    // would clash with the predefined methods of the repository.
+    @Transform("findFirstByUniqueId")
+    CompletableFuture<Customer> findFirstAsync(UUID id);
+
+    @Transform("findAllByUniqueIdExists")
+    CompletableFuture<List<Customer>> findAllAsync();
 }

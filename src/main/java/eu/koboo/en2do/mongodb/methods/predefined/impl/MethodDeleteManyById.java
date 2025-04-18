@@ -17,9 +17,15 @@ public class MethodDeleteManyById extends GlobalPredefinedMethod {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method, Object[] arguments) {
-        Collection<ID> idList = checkUniqueIdList(repositoryData, method, arguments[0]);
+        Class<E> entityClass = repositoryData.getEntityClass();
+        Collection<ID> idList = (Collection<ID>) arguments[0];
+        if (idList == null) {
+            throw new NullPointerException("idList of Entities of type " + entityClass.getName() +
+                " as parameter of method " + method.getName() + " is null.");
+        }
         if (idList.isEmpty()) {
             return true;
         }

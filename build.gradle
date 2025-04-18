@@ -2,32 +2,39 @@ import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
     id('java-library')
-    id('com.github.johnrengelman.shadow') version('8.1.1')
+    id('com.gradleup.shadow') version('8.3.6')
     id('com.vanniktech.maven.publish') version('0.29.0')
 }
 
 group('eu.koboo')
-version('3.1.10')
+version('3.2.0')
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
+
+    def mongoDriverVersion = "5.4.0"
     // The driver itself
     api("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
     testImplementation("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
 
     // Eliminate boilerplate code
+    def lombokVersion = "1.18.38"
     compileOnly("org.projectlombok:lombok:$lombokVersion")
     annotationProcessor("org.projectlombok:lombok:$lombokVersion")
     testImplementation("org.projectlombok:lombok:$lombokVersion")
     testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
     // Test-Suite runtime
+    def jupiterVersion = "5.12.2"
     testImplementation("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
+    testImplementation("org.junit.platform:junit-platform-launcher:1.12.2")
 
     // SLF4j logger for test-suite
+    def slf4jVersion = "2.0.17"
     testImplementation("org.slf4j:slf4j-jdk14:$slf4jVersion")
 }
 
@@ -35,9 +42,13 @@ test {
     useJUnitPlatform()
 }
 
-compileJava {
+java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
+    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+}
+
+compileJava {
     options.fork = true
     options.encoding = 'UTF-8'
     options.release.set(11)

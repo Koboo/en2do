@@ -7,6 +7,7 @@ import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidPageException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidSortLimitException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidSortSkipException;
+import eu.koboo.en2do.mongodb.indexer.RepositoryIndexer;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.methods.fields.FieldUpdate;
@@ -25,46 +26,46 @@ import org.bson.conversions.Bson;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Getter
 public class RepositoryData<E, ID, R extends Repository<E, ID>> {
 
     MongoManager mongoManager;
+    RepositoryIndexer<E, ID, R> indexer;
     String collectionName;
     MongoCollection<E> entityCollection;
     Class<R> repositoryClass;
     Class<E> entityClass;
-    Set<Field> entityFieldSet;
     Class<ID> entityUniqueIdClass;
     Field entityUniqueIdField;
 
     @Getter(AccessLevel.NONE)
     Map<String, IndexedMethod<E, ID, R>> dynamicMethodRegistry;
 
-    public RepositoryData(MongoManager mongoManager, Class<R> repositoryClass, Class<E> entityClass,
-                          Set<Field> entityFieldSet,
-                          Class<ID> entityUniqueIdClass, Field entityUniqueIdField,
-                          MongoCollection<E> entityCollection, String collectionName) {
+    public RepositoryData(MongoManager mongoManager,
+                          RepositoryIndexer<E, ID, R> indexer,
+                          MongoCollection<E> entityCollection) {
         this.mongoManager = mongoManager;
-        this.collectionName = collectionName;
+        this.indexer = indexer;
+        this.collectionName = indexer.getCollectionName();
         this.entityCollection = entityCollection;
 
-        this.repositoryClass = repositoryClass;
-        this.entityClass = entityClass;
+        this.repositoryClass = indexer.getRepositoryClass();
+        this.entityClass = indexer.getEntityClass();
 
-        this.entityFieldSet = entityFieldSet;
-
-        this.entityUniqueIdClass = entityUniqueIdClass;
-        this.entityUniqueIdField = entityUniqueIdField;
+        this.entityUniqueIdClass = indexer.getIdClass();
+        this.entityUniqueIdField = indexer.getIdField();
 
         this.dynamicMethodRegistry = new HashMap<>();
     }
 
     public void destroy() {
         dynamicMethodRegistry.clear();
-        entityFieldSet.clear();
     }
 
     public void registerDynamicMethod(String methodName, IndexedMethod<E, ID, R> dynamicMethod) {
@@ -79,7 +80,7 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
         return dynamicMethodRegistry.get(methodName);
     }
 
-    public FindIterable<E> createIterable(Bson filter, String methodName) {
+    public FindIterable<E> createFindIterableBase(Bson filter, String methodName) {
         FindIterable<E> findIterable;
         if (filter != null) {
             findIterable = entityCollection.find(filter);
@@ -108,90 +109,92 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             return findIterable;
         }
         Sort sortOptions = (Sort) lastParamObject;
-        findIterable = sortDirection(findIterable, sortOptions.getFieldDirectionMap());
-
+        Map<String, Boolean> sortDirection = sortOptions.getFieldDirectionMap();
         int limit = sortOptions.getLimit();
-        if (limit != -1) {
-            if (limit < -1 || limit == 0) {
-                throw new MethodInvalidSortLimitException(method, repositoryClass);
-            }
-            findIterable = findIterable.limit(limit);
-        }
         int skip = sortOptions.getSkip();
-        if (skip != -1) {
-            if (skip < -1 || skip == 0) {
-                throw new MethodInvalidSortSkipException(method, repositoryClass);
-            }
-            findIterable = findIterable.skip(skip);
-        }
-        findIterable = findIterable.allowDiskUse(mongoManager.getSettingsBuilder().isAllowDiskUse());
-        return findIterable;
+        return sort(method, findIterable, sortDirection, limit, skip);
     }
 
     public FindIterable<E> applySortAnnotations(Method method, FindIterable<E> findIterable) throws Exception {
         SortBy[] sortAnnotations = method.getAnnotationsByType(SortBy.class);
-        if (sortAnnotations != null) {
-            Map<String, Boolean> fieldSortMap = new LinkedHashMap<>();
-            for (SortBy sortBy : sortAnnotations) {
-                fieldSortMap.put(sortBy.field(), sortBy.ascending());
-            }
-            findIterable = sortDirection(findIterable, fieldSortMap);
+
+        // Try to apply the sort annotations of the method
+        Map<String, Boolean> sortDirection = new LinkedHashMap<>();
+        for (SortBy sortBy : sortAnnotations) {
+            sortDirection.put(sortBy.field(), sortBy.ascending());
         }
-        if (method.isAnnotationPresent(Limit.class)) {
-            Limit limit = method.getAnnotation(Limit.class);
-            int value = limit.value();
-            if (value <= 0) {
-                throw new MethodInvalidSortLimitException(method, repositoryClass);
-            }
-            findIterable = findIterable.limit(value);
+
+        // Try to apply the limiting annotations of the method
+        int limit = -1;
+        Limit limitAnnotation = method.getAnnotation(Limit.class);
+        if (limitAnnotation != null) {
+            limit = limitAnnotation.value();
         }
-        if (method.isAnnotationPresent(Skip.class)) {
-            Skip skip = method.getAnnotation(Skip.class);
-            int value = skip.value();
-            if (value <= 0) {
-                throw new MethodInvalidSortSkipException(method, repositoryClass);
-            }
-            findIterable = findIterable.skip(value);
+
+        // Try to apply the skipping annotations of the method
+        int skip = -1;
+        Skip skipAnnotation = method.getAnnotation(Skip.class);
+        if (skipAnnotation != null) {
+            skip = skipAnnotation.value();
         }
-        findIterable = findIterable.allowDiskUse(mongoManager.getSettingsBuilder().isAllowDiskUse());
-        return findIterable;
+
+        return sort(method, findIterable, sortDirection, limit, skip);
     }
 
     public FindIterable<E> applyPageObject(Method method,
-                                           FindIterable<E> findIterable, Object[] args) throws Exception {
-        // Pagination should always be the last parameter of the method.
-        // But of whatever reason, we could do something in the validation wrong,
-        // so we catch the class casting exception anyway.
-        Object parameterObject = args[args.length - 1];
-        Pagination pagination;
-        try {
-            pagination = (Pagination) parameterObject;
-        } catch (ClassCastException e) {
-            throw new RuntimeException("Invalid Pagination object " + parameterObject.getClass() + ": ", e);
+                                           FindIterable<E> findIterable,
+                                           Object[] args) {
+        // Check if the last parameter of the method is a Pagination object,
+        // and if so, we apply the pagination options to the findIterable.
+        if (args == null || args.length == 0) {
+            return findIterable;
         }
+        Object parameterObject = args[args.length - 1];
+        if (!(parameterObject instanceof Pagination)) {
+            return findIterable;
+        }
+        Pagination pagination = (Pagination) parameterObject;
 
         // We do not allow pages lower or equal to zero. The results
         // would just be empty, so we throw an exception to not allow that.
         if (pagination.getPage() <= 0) {
-            throw new MethodInvalidPageException(method, repositoryClass);
+            throw new MethodInvalidPageException(repositoryClass, method);
         }
 
         // Let's apply the sorting direction of the pagination object.
-        findIterable = sortDirection(findIterable, pagination.getPageDirectionMap());
-
+        Map<String, Boolean> sortDirectionMap = pagination.getPageDirectionMap();
         int limit = pagination.getEntitiesPerPage();
         int skip = (int) ((pagination.getPage() - 1) * limit);
 
-        findIterable = findIterable
-            .limit(limit)
-            .skip(skip)
-            .allowDiskUse(mongoManager.getSettingsBuilder().isAllowDiskUse());
-        return findIterable;
+        return sort(method, findIterable, sortDirectionMap, limit, skip);
+    }
+
+    public FindIterable<E> sort(Method method, FindIterable<E> findIterable,
+                                Map<String, Boolean> sortDirection, int limit, int skip) {
+        if (sortDirection != null && sortDirection.isEmpty()) {
+            findIterable = sortDirection(findIterable, sortDirection);
+        }
+
+        if (skip != -1) {
+            if (skip < 0) {
+                throw new MethodInvalidSortSkipException(repositoryClass, method);
+            }
+            findIterable = findIterable.skip(skip);
+        }
+
+        if (limit != -1) {
+            if (limit < 0) {
+                throw new MethodInvalidSortLimitException(repositoryClass, method);
+            }
+            findIterable = findIterable.limit(limit);
+        }
+
+        return findIterable.allowDiskUse(mongoManager.getSettingsBuilder().isAllowDiskUse());
     }
 
     private FindIterable<E> sortDirection(FindIterable<E> findIterable, Map<String, Boolean> fieldSortMap) {
         if (findIterable == null) {
-            return findIterable;
+            return null;
         }
 
         if (fieldSortMap == null || fieldSortMap.isEmpty()) {
@@ -207,11 +210,6 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             findIterable = findIterable.sort(new BasicDBObject(sortKey, direction));
         }
         return findIterable;
-    }
-
-    public String stripAsyncName(String asyncName) {
-        String predefinedName = asyncName.replaceFirst("async", "");
-        return predefinedName.substring(0, 1).toLowerCase(Locale.ROOT) + predefinedName.substring(1);
     }
 
     public Object getFilterableValue(Object object) {

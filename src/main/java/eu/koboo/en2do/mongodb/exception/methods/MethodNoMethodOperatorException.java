@@ -1,10 +1,12 @@
 package eu.koboo.en2do.mongodb.exception.methods;
 
+import eu.koboo.en2do.mongodb.exception.RepositoryMethodException;
+
 import java.lang.reflect.Method;
 
-public class MethodNoMethodOperatorException extends Exception {
+public class MethodNoMethodOperatorException extends RepositoryMethodException {
 
-    public MethodNoMethodOperatorException(Method method, Class<?> repoClass) {
-        super("Couldn't find method operator in \"" + method.getName() + "\" of " + repoClass.getName() + "!");
+    public MethodNoMethodOperatorException(Class<?> repositoryClass, Method method) {
+        super("Couldn't find method operator!", repositoryClass, method);
     }
 }

@@ -50,6 +50,7 @@ public class AnnotationConvention implements Convention {
                 if (writeAnnotation instanceof TransformField) {
                     TransformField transformField = (TransformField) writeAnnotation;
                     propertyModelBuilder.writeName(transformField.value());
+                    continue;
                 }
                 if (writeAnnotation instanceof Id) {
                     classModelBuilder.idPropertyName(propertyModelBuilder.getName());

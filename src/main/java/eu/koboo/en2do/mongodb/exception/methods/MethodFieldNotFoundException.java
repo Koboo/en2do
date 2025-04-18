@@ -1,11 +1,13 @@
 package eu.koboo.en2do.mongodb.exception.methods;
 
+import eu.koboo.en2do.mongodb.exception.RepositoryMethodException;
+
 import java.lang.reflect.Method;
 
-public class MethodFieldNotFoundException extends Exception {
+public class MethodFieldNotFoundException extends RepositoryMethodException {
 
-    public MethodFieldNotFoundException(String fieldName, Method method, Class<?> entityClass, Class<?> repoClass) {
-        super("Couldn't find any field with the name \"" + fieldName + "\" in the entity " +
-            entityClass.getName() + ". Used in method \"" + method.getName() + "\" in repository " + repoClass.getName() + ".");
+    public MethodFieldNotFoundException(Class<?> repositoryClass, Method method, String fieldName) {
+        super("Couldn't find any field with the name \"" + fieldName + "\"",
+            repositoryClass, method);
     }
 }

@@ -4,9 +4,11 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Position;
 import eu.koboo.en2do.mongodb.RepositoryData;
+import eu.koboo.en2do.mongodb.exception.ReportException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidRegexParameterException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodUnsupportedFilterException;
-import eu.koboo.en2do.operators.Chain;
+import eu.koboo.en2do.operators.AmountType;
+import eu.koboo.en2do.operators.ChainType;
 import eu.koboo.en2do.operators.MethodOperator;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.methods.geo.Geo;
@@ -30,10 +32,16 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
     Method method;
     @Getter
     MethodOperator methodOperator;
-    Chain chain;
+    ChainType chainType;
 
     @Getter
     Long methodDefinedEntityCount;
+
+    @Getter
+    AmountType amountType;
+
+    @Getter
+    long entityAmount;
 
     List<IndexedFilter> indexedFilterList;
 
@@ -48,7 +56,7 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
             Bson processedBsonFilter = processBson(indexedFilter, paramStartIndex, arguments);
             bsonFilterSet.add(processedBsonFilter);
         }
-        switch (chain) {
+        switch (chainType) {
             case OR:
                 filter = Filters.or(bsonFilterSet);
                 break;
@@ -67,7 +75,7 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
 
     @SuppressWarnings("unchecked")
     private Bson processBson(IndexedFilter filter, int paramsIndexAt,
-                             Object[] args) throws Exception {
+                             Object[] args) {
         String bsonFilterFieldKey = filter.getBsonFilterFieldKey();
 
         // Check if the id field of the entity is used.
@@ -119,8 +127,8 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 // No supported type provided, we can't do anything other than throwing exceptions.
                 if (retFilter == null) {
                     throw new MethodInvalidRegexParameterException(
-                        method,
                         repositoryData.getRepositoryClass(),
+                        method,
                         value.getClass()
                     );
                 }
@@ -157,11 +165,8 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 }
                 // If you produce this exception, I'm very surprised then I see the code.
                 if (objectArray == null) {
-                    throw new NullPointerException("Your Object array of the \"In\" filter was null.\n" +
-                        "This is a very rare case, since we do stuff, mongodb doesn't really support.\n" +
-                        "Please report your code and other information to\n" +
-                        "https://github.com/Koboo/en2do\n" +
-                        "to ensure others don't get this bug and we can't look further into this issue.");
+                    throw new ReportException("Your Object array of the \"In\" filter was null.\n" +
+                        "This is a very rare case, since we do stuff, mongodb doesn't really support.\n");
                 }
                 retFilter = Filters.in(bsonFilterFieldKey, objectArray);
                 break;
@@ -220,7 +225,7 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 );
                 break;
             default: // This filter is not supported. Throw exception.
-                throw new MethodUnsupportedFilterException(method, repositoryData.getRepositoryClass());
+                throw new MethodUnsupportedFilterException(repositoryData.getRepositoryClass(), method);
         }
 
         // Applying negotiating of the filter, if needed

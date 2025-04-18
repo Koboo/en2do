@@ -4,6 +4,7 @@ import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
 import eu.koboo.en2do.repository.methods.sort.Sort;
+import org.bson.conversions.Bson;
 
 import java.util.Collection;
 import java.util.List;
@@ -22,12 +23,12 @@ public interface Repository<E, ID> {
     /**
      * This method counts all documents of the collection in the mongodb.
      *
-     * @return The amount of total entities in this repository.
+     * @return The number of total entities in this repository.
      */
     long countAll();
 
     /**
-     * This method deletes the given entity, by filtering with the entity's "@Id" field/unique identifier.
+     * This method deletes the given entity by filtering with the entity's "@Id" field/unique identifier.
      *
      * @param entity The entity, which should be deleted.
      * @return true, if the entity was deleted successfully.
@@ -36,7 +37,7 @@ public interface Repository<E, ID> {
 
     /**
      * This method deletes all entities of the repository.
-     * Difference between drop is, that the indices stay the same.
+     * The difference between deleteAll() and drop() is that the indices stay the same.
      *
      * @return true, if entities were successfully deleted.
      */
@@ -129,8 +130,14 @@ public interface Repository<E, ID> {
      * @param entity The entity, which unique identifier, should be returned
      * @return The unique identifier of the given entity.
      */
-
     ID getUniqueId(E entity);
+
+    /**
+     * This method is used to set the unique identifier of the given entity.
+     *
+     * @param entity The entity, on which the unique identifier should be set
+     */
+    void setUniqueId(E entity, ID uniqueId);
 
     /**
      * This method applies the pagination of all entities of the repository.
@@ -153,19 +160,10 @@ public interface Repository<E, ID> {
     /**
      * Saves all entities of the given List to the database.
      *
-     * @param entityList A List of the entities, which should be saved
+     * @param entityList A List of the entities which should be saved
      * @return true, if the entities were successfully saved.
      */
     boolean saveAll(Collection<E> entityList);
-
-    /**
-     * Inserts all entities of the given List to the database.
-     * (Faster than saveAll)
-     *
-     * @param entityList A List of the entities, which should be saved
-     * @return true, if the entities were successfully saved.
-     */
-    boolean insertAll(List<E> entityList);
 
     /**
      * This method applies the Sort object of all entities of the repository.
@@ -184,8 +182,17 @@ public interface Repository<E, ID> {
     boolean updateAllFields(UpdateBatch updateBatch);
 
     /**
+     * This method uses the native mongodb bson object to filter.
+     * This allows dynamic filter construction
+     * instead of hard defining methods in the repository.
+     *
+     * @return The list of entities, based on the given filter.
+     */
+    List<E> filterBy(Bson bsonFilter);
+
+    /**
      * Allows access to the native mongodb collection,
-     * for more advanced queries or unsupported en2do stuff.
+     * for more advanced queries or en2do-unsupported mongodb stuff.
      *
      * @return the native mongodb collection object
      */

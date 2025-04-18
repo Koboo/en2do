@@ -32,7 +32,7 @@ public class CustomerFindFirstByFirstNameContainsTest extends CustomerRepository
     @Test
     @Order(3)
     public void operationTest() {
-        Customer customer = repository.findFirstByFirstNameContains("aine");
+        Customer customer = repository.findByFirstNameContains("aine");
         assertNotNull(customer);
         assertEquals(Const.CUSTOMER_ID, customer.getCustomerId());
         assertEquals(Const.FIRST_NAME, customer.getFirstName());

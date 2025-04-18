@@ -1,27 +1,44 @@
-# _// En2Do_
+# en2do
 
 ![Discord](https://img.shields.io/discord/1021053609359708211)
 ![Maven](https://img.shields.io/maven-central/v/eu.koboo/en2do)
 
-Entity framework for MongoDB in Java 17.
-
-**_En2Do_** is short for **_Entity-To-Document_**.
-
-This framework is heavily inspired by [Spring Data](https://spring.io/projects/spring-data).
-
-You need help or want to share a project, which uses en2do?
-
-[Feel free to join our Discord](https://discord.gg/VGrxZDQu2n)!
+**_en2do_** is short for **_Entity-To-Document_**, is heavily inspired
+by [Spring Data](https://spring.io/projects/spring-data) and
+only works with MongoDB.
 
 ## Links
 
-- Check out our [documentation](https://koboo.gitbook.io/en2do/) with many examples
-- Show all published [artifacts](https://mvnrepository.com/artifact/eu.koboo/en2do) in maven central
-
-### Other
-
+- [Wiki](https://koboo.gitbook.io/en2do/)
+- [MavenCentral](https://mvnrepository.com/artifact/eu.koboo/en2do)
+- [Discord](https://discord.koboo.eu/)
 - [License](LICENSE)
-- [Join our Discord](https://discord.gg/VGrxZDQu2n)
+
+## Use as dependency
+
+en2do is published on [maven central](https://central.sonatype.com/).
+
+### Maven
+
+```xml
+<dependency>
+    <groupId>eu.koboo</groupId>
+    <artifactId>en2do</artifactId>
+    <version>3.2.0</version>
+</dependency>
+```
+
+### Gradle Groovy
+
+```groovy
+implementation 'eu.koboo:en2do:3.2.0'
+```
+
+### Gradle Kotlin
+
+```groovy
+implementation("eu.koboo:en2do:3.2.0")
+```
 
 ### References
 
@@ -37,3 +54,4 @@ You need help or want to share a project, which uses en2do?
 - [Spring MongoDB Repositories](https://docs.spring.io/spring-data/mongodb/docs/1.2.0.RELEASE/reference/html/mongo.repositories.html)
 - [Advanced MongoDB Performance Tuning](https://medium.com/idealo-tech-blog/advanced-mongodb-performance-tuning-2ddcd01a27d2)
 - [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+- [Logo Icon](https://dryicons.com/icon/database-file-icon-5853)

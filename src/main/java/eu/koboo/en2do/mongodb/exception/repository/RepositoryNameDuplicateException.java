@@ -1,9 +1,11 @@
 package eu.koboo.en2do.mongodb.exception.repository;
 
-public class RepositoryNameDuplicateException extends Exception {
+import eu.koboo.en2do.mongodb.exception.RepositoryException;
 
-    public RepositoryNameDuplicateException(Class<?> repoClass, Class<?> collectionClass) {
-        super("Duplicated collection name given through " + collectionClass.getName() + " annotation in " + repoClass.getName() + "! " +
-            "That's not allowed.");
+public class RepositoryNameDuplicateException extends RepositoryException {
+
+    public RepositoryNameDuplicateException(Class<?> repository, String collectionName) {
+        super("Duplicated collection name given! \n" +
+            "  - Collection: " + collectionName, repository);
     }
 }

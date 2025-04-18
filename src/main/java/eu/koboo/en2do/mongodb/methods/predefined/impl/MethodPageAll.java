@@ -17,7 +17,7 @@ public class MethodPageAll extends GlobalPredefinedMethod {
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method, Object[] arguments) throws Exception {
-        FindIterable<E> findIterable = repositoryData.createIterable(null, methodName);
+        FindIterable<E> findIterable = repositoryData.createFindIterableBase(null, methodName);
         findIterable = repositoryData.applyPageObject(method, findIterable, arguments);
         return findIterable.into(new ArrayList<>());
     }

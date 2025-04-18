@@ -3,7 +3,6 @@ package eu.koboo.en2do.test.user;
 import eu.koboo.en2do.repository.entity.Id;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.bson.codecs.pojo.annotations.BsonProperty;
 
 import java.util.Date;
 import java.util.UUID;
@@ -20,6 +19,9 @@ public class User {
 
     String userName;
     String email;
+    // That property won't be saved, if method properties are disabled,
+    // because mongodb maps it to "superUser" instead of "isSuperUser".
+    boolean isSuperUser = false;
 
     Date registrationDate;
     Date lastLoginDate;

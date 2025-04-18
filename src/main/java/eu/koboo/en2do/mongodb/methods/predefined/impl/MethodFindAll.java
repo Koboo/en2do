@@ -17,7 +17,7 @@ public class MethodFindAll extends GlobalPredefinedMethod {
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method, Object[] arguments) {
-        FindIterable<E> findIterable = repositoryData.createIterable(null, methodName);
+        FindIterable<E> findIterable = repositoryData.createFindIterableBase(null, methodName);
         return findIterable.into(new ArrayList<>());
     }
 }

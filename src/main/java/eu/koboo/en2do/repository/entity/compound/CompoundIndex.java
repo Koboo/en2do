@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@Repeatable(CompoundIndexArray.class)
+@Repeatable(CompoundIndex.CompoundIndexArray.class)
 public @interface CompoundIndex {
 
     /**
@@ -27,4 +27,20 @@ public @interface CompoundIndex {
      * @return true, if the compound index is unique on every document.
      */
     boolean uniqueIndex() default false;
+
+
+    /**
+     * This annotation is used to create an array of the @CompoundIndex annotation.
+     */
+    @Inherited
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @interface CompoundIndexArray {
+
+        /**
+         * @return The array of the @CompoundIndex annotations.
+         */
+        CompoundIndex[] value();
+    }
+
 }

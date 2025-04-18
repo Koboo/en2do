@@ -1,11 +1,13 @@
 package eu.koboo.en2do.mongodb.exception.methods;
 
+import eu.koboo.en2do.mongodb.exception.RepositoryMethodException;
+
 import java.lang.reflect.Method;
 
-public class MethodUnsupportedFilterException extends Exception {
+public class MethodUnsupportedFilterException extends RepositoryMethodException {
 
-    public MethodUnsupportedFilterException(Method method, Class<?> repoClass) {
-        super("Unsupported filter found on \"" + method.getName() + "\" of repository " + repoClass.getName() + "! " +
-            "Please make sure to match the defined filter pattern!");
+    public MethodUnsupportedFilterException(Class<?> repoClass, Method method) {
+        super("Unsupported filter found! Please make sure to match the defined filter pattern!",
+            repoClass, method);
     }
 }
