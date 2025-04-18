@@ -48,17 +48,17 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
 
     Customer findFirstByBalanceGreaterEq(double balance);
 
-    Customer findFirstByBalanceLessEq(double balance);
+    Customer findByBalanceLessEq(double balance);
 
     Customer findFirstByFirstNameRegex(String namePart);
 
     Customer findFirstByFirstNameExists();
 
-    List<Customer> findManyByFirstNameExists();
+    List<Customer> findByFirstNameExists();
 
     List<Customer> findTop20ByFirstNameExists();
 
-    Customer findFirstByFirstNameContains(String partOfFirstName);
+    Customer findByFirstNameContains(String partOfFirstName);
 
     List<Customer> findManyByBalanceBetweenAndCustomerId(double from, double to, int customerId);
 

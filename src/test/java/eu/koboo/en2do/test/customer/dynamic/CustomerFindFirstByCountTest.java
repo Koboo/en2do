@@ -49,7 +49,7 @@ public class CustomerFindFirstByCountTest extends CustomerRepositoryTest {
     @Test
     @Order(4)
     public void findManyTest() {
-        List<Customer> customerList = repository.findManyByFirstNameExists();
+        List<Customer> customerList = repository.findByFirstNameExists();
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());
         assertEquals(25, customerList.size());
