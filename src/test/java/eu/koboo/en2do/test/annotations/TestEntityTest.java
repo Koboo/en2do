@@ -1,6 +1,5 @@
 package eu.koboo.en2do.test.annotations;
 
-import com.mongodb.assertions.Assertions;
 import com.mongodb.client.model.Filters;
 import eu.koboo.en2do.test.AnnotationTest;
 import org.bson.Document;
