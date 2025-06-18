@@ -11,6 +11,8 @@ import org.bson.codecs.pojo.Convention;
 import org.bson.codecs.pojo.PropertyModelBuilder;
 
 import java.lang.annotation.Annotation;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * This convention implementation enables the usage of the annotations from en2do
@@ -27,10 +29,11 @@ public class AnnotationConvention implements Convention {
      */
     @Override
     public void apply(ClassModelBuilder<?> classModelBuilder) {
-        for (PropertyModelBuilder<?> propertyModelBuilder : classModelBuilder.getPropertyModelBuilders()) {
+        Set<PropertyModelBuilder<?>> copiedModelBuilders = new LinkedHashSet<>(classModelBuilder.getPropertyModelBuilders());
+        for (PropertyModelBuilder<?> propertyModelBuilder : copiedModelBuilders) {
             for (Annotation readAnnotation : propertyModelBuilder.getReadAnnotations()) {
                 if (readAnnotation instanceof Transient) {
-                    propertyModelBuilder.readName(null);
+                    classModelBuilder.removeProperty(propertyModelBuilder.getName());
                     continue;
                 }
                 if (readAnnotation instanceof TransformField) {
@@ -44,7 +47,7 @@ public class AnnotationConvention implements Convention {
             }
             for (Annotation writeAnnotation : propertyModelBuilder.getWriteAnnotations()) {
                 if (writeAnnotation instanceof Transient) {
-                    propertyModelBuilder.writeName(null);
+                    classModelBuilder.removeProperty(propertyModelBuilder.getName());
                     continue;
                 }
                 if (writeAnnotation instanceof TransformField) {
@@ -57,5 +60,6 @@ public class AnnotationConvention implements Convention {
                 }
             }
         }
+        copiedModelBuilders.clear();
     }
 }
