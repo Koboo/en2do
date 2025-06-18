@@ -116,11 +116,11 @@ public class RepositoryIndexer<E, ID, R extends Repository<E, ID>> {
         Collection collectionAnnotation = parseCollectionAnnotation();
 
         // Check if the collection name is valid and for duplication issues
-        String baseCollectionName = collectionAnnotation.value();
-        if (baseCollectionName.trim().equalsIgnoreCase("")) {
-            throw new RepositoryNameEmptyException(repositoryClass, baseCollectionName);
+        String annotatedCollectionName = collectionAnnotation.value();
+        if (annotatedCollectionName.trim().equalsIgnoreCase("")) {
+            return NameConvention.SNAKE_CASE.generate(repositoryClass);
         }
-        return baseCollectionName;
+        return annotatedCollectionName;
     }
 
     private String parseFullCollectionName() {
