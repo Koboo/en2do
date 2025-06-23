@@ -39,17 +39,17 @@ public class MethodMappingConvention implements Convention {
         }
         Class<?> entityClass = classModelBuilder.getType();
         Set<Field> fieldSet = FieldUtils.collectFields(entityClass);
-        Set<String> nonFieldProperties = new LinkedHashSet<>();
+        Set<PropertyModelBuilder<?>> removableProperties = new LinkedHashSet<>();
         for (PropertyModelBuilder<?> propertyModelBuilder : classModelBuilder.getPropertyModelBuilders()) {
             String propertyName = propertyModelBuilder.getName();
             Field field = FieldUtils.findFieldByName(propertyName, fieldSet);
             if (field != null) {
                 continue;
             }
-            nonFieldProperties.add(propertyName);
+            removableProperties.add(propertyModelBuilder);
         }
-        for (String nonFieldProperty : nonFieldProperties) {
-            classModelBuilder.removeProperty(nonFieldProperty);
+        for (PropertyModelBuilder<?> property : removableProperties) {
+            classModelBuilder.removeProperty(property.getName());
         }
     }
 }

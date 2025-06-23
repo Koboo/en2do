@@ -6,7 +6,10 @@ import eu.koboo.en2do.SettingsBuilder;
 import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.mongodb.Validator;
 import eu.koboo.en2do.mongodb.exception.RepositoryException;
-import eu.koboo.en2do.mongodb.exception.repository.*;
+import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameDuplicateException;
+import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameInvalidException;
+import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameNotFoundException;
+import eu.koboo.en2do.mongodb.exception.repository.RepositoryTypeIdNotFoundException;
 import eu.koboo.en2do.mongodb.methods.predefined.PredefinedMethodRegistry;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.NameConvention;
@@ -116,11 +119,11 @@ public class RepositoryIndexer<E, ID, R extends Repository<E, ID>> {
         Collection collectionAnnotation = parseCollectionAnnotation();
 
         // Check if the collection name is valid and for duplication issues
-        String baseCollectionName = collectionAnnotation.value();
-        if (baseCollectionName.trim().equalsIgnoreCase("")) {
-            throw new RepositoryNameEmptyException(repositoryClass, baseCollectionName);
+        String annotatedCollectionName = collectionAnnotation.value();
+        if (annotatedCollectionName.trim().equalsIgnoreCase("")) {
+            return NameConvention.SNAKE_CASE.generate(repositoryClass);
         }
-        return baseCollectionName;
+        return annotatedCollectionName;
     }
 
     private String parseFullCollectionName() {
