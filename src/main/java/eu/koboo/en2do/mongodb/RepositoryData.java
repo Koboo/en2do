@@ -171,7 +171,7 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
 
     public FindIterable<E> sort(Method method, FindIterable<E> findIterable,
                                 Map<String, Boolean> sortDirection, int limit, int skip) {
-        if (sortDirection != null && sortDirection.isEmpty()) {
+        if (sortDirection != null && !sortDirection.isEmpty()) {
             findIterable = sortDirection(findIterable, sortDirection);
         }
 
