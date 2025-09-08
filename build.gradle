@@ -7,7 +7,7 @@ plugins {
 }
 
 group('eu.koboo')
-version('3.2.1')
+version('3.2.2')
 
 repositories {
     mavenCentral()
@@ -28,10 +28,10 @@ dependencies {
     testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
     // Test-Suite runtime
-    def jupiterVersion = "5.13.1"
+    def jupiterVersion = "5.13.4"
     testImplementation("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
-    testImplementation("org.junit.platform:junit-platform-launcher:1.13.1")
+    testImplementation("org.junit.platform:junit-platform-launcher:1.13.4")
 
     // SLF4j logger for test-suite
     def slf4jVersion = "2.0.17"

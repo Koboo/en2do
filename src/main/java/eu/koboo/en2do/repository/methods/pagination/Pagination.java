@@ -14,7 +14,7 @@ import java.util.Map;
  * See documentation: <a href="https://koboo.gitbook.io/en2do/usage/pagination">...</a>
  */
 @Getter
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @ToString
 public class Pagination {
 
@@ -28,14 +28,15 @@ public class Pagination {
         return new Pagination(entitiesPerPage);
     }
 
-    int entitiesPerPage;
-    Map<String, Boolean> pageDirectionMap;
-    @NonFinal
+    final int entitiesPerPage;
+    String fieldName;
+    boolean ascending;
     long page;
 
     private Pagination(int entitiesPerPage) {
-        this.pageDirectionMap = new HashMap<>();
         this.entitiesPerPage = entitiesPerPage;
+        this.fieldName = null;
+        this.ascending = true;
         this.page = 1;
     }
 
@@ -46,8 +47,9 @@ public class Pagination {
      * @param ascending The direction of the sorting
      * @return The used Pagination object
      */
-    public Pagination order(String fieldName, boolean ascending) {
-        pageDirectionMap.put(fieldName, ascending);
+    public Pagination byField(String fieldName, boolean ascending) {
+        this.fieldName = fieldName;
+        this.ascending = ascending;
         return this;
     }
 
@@ -58,8 +60,10 @@ public class Pagination {
      * @param fieldName The field which is used to sort
      * @return The used Pagination object
      */
-    public Pagination order(String fieldName) {
-        return order(fieldName, true);
+    public Pagination byField(String fieldName) {
+        this.fieldName = fieldName;
+        this.ascending = true;
+        return this;
     }
 
     /**

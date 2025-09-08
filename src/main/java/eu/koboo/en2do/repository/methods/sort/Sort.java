@@ -5,9 +5,6 @@ import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * This object is used to enable dynamic sorting, without defining the sorting options statically through annotations.
  * See documentation: <a href="https://koboo.gitbook.io/en2do/usage/sorting/sorting-by-parameter">...</a>
@@ -17,34 +14,40 @@ import java.util.Map;
 @ToString
 public class Sort {
 
-    /**
-     * Use this method to create a new Sort object
-     *
-     * @return The new created sort object.
-     */
-    public static Sort of() {
+    public static Sort create() {
         return new Sort();
     }
 
-    final Map<String, Boolean> fieldDirectionMap;
+    public static Sort byField(String fieldName) {
+        return new Sort().field(fieldName);
+    }
+
+    public static Sort byField(String fieldName, boolean ascending) {
+        return new Sort().field(fieldName, ascending);
+    }
+
+    String fieldName;
+    boolean ascending;
     int limit;
     int skip;
 
     private Sort() {
-        this.fieldDirectionMap = new HashMap<>();
+        this.fieldName = null;
+        this.ascending = true;
         this.limit = -1;
         this.skip = -1;
     }
 
     /**
-     * Use this method to define the order / sorting by the given fields
+     * Use this method to define the order / sorting by the given fields,
+     * but sets the ascending value to "true"
      *
      * @param fieldName The field which is used to sort
-     * @param ascending The direction of the sorting
      * @return The used Sort object
      */
-    public Sort order(String fieldName, boolean ascending) {
-        fieldDirectionMap.put(fieldName, ascending);
+    public Sort field(String fieldName, boolean ascending) {
+        this.fieldName = fieldName;
+        this.ascending = ascending;
         return this;
     }
 
@@ -55,8 +58,8 @@ public class Sort {
      * @param fieldName The field which is used to sort
      * @return The used Sort object
      */
-    public Sort order(String fieldName) {
-        return order(fieldName, true);
+    public Sort field(String fieldName) {
+        return field(fieldName, true);
     }
 
     /**

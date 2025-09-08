@@ -24,20 +24,20 @@ en2do is published on [maven central](https://central.sonatype.com/).
 <dependency>
     <groupId>eu.koboo</groupId>
     <artifactId>en2do</artifactId>
-    <version>3.2.0</version>
+    <version>3.2.2</version>
 </dependency>
 ```
 
 ### Gradle Groovy
 
 ```groovy
-implementation 'eu.koboo:en2do:3.2.0'
+implementation 'eu.koboo:en2do:3.2.2'
 ```
 
 ### Gradle Kotlin
 
 ```groovy
-implementation("eu.koboo:en2do:3.2.0")
+implementation("eu.koboo:en2do:3.2.2")
 ```
 
 ### References
