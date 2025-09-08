@@ -87,7 +87,6 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
             case FIND:
                 findIterable = repositoryData.createFindIterableBase(filter, methodName);
                 findIterable = repositoryData.applySortObject(method, findIterable, arguments);
-                findIterable = repositoryData.applySortAnnotations(method, findIterable);
                 findIterable = repositoryData.applyPageObject(method, findIterable, arguments);
 
                 // Because it's a find method, we always got an entity-defined count.

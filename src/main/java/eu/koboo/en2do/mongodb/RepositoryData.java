@@ -14,10 +14,7 @@ import eu.koboo.en2do.repository.methods.fields.FieldUpdate;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.fields.UpdateType;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
-import eu.koboo.en2do.repository.methods.sort.Limit;
-import eu.koboo.en2do.repository.methods.sort.Skip;
 import eu.koboo.en2do.repository.methods.sort.Sort;
-import eu.koboo.en2do.repository.methods.sort.SortBy;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
@@ -27,7 +24,6 @@ import org.bson.conversions.Bson;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -109,36 +105,11 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             return findIterable;
         }
         Sort sortOptions = (Sort) lastParamObject;
-        Map<String, Boolean> sortDirection = sortOptions.getFieldDirectionMap();
         int limit = sortOptions.getLimit();
         int skip = sortOptions.getSkip();
-        return sort(method, findIterable, sortDirection, limit, skip);
-    }
-
-    public FindIterable<E> applySortAnnotations(Method method, FindIterable<E> findIterable) throws Exception {
-        SortBy[] sortAnnotations = method.getAnnotationsByType(SortBy.class);
-
-        // Try to apply the sort annotations of the method
-        Map<String, Boolean> sortDirection = new LinkedHashMap<>();
-        for (SortBy sortBy : sortAnnotations) {
-            sortDirection.put(sortBy.field(), sortBy.ascending());
-        }
-
-        // Try to apply the limiting annotations of the method
-        int limit = -1;
-        Limit limitAnnotation = method.getAnnotation(Limit.class);
-        if (limitAnnotation != null) {
-            limit = limitAnnotation.value();
-        }
-
-        // Try to apply the skipping annotations of the method
-        int skip = -1;
-        Skip skipAnnotation = method.getAnnotation(Skip.class);
-        if (skipAnnotation != null) {
-            skip = skipAnnotation.value();
-        }
-
-        return sort(method, findIterable, sortDirection, limit, skip);
+        String fieldName = sortOptions.getFieldName();
+        boolean ascending = sortOptions.isAscending();
+        return sort(method, findIterable, fieldName, ascending, limit, skip);
     }
 
     public FindIterable<E> applyPageObject(Method method,
@@ -162,17 +133,19 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
         }
 
         // Let's apply the sorting direction of the pagination object.
-        Map<String, Boolean> sortDirectionMap = pagination.getPageDirectionMap();
         int limit = pagination.getEntitiesPerPage();
         int skip = (int) ((pagination.getPage() - 1) * limit);
+        String fieldName = pagination.getFieldName();
+        boolean ascending = pagination.isAscending();
 
-        return sort(method, findIterable, sortDirectionMap, limit, skip);
+        return sort(method, findIterable, fieldName, ascending, limit, skip);
     }
 
     public FindIterable<E> sort(Method method, FindIterable<E> findIterable,
-                                Map<String, Boolean> sortDirection, int limit, int skip) {
-        if (sortDirection != null && sortDirection.isEmpty()) {
-            findIterable = sortDirection(findIterable, sortDirection);
+                                String fieldName, boolean ascending, int limit, int skip) {
+        if (fieldName != null && !fieldName.isEmpty()) {
+            int direction = ascending ? 1 : -1;
+            findIterable = findIterable.sort(new BasicDBObject(fieldName, direction));
         }
 
         if (skip != -1) {
@@ -190,26 +163,6 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
         }
 
         return findIterable.allowDiskUse(mongoManager.getSettingsBuilder().isAllowDiskUse());
-    }
-
-    private FindIterable<E> sortDirection(FindIterable<E> findIterable, Map<String, Boolean> fieldSortMap) {
-        if (findIterable == null) {
-            return null;
-        }
-
-        if (fieldSortMap == null || fieldSortMap.isEmpty()) {
-            return findIterable;
-        }
-
-        for (String sortKey : fieldSortMap.keySet()) {
-            Boolean ascending = fieldSortMap.get(sortKey);
-            if (ascending == null) {
-                continue;
-            }
-            int direction = ascending ? 1 : -1;
-            findIterable = findIterable.sort(new BasicDBObject(sortKey, direction));
-        }
-        return findIterable;
     }
 
     public Object getFilterableValue(Object object) {
