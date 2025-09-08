@@ -4,10 +4,7 @@ import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
-import eu.koboo.en2do.repository.methods.sort.Limit;
-import eu.koboo.en2do.repository.methods.sort.Skip;
 import eu.koboo.en2do.repository.methods.sort.Sort;
-import eu.koboo.en2do.repository.methods.sort.SortBy;
 import eu.koboo.en2do.repository.methods.transform.NestedBsonKey;
 import eu.koboo.en2do.repository.methods.transform.Transform;
 
@@ -76,11 +73,7 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
 
     Customer findFirstByIdListHas(UUID id);
 
-    @SortBy(field = "customerId")
-    @SortBy(field = "balance", ascending = true)
-    @Limit(10)
-    @Skip(5)
-    List<Customer> findManyByCustomerIdExists();
+    List<Customer> findManyByCustomerIdExists(Sort sort);
 
     List<Customer> findManyByCustomerIdNot(int customerId, Sort sort);
 
