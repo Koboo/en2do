@@ -78,7 +78,6 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
         this.indexedFilters = parseFilters();
 
         validateParameterCount();
-        validateParameterTypes();
     }
 
     private MethodOperator parseMethodOperator() {
@@ -327,35 +326,6 @@ public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
             return;
         }
         throw new MethodParameterCountException(repositoryClass, method, expectedParameterCount);
-    }
-
-    void validateParameterTypes() {
-        // Check if the method has the Sort annotation set.
-        SortBy sortAnnotation = method.getAnnotation(SortBy.class);
-        if (sortAnnotation != null) {
-            String sortFieldName = sortAnnotation.field();
-            Field field = parseFieldByBsonKey(sortFieldName);
-            if (field == null) {
-                throw new MethodSortFieldNotFoundException(repositoryClass, method, sortFieldName);
-            }
-        }
-        int methodParameterCount = method.getParameterCount();
-        if (methodParameterCount > 0) {
-            Class<?> lastMethodParameter = method.getParameterTypes()[methodParameterCount - 1];
-            // Check if both Sort types are used.
-            // This is not allowed, even if it is possible internally.
-            // En2do is capable of handling it, but I don't know the result.
-            // Probably one sort would get an override by the other one.
-            boolean hasAnySortAnnotation = method.isAnnotationPresent(Limit.class)
-                || method.isAnnotationPresent(Skip.class)
-                || method.isAnnotationPresent(SortBy.class)
-                || method.isAnnotationPresent(SortByArray.class);
-            if (hasAnySortAnnotation && lastMethodParameter.isAssignableFrom(Sort.class)) {
-                throw new MethodMixedSortException(repositoryClass, method);
-            }
-            // We can't check the field, because it's a parameter, we can only check it, on executing
-            // while runtime, so good luck to you my dear ;)
-        }
     }
 
     public void indexMethod(RepositoryData<E, ID, R> repositoryData) {

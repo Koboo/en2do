@@ -45,7 +45,7 @@ public class CustomerFindByPaginationTest extends CustomerRepositoryTest {
         List<Customer> customerList = repository.paginationTest(
             CUSTOMER_ID,
             Pagination.of(5)
-                .order("customerId", true)
+                .byField("customerId")
                 .setPage(1)
         );
         assertNotNull(customerList);

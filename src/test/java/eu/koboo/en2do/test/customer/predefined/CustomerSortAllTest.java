@@ -38,8 +38,7 @@ public class CustomerSortAllTest extends CustomerRepositoryTest {
     @Test
     @Order(3)
     public void findCustomer() {
-        List<Customer> customerList = repository.sortAll(Sort.of()
-            .order("customerId", true)
+        List<Customer> customerList = repository.sortAll(Sort.byField("customerId")
             .limit(10)
             .skip(5)
         );
