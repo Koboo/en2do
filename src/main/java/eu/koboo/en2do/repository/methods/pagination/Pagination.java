@@ -4,10 +4,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * This object is used to provide simplified pagination in several repositories.

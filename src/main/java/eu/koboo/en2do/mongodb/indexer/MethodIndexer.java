@@ -14,7 +14,7 @@ import eu.koboo.en2do.operators.MethodOperator;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.pagination.Pagination;
-import eu.koboo.en2do.repository.methods.sort.*;
+import eu.koboo.en2do.repository.methods.sort.Sort;
 import eu.koboo.en2do.repository.methods.transform.NestedBsonKey;
 import eu.koboo.en2do.repository.methods.transform.Transform;
 import eu.koboo.en2do.utility.parse.ParseUtils;
