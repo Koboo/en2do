@@ -10,13 +10,13 @@ only works with MongoDB.
 ## Links
 
 - [Wiki](https://koboo.gitbook.io/en2do/)
-- [MavenCentral](https://mvnrepository.com/artifact/eu.koboo/en2do)
+- [MavenCentral](https://central.sonatype.com/artifact/eu.koboo/en2do)
 - [Discord](https://discord.koboo.eu/)
 - [License](LICENSE)
 
 ## Use as dependency
 
-en2do is published on [maven central](https://central.sonatype.com/).
+en2do is published on [maven central](https://central.sonatype.com/artifact/eu.koboo/en2do).
 
 ### Maven
 
@@ -24,20 +24,20 @@ en2do is published on [maven central](https://central.sonatype.com/).
 <dependency>
     <groupId>eu.koboo</groupId>
     <artifactId>en2do</artifactId>
-    <version>3.2.2</version>
+    <version>3.2.3</version>
 </dependency>
 ```
 
 ### Gradle Groovy
 
 ```groovy
-implementation 'eu.koboo:en2do:3.2.2'
+implementation 'eu.koboo:en2do:3.2.3'
 ```
 
 ### Gradle Kotlin
 
 ```groovy
-implementation("eu.koboo:en2do:3.2.2")
+implementation("eu.koboo:en2do:3.2.3")
 ```
 
 ### References
