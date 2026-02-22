@@ -26,10 +26,10 @@ dependencies {
     testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
     // Test-Suite runtime
-    def jupiterVersion = "5.13.4"
+    def jupiterVersion = "6.0.3"
     testImplementation("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
-    testImplementation("org.junit.platform:junit-platform-launcher:1.13.4")
+    testImplementation("org.junit.platform:junit-platform-launcher:$jupiterVersion")
 
     // SLF4j logger for test-suite
     def slf4jVersion = "2.0.17"
@@ -41,8 +41,8 @@ test {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 compileJava {
