@@ -99,5 +99,6 @@ mavenPublishing {
             developerConnection = 'scm:git:https://github.com/Koboo/en2do'
         }
     }
+    publishToMavenCentral()
     signAllPublications()
 }
