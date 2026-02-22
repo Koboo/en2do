@@ -19,7 +19,7 @@ dependencies {
     testImplementation("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
 
     // Eliminate boilerplate code
-    def lombokVersion = "1.18.38"
+    def lombokVersion = "1.18.42"
     compileOnly("org.projectlombok:lombok:$lombokVersion")
     annotationProcessor("org.projectlombok:lombok:$lombokVersion")
     testImplementation("org.projectlombok:lombok:$lombokVersion")
