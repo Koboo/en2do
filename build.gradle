@@ -1,9 +1,7 @@
-import com.vanniktech.maven.publish.SonatypeHost
-
 plugins {
     id('java-library')
     id('com.gradleup.shadow') version('8.3.6')
-    id('com.vanniktech.maven.publish') version('0.29.0')
+    id('com.vanniktech.maven.publish') version('0.36.0')
 }
 
 group('eu.koboo')
@@ -45,13 +43,11 @@ test {
 java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
-    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
 }
 
 compileJava {
     options.fork = true
     options.encoding = 'UTF-8'
-    options.release.set(11)
 }
 
 tasks.register('sourcesJar', Jar) {
@@ -98,7 +94,5 @@ mavenPublishing {
             developerConnection = 'scm:git:https://github.com/Koboo/en2do'
         }
     }
-
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
 }
