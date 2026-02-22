@@ -12,13 +12,14 @@ repositories {
 }
 
 dependencies {
-
-    def mongoDriverVersion = "5.5.1"
-    // The driver itself
+    // The mongodb driver itself
+    // https://central.sonatype.com/artifact/org.mongodb/mongodb-driver-sync
+    def mongoDriverVersion = "5.6.3"
     api("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
     testImplementation("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
 
     // Eliminate boilerplate code
+    // https://central.sonatype.com/artifact/org.projectlombok/lombok
     def lombokVersion = "1.18.42"
     compileOnly("org.projectlombok:lombok:$lombokVersion")
     annotationProcessor("org.projectlombok:lombok:$lombokVersion")
@@ -27,11 +28,15 @@ dependencies {
 
     // Test-Suite runtime
     def jupiterVersion = "6.0.3"
+    // https://central.sonatype.com/artifact/org.junit.jupiter/junit-jupiter-engine
     testImplementation("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
+    // https://central.sonatype.com/artifact/org.junit.jupiter/junit-jupiter-api
     testImplementation("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
+    // https://central.sonatype.com/artifact/org.junit.platform/junit-platform-launcher
     testImplementation("org.junit.platform:junit-platform-launcher:$jupiterVersion")
 
     // SLF4j logger for test-suite
+    // https://central.sonatype.com/artifact/org.slf4j/slf4j-jdk14
     def slf4jVersion = "2.0.17"
     testImplementation("org.slf4j:slf4j-jdk14:$slf4jVersion")
 }
