@@ -205,7 +205,7 @@ public final class SettingsBuilder {
      *
      * @param otherBuilder The builder you want to merge into this builder.
      */
-    protected void merge(SettingsBuilder otherBuilder) {
+    void merge(SettingsBuilder otherBuilder) {
         this.mongoLoggerLevel = otherBuilder.getMongoLoggerLevel();
         this.disallowUUIDKeys = otherBuilder.isDisallowUUIDKeys();
         this.allowDiskUse = otherBuilder.isAllowDiskUse();
