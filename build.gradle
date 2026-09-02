@@ -27,7 +27,7 @@ dependencies {
     testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
     // Test-Suite runtime
-    def jupiterVersion = "6.0.3"
+    def jupiterVersion = "6.1.3"
     // https://central.sonatype.com/artifact/org.junit.jupiter/junit-jupiter-engine
     testImplementation("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
     // https://central.sonatype.com/artifact/org.junit.jupiter/junit-jupiter-api
