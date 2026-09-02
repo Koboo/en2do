@@ -11,7 +11,7 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class FieldUpdate {
+public final class FieldUpdate {
 
     /**
      * Set the defaultValue of a specific field.

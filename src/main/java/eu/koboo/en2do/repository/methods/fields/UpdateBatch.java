@@ -16,7 +16,7 @@ import java.util.List;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class UpdateBatch {
+public final class UpdateBatch {
 
     /**
      * Creates a UpdateBatch instance from a List of

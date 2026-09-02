@@ -48,7 +48,7 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
     RepositoryData<E, ID, R> repositoryData;
 
     @SuppressWarnings("unchecked")
-    public <F> F createFilter(Object[] arguments) throws Exception {
+    public <F> F createFilter(Object[] arguments) {
         Bson filter;
         Set<Bson> bsonFilterSet = new LinkedHashSet<>();
         for (IndexedFilter indexedFilter : indexedFilterList) {
@@ -56,20 +56,13 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
             Bson processedBsonFilter = processBson(indexedFilter, paramStartIndex, arguments);
             bsonFilterSet.add(processedBsonFilter);
         }
-        switch (chainType) {
-            case OR:
-                filter = Filters.or(bsonFilterSet);
-                break;
-            case AND:
-                filter = Filters.and(bsonFilterSet);
-                break;
-            case NONE:
-            default:
-                filter = bsonFilterSet.stream()
-                    .findFirst()
-                    .orElse(null);
-                break;
-        }
+        filter = switch (chainType) {
+            case OR -> Filters.or(bsonFilterSet);
+            case AND -> Filters.and(bsonFilterSet);
+            default -> bsonFilterSet.stream()
+                .findFirst()
+                .orElse(null);
+        };
         return (F) filter;
     }
 
@@ -116,12 +109,10 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 // MongoDB supports multiple types of regex filtering, so check which type is provided.
                 // We support plain Strings and Pattern types.
                 Object value = repositoryData.getFilterableValue(args[paramsIndexAt]);
-                if (value instanceof String) {
-                    String regexPatternString = (String) value;
+                if (value instanceof String regexPatternString) {
                     retFilter = Filters.regex(bsonFilterFieldKey, regexPatternString);
                 }
-                if (value instanceof Pattern) {
-                    Pattern regexPattern = (Pattern) value;
+                if (value instanceof Pattern regexPattern) {
                     retFilter = Filters.regex(bsonFilterFieldKey, regexPattern);
                 }
                 // No supported type provided, we can't do anything other than throwing exceptions.
@@ -165,8 +156,10 @@ public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 }
                 // If you produce this exception, I'm very surprised then I see the code.
                 if (objectArray == null) {
-                    throw new ReportException("Your Object array of the \"In\" filter was null.\n" +
-                        "This is a very rare case, since we do stuff, mongodb doesn't really support.\n");
+                    throw new ReportException("""
+                        Your Object array of the "In" filter was null.
+                        This is a very rare case, since we do stuff, mongodb doesn't really support.
+                        """);
                 }
                 retFilter = Filters.in(bsonFilterFieldKey, objectArray);
                 break;

@@ -12,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @ToString
-public class Sort {
+public final class Sort {
 
     public static Sort create() {
         return new Sort();

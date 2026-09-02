@@ -19,10 +19,9 @@ public class MethodEquals extends GlobalPredefinedMethod {
             return false;
         }
         Object object = arguments[0];
-        if (!(object instanceof Repository<?, ?>)) {
+        if (!(object instanceof Repository<?, ?> repository)) {
             return false;
         }
-        Repository<?, ?> repository = (Repository<?, ?>) object;
         return repository.getClass().getName().equalsIgnoreCase(repositoryData.getClass().getName());
     }
 }

@@ -12,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @ToString
-public class Pagination {
+public final class Pagination {
 
     /**
      * Use this method to create a new pagination object.

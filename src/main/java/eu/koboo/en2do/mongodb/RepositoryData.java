@@ -101,10 +101,9 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             return findIterable;
         }
         Object lastParamObject = args == null ? null : args[args.length - 1];
-        if (!(lastParamObject instanceof Sort)) {
+        if (!(lastParamObject instanceof Sort sortOptions)) {
             return findIterable;
         }
-        Sort sortOptions = (Sort) lastParamObject;
         int limit = sortOptions.getLimit();
         int skip = sortOptions.getSkip();
         String fieldName = sortOptions.getFieldName();
@@ -121,10 +120,9 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             return findIterable;
         }
         Object parameterObject = args[args.length - 1];
-        if (!(parameterObject instanceof Pagination)) {
+        if (!(parameterObject instanceof Pagination pagination)) {
             return findIterable;
         }
-        Pagination pagination = (Pagination) parameterObject;
 
         // We do not allow pages lower or equal to zero. The results
         // would just be empty, so we throw an exception to not allow that.

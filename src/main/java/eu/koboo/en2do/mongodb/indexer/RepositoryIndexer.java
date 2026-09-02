@@ -87,10 +87,9 @@ public class RepositoryIndexer<E, ID, R extends Repository<E, ID>> {
         }
 
         Type repositoryType = genericInterfaces[0];
-        if (!(repositoryType instanceof ParameterizedType)) {
+        if (!(repositoryType instanceof ParameterizedType parameterizedType)) {
             throw new RepositoryException("Couldn't find parameterized types.", repositoryClass);
         }
-        ParameterizedType parameterizedType = (ParameterizedType) repositoryType;
 
         Class<?> entityTypeClass = (Class<?>) parameterizedType.getActualTypeArguments()[0];
         Class<?> idTypeClass = (Class<?>) parameterizedType.getActualTypeArguments()[1];
