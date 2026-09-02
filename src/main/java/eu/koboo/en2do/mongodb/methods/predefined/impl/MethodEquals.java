@@ -6,7 +6,7 @@ import eu.koboo.en2do.repository.Repository;
 
 import java.lang.reflect.Method;
 
-public class MethodEquals extends GlobalPredefinedMethod {
+public final class MethodEquals extends GlobalPredefinedMethod {
 
     public MethodEquals() {
         super("equals");

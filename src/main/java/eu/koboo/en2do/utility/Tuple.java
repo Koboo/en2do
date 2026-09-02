@@ -8,7 +8,7 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class Tuple<I1, I2> {
+public final class Tuple<I1, I2> {
 
     I1 first;
     I2 second;

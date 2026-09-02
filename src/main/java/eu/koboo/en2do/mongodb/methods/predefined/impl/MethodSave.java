@@ -13,7 +13,7 @@ import org.bson.conversions.Bson;
 import java.lang.reflect.Method;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class MethodSave extends GlobalPredefinedMethod {
+public final class MethodSave extends GlobalPredefinedMethod {
 
     ReplaceOptions replaceOptions;
 

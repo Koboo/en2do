@@ -29,7 +29,7 @@ import java.util.logging.Level;
  */
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Log
-public class GenericMapCodec<K, T> implements Codec<Map<K, T>> {
+public final class GenericMapCodec<K, T> implements Codec<Map<K, T>> {
 
     MongoManager manager;
     @Getter

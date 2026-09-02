@@ -20,7 +20,7 @@ import java.util.Map;
  */
 @Log
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class InternalPropertyCodecProvider implements PropertyCodecProvider {
+public final class InternalPropertyCodecProvider implements PropertyCodecProvider {
 
     MongoManager manager;
     Map<Class<?>, Codec<?>> customCodecRegistry;

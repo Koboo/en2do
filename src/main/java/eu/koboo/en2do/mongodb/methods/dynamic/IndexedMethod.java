@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class IndexedMethod<E, ID, R extends Repository<E, ID>> {
+public final class IndexedMethod<E, ID, R extends Repository<E, ID>> {
 
     @Getter
     Method method;

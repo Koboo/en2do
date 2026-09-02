@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class RepositoryIndexer<E, ID, R extends Repository<E, ID>> {
+public final class RepositoryIndexer<E, ID, R extends Repository<E, ID>> {
 
     private static final Pattern COLLECTION_REGEX_NAME = Pattern.compile("^[A-Za-z0-9_]+$");
 

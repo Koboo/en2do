@@ -6,7 +6,7 @@ import eu.koboo.en2do.repository.Repository;
 
 import java.lang.reflect.Method;
 
-public class MethodHashCode extends GlobalPredefinedMethod {
+public final class MethodHashCode extends GlobalPredefinedMethod {
 
     public MethodHashCode() {
         super("hashCode");

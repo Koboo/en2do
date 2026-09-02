@@ -21,7 +21,7 @@ import java.util.Set;
  */
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-public class AnnotationConvention implements Convention {
+public final class AnnotationConvention implements Convention {
 
     /**
      * @param classModelBuilder the ClassModelBuilder to apply the convention to

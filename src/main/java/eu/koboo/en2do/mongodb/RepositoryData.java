@@ -29,7 +29,7 @@ import java.util.UUID;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Getter
-public class RepositoryData<E, ID, R extends Repository<E, ID>> {
+public final class RepositoryData<E, ID, R extends Repository<E, ID>> {
 
     MongoManager mongoManager;
     RepositoryIndexer<E, ID, R> indexer;

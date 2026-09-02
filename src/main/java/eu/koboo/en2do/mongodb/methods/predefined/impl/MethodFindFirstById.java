@@ -8,7 +8,7 @@ import org.bson.conversions.Bson;
 
 import java.lang.reflect.Method;
 
-public class MethodFindFirstById extends GlobalPredefinedMethod {
+public final class MethodFindFirstById extends GlobalPredefinedMethod {
 
     public MethodFindFirstById() {
         super("findFirstById");

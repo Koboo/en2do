@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-public class MethodDeleteMany extends GlobalPredefinedMethod {
+public final class MethodDeleteMany extends GlobalPredefinedMethod {
 
     public MethodDeleteMany() {
         super("deleteMany");

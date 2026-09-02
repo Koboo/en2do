@@ -26,7 +26,7 @@ import java.util.concurrent.ExecutorService;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @AllArgsConstructor
-public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> implements InvocationHandler {
+public final class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> implements InvocationHandler {
 
     RepositoryData<E, ID, R> repositoryData;
     ExecutorService executorService;

@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class CompoundIndicesParser implements IndicesParser {
+public final class CompoundIndicesParser implements IndicesParser {
 
     @Override
     public void parse(Class<?> repositoryClass, Class<?> entityClass, MongoCollection<?> entityCollection,

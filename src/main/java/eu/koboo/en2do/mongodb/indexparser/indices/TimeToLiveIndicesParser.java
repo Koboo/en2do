@@ -11,7 +11,7 @@ import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.Set;
 
-public class TimeToLiveIndicesParser implements IndicesParser {
+public final class TimeToLiveIndicesParser implements IndicesParser {
 
     @Override
     public void parse(Class<?> repositoryClass, Class<?> entityClass, MongoCollection<?> entityCollection, Set<Field> entityFieldSet) {

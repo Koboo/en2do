@@ -8,7 +8,7 @@ import eu.koboo.en2do.repository.Repository;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
-public class MethodPageAll extends GlobalPredefinedMethod {
+public final class MethodPageAll extends GlobalPredefinedMethod {
 
     public MethodPageAll() {
         super("pageAll");

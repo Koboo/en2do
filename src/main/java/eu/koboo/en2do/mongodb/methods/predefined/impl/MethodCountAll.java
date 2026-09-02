@@ -6,7 +6,7 @@ import eu.koboo.en2do.repository.Repository;
 
 import java.lang.reflect.Method;
 
-public class MethodCountAll extends GlobalPredefinedMethod {
+public final class MethodCountAll extends GlobalPredefinedMethod {
 
     public MethodCountAll() {
         super("countAll");

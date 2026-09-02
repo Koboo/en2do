@@ -26,7 +26,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class MethodIndexer<E, ID, R extends Repository<E, ID>> {
+public final class MethodIndexer<E, ID, R extends Repository<E, ID>> {
 
     final RepositoryIndexer<E, ID, R> repositoryIndexer;
     final Class<R> repositoryClass;

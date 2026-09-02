@@ -20,7 +20,7 @@ import java.util.Set;
  */
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-public class MethodMappingConvention implements Convention {
+public final class MethodMappingConvention implements Convention {
 
     MongoManager mongoManager;
 

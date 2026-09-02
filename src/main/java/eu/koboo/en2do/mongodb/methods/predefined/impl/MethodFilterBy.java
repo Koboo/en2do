@@ -9,7 +9,7 @@ import org.bson.conversions.Bson;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
-public class MethodFilterBy extends GlobalPredefinedMethod {
+public final class MethodFilterBy extends GlobalPredefinedMethod {
 
     public MethodFilterBy() {
         super("filterBy");

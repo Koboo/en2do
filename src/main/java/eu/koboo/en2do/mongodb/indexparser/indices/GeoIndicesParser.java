@@ -11,7 +11,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Set;
 
-public class GeoIndicesParser implements IndicesParser {
+public final class GeoIndicesParser implements IndicesParser {
 
     @Override
     public void parse(Class<?> repositoryClass, Class<?> entityClass, MongoCollection<?> entityCollection,

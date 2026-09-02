@@ -6,7 +6,7 @@ import eu.koboo.en2do.repository.Repository;
 
 import java.lang.reflect.Method;
 
-public class MethodDrop extends GlobalPredefinedMethod {
+public final class MethodDrop extends GlobalPredefinedMethod {
 
     public MethodDrop() {
         super("drop");

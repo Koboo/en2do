@@ -14,7 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class IndexParser {
+public final class IndexParser {
 
     Set<IndicesParser> indicesParserRegistry;
 
