@@ -29,11 +29,7 @@ public final class MethodSave extends GlobalPredefinedMethod {
         ID uniqueId = getGenericUniqueIdByEntity(repositoryData, method, entity);
         Bson idFilter = createBsonIdFilter(uniqueId);
         MongoCollection<E> entityCollection = repositoryData.getEntityCollection();
-        if (entityCollection.countDocuments(idFilter) > 0) {
-            UpdateResult result = entityCollection.replaceOne(idFilter, entity, replaceOptions);
-            return result.wasAcknowledged();
-        }
-        entityCollection.insertOne(entity);
-        return true;
+        UpdateResult updateResult = entityCollection.replaceOne(idFilter, entity, replaceOptions);
+        return updateResult.wasAcknowledged();
     }
 }
