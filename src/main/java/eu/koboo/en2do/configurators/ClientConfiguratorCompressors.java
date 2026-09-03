@@ -10,21 +10,21 @@ import lombok.experimental.FieldDefaults;
 import java.util.Collection;
 import java.util.List;
 
-@RequiredArgsConstructor
 @SuppressWarnings("unused")
+@RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public final class ClientConfiguratorCompressors implements ClientConfigurator {
 
     Collection<MongoCompressor> compressors;
 
     @Override
-    public void configure(MongoClientSettings.Builder settingsBuilder) {
+    public void configure(MongoClientSettings.Builder clientSettingsBuilder) {
         if (compressors == null) {
             throw new NullPointerException("compressors is null");
         }
         if (compressors.isEmpty()) {
             throw new IllegalArgumentException("compressors is empty");
         }
-        settingsBuilder.compressorList(List.copyOf(compressors));
+        clientSettingsBuilder.compressorList(List.copyOf(compressors));
     }
 }
