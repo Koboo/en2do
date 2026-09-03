@@ -1,5 +1,8 @@
 package eu.koboo.en2do;
 
+import com.mongodb.MongoClientSettings;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoDatabase;
 import eu.koboo.en2do.repository.NameConvention;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -7,13 +10,22 @@ import lombok.experimental.FieldDefaults;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 
 @SuppressWarnings("unused")
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public final class SettingsBuilder {
+
+    /**
+     * This is the connectionString you need to provide, to connect to your {@link MongoDatabase}.
+     * <a href="https://www.mongodb.com/docs/manual/reference/connection-string/">See documentation of MongoDB</a>.
+     * For easier retrieval you can use {@link ConnectionString} utility class.
+     */
+    String connectionString = null;
 
     /**
      * Defines the logger level for the mongodb loggers
@@ -26,23 +38,28 @@ public final class SettingsBuilder {
     Level mongoLoggerLevel = null;
 
     /**
-     * Disables the usage of uuids as keys in Map fields.
+     * Disables the usage of {@link UUID}s as keys in {@link Map} fields.
      * MongoDB by default does not allow this, but it should be
      * pretty helpful.
+     * Example within an entity:
+     * private final Map<UUID, String> uuidToNameMap;
      */
     boolean disallowUUIDKeys = false;
 
     /**
      * Allows the usage of disk storage for find iterables.
      * This is needed if the size of your results are too large
-     * for your ram.
+     * for your memory.
+     * If the client executes a find operation and the result is too big to be stored
+     * in memory, this options allows the client to temporary save the result onto the disk.
      */
     boolean allowDiskUse = true;
 
     /**
      * Sets the name of the method from the repository into the
-     * mongodb bson construct and can then be seen in the mongodb database logs,
+     * mongodb bson query and can then be seen in the mongodb database logs,
      * through tools like MongoDB Compass or MongoDB Atlas.
+     * This is mainly used for debug purposes and/or performance analysis.
      */
     boolean appendMethodAsComment = false;
 
@@ -56,12 +73,22 @@ public final class SettingsBuilder {
     boolean enableMethodProperties = false;
 
     /**
-     * Defines the prefix of every collection
+     * Defines the prefix of every collection.
+     * Example: collectionPrefix = "test_"
+     * Results:
+     * - "test_players"
+     * - "test_settings"
+     * - "test_quests"
      */
     String collectionPrefix = null;
 
     /**
-     * Defines the suffix of every collection
+     * Defines the suffix of every collection.
+     * Example: collectionPrefix = "_test"
+     * Results:
+     * - "players_test"
+     * - "settings_test"
+     * - "quests_test"
      */
     String collectionSuffix = null;
 
@@ -69,16 +96,43 @@ public final class SettingsBuilder {
      * Enables the automatic generation of collection
      * names, based on the Repository class name and the given convention.
      * The repositories still need @Collection, but you can leave it empty.
+     * Examples:
+     * - {@link NameConvention#CAMEL_CASE_LOWER}
+     *   > CustomerRepository -> "customerRepository"
+     * - {@link NameConvention#CAMEL_CASE_UPPER}
+     *   > CustomerRepository -> "CustomerRepository"
+     * - {@link NameConvention#SNAKE_CASE}
+     *   > CustomerRepository -> "customer_repository"
+     * - {@link NameConvention#FLAT_CASE}
+     *   > CustomerRepository -> "customerrepository"
+     * - {@link NameConvention#MACRO_CASE}
+     *   > CustomerRepository -> "CUSTOMER_REPOSITORY"
+     * - {@link NameConvention#KEBAB_CASE}
+     *   > CustomerRepository -> "customer-repository"
      */
     NameConvention collectionNameConvention = null;
 
     /**
-     * A collection of all client configurator, which are
-     * executed, to allow access on the native MongoClientSettings.Builder instance
-     * before the MongoClient is created.
+     * A collection of custom implemented {@link ClientConfigurator}, which are
+     * executed, to allow access on the native {@link MongoClientSettings.Builder} instance
+     * before the native {@link MongoClient} is created.
      * USE WITH CAUTION. You could mess up the en2do configurations.
+     * Some prebuilt {@link ClientConfigurator}s:
+     * - {@link eu.koboo.en2do.configurators.ClientConfiguratorCompressors}
+     * - {@link eu.koboo.en2do.configurators.ClientConfiguratorServerApi}
      */
     Set<ClientConfigurator> clientConfiguratorSet = null;
+
+    /**
+     * See field documentation.
+     *
+     * @param connectionString The value
+     * @return This builder
+     */
+    public SettingsBuilder connectionString(String connectionString) {
+        this.connectionString = connectionString;
+        return this;
+    }
 
     /**
      * See field documentation.
@@ -198,20 +252,5 @@ public final class SettingsBuilder {
         }
         clientConfiguratorSet.addAll(configurators);
         return this;
-    }
-
-    /**
-     * Merges two different settings builder together.
-     *
-     * @param otherBuilder The builder you want to merge into this builder.
-     */
-    void merge(SettingsBuilder otherBuilder) {
-        this.mongoLoggerLevel = otherBuilder.getMongoLoggerLevel();
-        this.disallowUUIDKeys = otherBuilder.isDisallowUUIDKeys();
-        this.allowDiskUse = otherBuilder.isAllowDiskUse();
-        this.appendMethodAsComment = otherBuilder.isAppendMethodAsComment();
-        this.enableMethodProperties = otherBuilder.isEnableMethodProperties();
-        this.collectionPrefix = otherBuilder.getCollectionPrefix();
-        this.collectionSuffix = otherBuilder.getCollectionSuffix();
     }
 }

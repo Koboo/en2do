@@ -42,7 +42,6 @@ import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@SuppressWarnings("unused")
 public final class MongoManager {
 
     @Getter
@@ -63,14 +62,23 @@ public final class MongoManager {
     @Getter
     MongoDatabase mongoDatabase;
 
-    public MongoManager(String connectString, ExecutorService executorService, SettingsBuilder builder) {
-        this.settingsBuilder = ParseUtils.parseSettingsBuilder(builder);
-        applyLoggerLevel();
+    public MongoManager(ExecutorService executorService, SettingsBuilder builder) {
+        if(builder == null) {
+            throw new NullPointerException("SettingsBuilder cannot be null.");
+        }
+        settingsBuilder = builder;
 
-        this.parser = new IndexParser();
-        this.repositoryDataByClassMap = new ConcurrentHashMap<>();
-        this.repositoryByClassRegistry = new ConcurrentHashMap<>();
-        this.predefinedMethodRegistry = new PredefinedMethodRegistry();
+        // Applying loggerLevel
+        Level loggerLevel = settingsBuilder.getMongoLoggerLevel();
+        if(loggerLevel != null) {
+            Logger.getLogger("org.mongodb").setLevel(loggerLevel);
+            Logger.getLogger("com.mongodb").setLevel(loggerLevel);
+        }
+
+        parser = new IndexParser();
+        repositoryDataByClassMap = new ConcurrentHashMap<>();
+        repositoryByClassRegistry = new ConcurrentHashMap<>();
+        predefinedMethodRegistry = new PredefinedMethodRegistry();
         this.executorService = ParseUtils.parseExecutorService(executorService);
 
         internalPropertyCodecProvider = new InternalPropertyCodecProvider(this);
@@ -90,10 +98,14 @@ public final class MongoManager {
                 .build())
         );
 
-        ConnectionString connectionString = ParseUtils.parseConnectionString(connectString);
+        String settingsConnectionString = settingsBuilder.getConnectionString();
+        if(settingsConnectionString == null || settingsConnectionString.isEmpty()) {
+            throw new NullPointerException("connectionString is null or empty!");
+        }
+        ConnectionString connectionString = new ConnectionString(settingsConnectionString);
         String database = connectionString.getDatabase();
         if (database == null || database.isEmpty()) {
-            throw new NullPointerException("database is null or empty in your connection string!");
+            throw new NullPointerException("No database provided in connectionString!");
         }
 
         MongoClientSettings.Builder clientSettingsBuilder = MongoClientSettings.builder()
@@ -115,20 +127,12 @@ public final class MongoManager {
         mongoDatabase = mongoClient.getDatabase(database);
     }
 
-    public MongoManager(String connectString, SettingsBuilder settingsBuilder) {
-        this(connectString, null, settingsBuilder);
-    }
-
     public MongoManager(SettingsBuilder settingsBuilder) {
-        this(null, null, settingsBuilder);
-    }
-
-    public MongoManager(String connectString) {
-        this(connectString, null, null);
+        this(null, settingsBuilder);
     }
 
     public MongoManager() {
-        this(null, null, null);
+        this(null, new SettingsBuilder());
     }
 
     public void close() {
@@ -222,27 +226,22 @@ public final class MongoManager {
         }
     }
 
+    /**
+     * Register a new {@link Codec} to the {@link InternalPropertyCodecProvider} of en2do.
+     * @param typeCodec The new codec you want to implement
+     * @return This {@link MongoManager}
+     * @param <T> The java type the given {@link Codec} is for.
+     */
     public <T> MongoManager registerCodec(Codec<T> typeCodec) {
         internalPropertyCodecProvider.registerCodec(typeCodec.getEncoderClass(), typeCodec);
         return this;
     }
 
-    public MongoManager applySettings(SettingsBuilder newBuilder) {
-        settingsBuilder.merge(newBuilder);
-        applyLoggerLevel();
-        return this;
-    }
-
+    /**
+     * @return Unmodifiable {@link List} with all
+     * registered and created {@link Repository} of this {@link MongoManager}
+     */
     public Set<Repository<?, ?>> getAllRepositories() {
         return Set.copyOf(repositoryByClassRegistry.values());
-    }
-
-    private void applyLoggerLevel() {
-        Level loggerLevel = settingsBuilder.getMongoLoggerLevel();
-        if (loggerLevel == null) {
-            return;
-        }
-        Logger.getLogger("org.mongodb").setLevel(loggerLevel);
-        Logger.getLogger("com.mongodb").setLevel(loggerLevel);
     }
 }
