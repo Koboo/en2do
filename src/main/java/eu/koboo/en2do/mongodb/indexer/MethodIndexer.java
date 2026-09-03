@@ -112,7 +112,7 @@ public final class MethodIndexer<E, ID, R extends Repository<E, ID>> {
             return amountType;
         }
         // Couldn't find an AmountType by their respective keyword.
-        // Let's try to find an AmountType by the return type. THe return type
+        // Let's try to find an AmountType by the return type. The return type
         // is already validated and can only be a single entity or a list/collection of entities.
         if (ParseUtils.isReturnTypeOfCollection(method)) {
             return AmountType.MANY;
@@ -136,6 +136,7 @@ public final class MethodIndexer<E, ID, R extends Repository<E, ID>> {
             case TOP:
                 long entityAmount = AmountType.parseAmountByStringStartsWith(parsableMethodName);
                 if (entityAmount == 0) {
+                    // TODO: Replace with dedicated exception
                     throw new RuntimeException("The entityAmount 0 is not a valid top number.");
                 }
                 parsableMethodName = parsableMethodName.replaceFirst(String.valueOf(entityAmount), "");
@@ -145,6 +146,7 @@ public final class MethodIndexer<E, ID, R extends Repository<E, ID>> {
                 // Doesn't get used anyway.
                 return -1;
             default:
+                // TODO: Replace with dedicated exception
                 throw new IllegalArgumentException("Cannot parse entity amount by type " +
                     amountType.name() + " " + parsableMethodName);
         }
