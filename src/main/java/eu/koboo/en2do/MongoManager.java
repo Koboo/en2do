@@ -53,7 +53,6 @@ public final class MongoManager {
     PredefinedMethodRegistry predefinedMethodRegistry;
     ExecutorService executorService;
 
-    InternalPropertyCodecProvider internalPropertyCodecProvider;
     CodecRegistry codecRegistry;
 
     @Getter
@@ -62,7 +61,7 @@ public final class MongoManager {
     @Getter
     MongoDatabase mongoDatabase;
 
-    public MongoManager(ExecutorService executorService, SettingsBuilder builder) {
+    public MongoManager(SettingsBuilder builder, ExecutorService executorService) {
         if(builder == null) {
             throw new NullPointerException("SettingsBuilder cannot be null.");
         }
@@ -81,7 +80,13 @@ public final class MongoManager {
         predefinedMethodRegistry = new PredefinedMethodRegistry();
         this.executorService = ParseUtils.parseExecutorService(executorService);
 
-        internalPropertyCodecProvider = new InternalPropertyCodecProvider(this);
+        InternalPropertyCodecProvider internalPropertyCodecProvider = new InternalPropertyCodecProvider(this);
+        Set<Codec<?>> codecSet = settingsBuilder.getCodecSet();
+        if(codecSet != null && !codecSet.isEmpty()) {
+            for (Codec<?> codec : codecSet) {
+                internalPropertyCodecProvider.registerCodec(codec);
+            }
+        }
 
         codecRegistry = fromRegistries(
             MongoClientSettings.getDefaultCodecRegistry(),
@@ -128,20 +133,16 @@ public final class MongoManager {
     }
 
     public MongoManager(SettingsBuilder settingsBuilder) {
-        this(null, settingsBuilder);
+        this(settingsBuilder, null);
     }
 
     public MongoManager() {
-        this(null, new SettingsBuilder());
+        this(new SettingsBuilder(), null);
     }
 
     public void close() {
-        close(true);
-    }
-
-    public void close(boolean shutdownExecutorService) {
         try {
-            if (executorService != null && shutdownExecutorService) {
+            if (executorService != null) {
                 executorService.shutdown();
             }
             repositoryByClassRegistry.clear();
@@ -224,17 +225,6 @@ public final class MongoManager {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * Register a new {@link Codec} to the {@link InternalPropertyCodecProvider} of en2do.
-     * @param typeCodec The new codec you want to implement
-     * @return This {@link MongoManager}
-     * @param <T> The java type the given {@link Codec} is for.
-     */
-    public <T> MongoManager registerCodec(Codec<T> typeCodec) {
-        internalPropertyCodecProvider.registerCodec(typeCodec.getEncoderClass(), typeCodec);
-        return this;
     }
 
     /**

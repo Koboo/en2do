@@ -7,8 +7,8 @@ import eu.koboo.en2do.repository.NameConvention;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
+import org.bson.codecs.Codec;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -122,6 +122,11 @@ public final class SettingsBuilder {
      * - {@link eu.koboo.en2do.configurators.ClientConfiguratorServerApi}
      */
     Set<ClientConfigurator> clientConfiguratorSet = null;
+
+    /**
+     * A {@link Set} of custom codecs you want to register with the {@link MongoClient}.
+     */
+    Set<Codec<?>> codecSet = null;
 
     /**
      * See field documentation.
@@ -243,14 +248,14 @@ public final class SettingsBuilder {
     /**
      * See field documentation.
      *
-     * @param configurators The value
+     * @param codec The value
      * @return This builder
      */
-    public SettingsBuilder clientConfigurators(Collection<ClientConfigurator> configurators) {
-        if (clientConfiguratorSet == null) {
-            clientConfiguratorSet = new HashSet<>();
+    public <T> SettingsBuilder registerCodec(Codec<T> codec) {
+        if (codecSet == null) {
+            codecSet = new HashSet<>();
         }
-        clientConfiguratorSet.addAll(configurators);
+        codecSet.add(codec);
         return this;
     }
 }

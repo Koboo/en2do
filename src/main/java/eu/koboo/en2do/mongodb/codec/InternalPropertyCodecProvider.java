@@ -30,8 +30,8 @@ public final class InternalPropertyCodecProvider implements PropertyCodecProvide
         this.customCodecRegistry = new LinkedHashMap<>();
     }
 
-    public <T> void registerCodec(Class<T> typeClass, Codec<T> typeCodec) {
-        this.customCodecRegistry.put(typeClass, typeCodec);
+    public <T> void registerCodec(Codec<T> typeCodec) {
+        this.customCodecRegistry.put(typeCodec.getEncoderClass(), typeCodec);
     }
 
     /**
