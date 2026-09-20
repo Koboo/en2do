@@ -1,11 +1,9 @@
 package eu.koboo.en2do.utility.parse;
 
-import eu.koboo.en2do.repository.entity.TransformField;
 import eu.koboo.en2do.utility.reflection.PrimitiveUtils;
 import lombok.experimental.UtilityClass;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -60,14 +58,6 @@ public class ParseUtils {
     public boolean isReturnTypeOfCollection(Method method) {
         ParameterizedType parameterizedType = decapsulateFuture(method);
         return parameterizedType != null;
-    }
-
-    public String parseBsonName(Field field) {
-        TransformField transformField = field.getAnnotation(TransformField.class);
-        if (transformField != null && !transformField.value().trim().equalsIgnoreCase("")) {
-            return transformField.value();
-        }
-        return field.getName();
     }
 
     /**
