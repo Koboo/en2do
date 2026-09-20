@@ -36,8 +36,7 @@ public final class AnnotationConvention implements Convention {
                     classModelBuilder.removeProperty(propertyModelBuilder.getName());
                     continue;
                 }
-                if (readAnnotation instanceof TransformField) {
-                    TransformField transformField = (TransformField) readAnnotation;
+                if (readAnnotation instanceof TransformField transformField) {
                     propertyModelBuilder.readName(transformField.value());
                     continue;
                 }
@@ -50,8 +49,7 @@ public final class AnnotationConvention implements Convention {
                     classModelBuilder.removeProperty(propertyModelBuilder.getName());
                     continue;
                 }
-                if (writeAnnotation instanceof TransformField) {
-                    TransformField transformField = (TransformField) writeAnnotation;
+                if (writeAnnotation instanceof TransformField transformField) {
                     propertyModelBuilder.writeName(transformField.value());
                     continue;
                 }
