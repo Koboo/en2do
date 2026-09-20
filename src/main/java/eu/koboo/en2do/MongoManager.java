@@ -67,7 +67,7 @@ public final class MongoManager {
         }
         settingsBuilder = builder;
 
-        // Applying loggerLevel
+        // Applying loggerLevel from settings builder
         Level loggerLevel = settingsBuilder.getMongoLoggerLevel();
         if(loggerLevel != null) {
             Logger.getLogger("org.mongodb").setLevel(loggerLevel);
@@ -80,6 +80,7 @@ public final class MongoManager {
         predefinedMethodRegistry = new PredefinedMethodRegistry();
         this.executorService = ParseUtils.parseExecutorService(executorService);
 
+        // Registering user-provided codecs from SettingsBuilder
         InternalPropertyCodecProvider internalPropertyCodecProvider = new InternalPropertyCodecProvider(this);
         Set<Codec<?>> codecSet = settingsBuilder.getCodecSet();
         if(codecSet != null && !codecSet.isEmpty()) {
@@ -88,6 +89,7 @@ public final class MongoManager {
             }
         }
 
+        // Building the native mongodb CodecRegistry
         codecRegistry = fromRegistries(
             MongoClientSettings.getDefaultCodecRegistry(),
             fromProviders(PojoCodecProvider.builder()
@@ -103,6 +105,7 @@ public final class MongoManager {
                 .build())
         );
 
+        // Building and validating the given connection string.
         String settingsConnectionString = settingsBuilder.getConnectionString();
         if(settingsConnectionString == null || settingsConnectionString.isEmpty()) {
             throw new NullPointerException("connectionString is null or empty!");
@@ -113,12 +116,14 @@ public final class MongoManager {
             throw new NullPointerException("No database provided in connectionString!");
         }
 
+        // Prebuild the native client settings.
         MongoClientSettings.Builder clientSettingsBuilder = MongoClientSettings.builder()
             .applicationName("en2do-client")
             .applyConnectionString(connectionString)
             .uuidRepresentation(UuidRepresentation.STANDARD)
             .codecRegistry(codecRegistry);
 
+        // Apply the user-provided client configurators
         Set<ClientConfigurator> clientConfiguratorSet = settingsBuilder.getClientConfiguratorSet();
         if (clientConfiguratorSet != null && !clientConfiguratorSet.isEmpty()) {
             for (ClientConfigurator clientConfigurator : clientConfiguratorSet) {
@@ -126,9 +131,8 @@ public final class MongoManager {
             }
         }
 
-        MongoClientSettings clientSettings = clientSettingsBuilder.build();
-
-        mongoClient = MongoClients.create(clientSettings);
+        // Build the actual mongodb client and database
+        mongoClient = MongoClients.create(clientSettingsBuilder.build());
         mongoDatabase = mongoClient.getDatabase(database);
     }
 
