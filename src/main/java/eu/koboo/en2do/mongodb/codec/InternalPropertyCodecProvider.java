@@ -1,6 +1,5 @@
 package eu.koboo.en2do.mongodb.codec;
 
-import eu.koboo.en2do.MongoManager;
 import eu.koboo.en2do.mongodb.codec.types.ClassCodec;
 import eu.koboo.en2do.mongodb.codec.types.GenericMapCodec;
 import eu.koboo.en2do.mongodb.codec.types.StringConversionCodec;
@@ -26,11 +25,9 @@ import java.util.*;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public final class InternalPropertyCodecProvider implements PropertyCodecProvider {
 
-    MongoManager manager;
     Map<Class<?>, Codec<?>> customCodecRegistry;
 
-    public InternalPropertyCodecProvider(MongoManager manager) {
-        this.manager = manager;
+    public InternalPropertyCodecProvider() {
         this.customCodecRegistry = new LinkedHashMap<>();
         registerCodec(new ClassCodec());
         registerCodec(new ZonedDateTimeCodec());
@@ -60,7 +57,7 @@ public final class InternalPropertyCodecProvider implements PropertyCodecProvide
         List<? extends TypeWithTypeParameters<?>> typeParameters = type.getTypeParameters();
 
         if (Map.class.isAssignableFrom(typeClass) && typeParameters.size() == 2) {
-            return new GenericMapCodec(manager, typeClass, registry.get(typeParameters.get(0)),
+            return new GenericMapCodec(typeClass, registry.get(typeParameters.get(0)),
                 registry.get(typeParameters.get(1)));
         }
         Codec<?> codec = customCodecRegistry.get(typeClass);

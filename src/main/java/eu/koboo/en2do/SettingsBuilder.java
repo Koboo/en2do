@@ -10,9 +10,7 @@ import lombok.experimental.FieldDefaults;
 import org.bson.codecs.Codec;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.logging.Level;
 
 @SuppressWarnings("unused")
@@ -36,15 +34,6 @@ public final class SettingsBuilder {
      * <a href="https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/logging/">Click here</a>
      */
     Level mongoLoggerLevel = null;
-
-    /**
-     * Disables the usage of {@link UUID}s as keys in {@link Map} fields.
-     * MongoDB by default does not allow this, but it should be
-     * pretty helpful.
-     * Example within an entity:
-     * private final Map<UUID, String> uuidToNameMap;
-     */
-    boolean disallowUUIDKeys = false;
 
     /**
      * Allows the usage of disk storage for find iterables.
@@ -157,16 +146,6 @@ public final class SettingsBuilder {
      */
     public SettingsBuilder disableMongoDBLogger() {
         return setMongoDBLoggerLevel(Level.OFF);
-    }
-
-    /**
-     * See field documentation.
-     *
-     * @return This builder
-     */
-    public SettingsBuilder disallowUUIDMapKeys() {
-        this.disallowUUIDKeys = true;
-        return this;
     }
 
     /**

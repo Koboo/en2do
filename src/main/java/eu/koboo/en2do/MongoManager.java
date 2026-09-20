@@ -81,7 +81,7 @@ public final class MongoManager {
         this.executorService = ParseUtils.parseExecutorService(executorService);
 
         // Registering user-provided codecs from SettingsBuilder
-        InternalPropertyCodecProvider internalPropertyCodecProvider = new InternalPropertyCodecProvider(this);
+        InternalPropertyCodecProvider internalPropertyCodecProvider = new InternalPropertyCodecProvider();
         Set<Codec<?>> codecSet = settingsBuilder.getCodecSet();
         if(codecSet != null && !codecSet.isEmpty()) {
             for (Codec<?> codec : codecSet) {
