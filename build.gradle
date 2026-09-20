@@ -80,9 +80,9 @@ mavenPublishing {
         url = 'https://github.com/Koboo/en2do'
         licenses {
             license {
-                name = 'The Apache License, Version 2.0'
-                url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
-                distribution = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                name = 'MIT'
+                url = 'https://mit-license.org/'
+                distribution = 'https://mit-license.org/'
             }
         }
         developers {
