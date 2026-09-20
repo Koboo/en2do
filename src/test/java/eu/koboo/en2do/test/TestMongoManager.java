@@ -25,8 +25,7 @@ public final class TestMongoManager implements TestExecutionListener {
         SettingsBuilder settingsBuilder = new SettingsBuilder()
             .connectionString(CONNECTION_STRING)
             .clientConfigurator(new ClientConfiguratorCompressors(Collections.singletonList(MongoCompressor.createZlibCompressor())))
-            .appendMethodNameAsQueryComment()
-            .disableMongoDBLogger();
+            .appendMethodNameAsQueryComment();
         MANAGER = new MongoManager(settingsBuilder);
         assertNotNull(MANAGER);
         log.info("Finished initializing MongoManager singleton instance!");

@@ -26,16 +26,6 @@ public final class SettingsBuilder {
     String connectionString = null;
 
     /**
-     * Defines the logger level for the mongodb loggers
-     * with the following package prefixes:
-     * - "org.mongodb"
-     * - "com.mongodb"
-     * If you want to customize logging even more, look into the mongodb logging documentation:
-     * <a href="https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/logging/">Click here</a>
-     */
-    Level mongoLoggerLevel = null;
-
-    /**
      * Allows the usage of disk storage for find iterables.
      * This is needed if the size of your results are too large
      * for your memory.
@@ -126,26 +116,6 @@ public final class SettingsBuilder {
     public SettingsBuilder connectionString(String connectionString) {
         this.connectionString = connectionString;
         return this;
-    }
-
-    /**
-     * See field documentation.
-     *
-     * @param level The value
-     * @return This builder
-     */
-    public SettingsBuilder setMongoDBLoggerLevel(Level level) {
-        this.mongoLoggerLevel = level;
-        return this;
-    }
-
-    /**
-     * See field documentation.
-     *
-     * @return This builder
-     */
-    public SettingsBuilder disableMongoDBLogger() {
-        return setMongoDBLoggerLevel(Level.OFF);
     }
 
     /**

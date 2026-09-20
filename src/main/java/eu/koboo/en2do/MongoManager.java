@@ -62,17 +62,10 @@ public final class MongoManager {
     MongoDatabase mongoDatabase;
 
     public MongoManager(SettingsBuilder builder, ExecutorService executorService) {
-        if(builder == null) {
+        if (builder == null) {
             throw new NullPointerException("SettingsBuilder cannot be null.");
         }
         settingsBuilder = builder;
-
-        // Applying loggerLevel from settings builder
-        Level loggerLevel = settingsBuilder.getMongoLoggerLevel();
-        if(loggerLevel != null) {
-            Logger.getLogger("org.mongodb").setLevel(loggerLevel);
-            Logger.getLogger("com.mongodb").setLevel(loggerLevel);
-        }
 
         parser = new IndexParser();
         repositoryDataByClassMap = new ConcurrentHashMap<>();
@@ -83,7 +76,7 @@ public final class MongoManager {
         // Registering user-provided codecs from SettingsBuilder
         InternalPropertyCodecProvider internalPropertyCodecProvider = new InternalPropertyCodecProvider();
         Set<Codec<?>> codecSet = settingsBuilder.getCodecSet();
-        if(codecSet != null && !codecSet.isEmpty()) {
+        if (codecSet != null && !codecSet.isEmpty()) {
             for (Codec<?> codec : codecSet) {
                 internalPropertyCodecProvider.registerCodec(codec);
             }
@@ -107,7 +100,7 @@ public final class MongoManager {
 
         // Building and validating the given connection string.
         String settingsConnectionString = settingsBuilder.getConnectionString();
-        if(settingsConnectionString == null || settingsConnectionString.isEmpty()) {
+        if (settingsConnectionString == null || settingsConnectionString.isEmpty()) {
             throw new NullPointerException("connectionString is null or empty!");
         }
         ConnectionString connectionString = new ConnectionString(settingsConnectionString);
@@ -232,5 +225,19 @@ public final class MongoManager {
      */
     public Set<Repository<?, ?>> getAllRepositories() {
         return Set.copyOf(repositoryByClassRegistry.values());
+    }
+
+    /**
+     * Defines the logger level for the mongodb loggers
+     * with the following package prefixes:
+     * - "org.mongodb"
+     * - "com.mongodb"
+     * If you want to customize logging even more, look into the mongodb logging documentation:
+     * <a href="https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/logging/">Click here</a>
+     */
+    public static void updateLoggingLevel(Level level) {
+        // Applying loggerLevel to mongo db logger
+        Logger.getLogger("org.mongodb").setLevel(level);
+        Logger.getLogger("com.mongodb").setLevel(level);
     }
 }
