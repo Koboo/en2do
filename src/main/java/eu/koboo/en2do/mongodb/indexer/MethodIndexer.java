@@ -4,6 +4,8 @@ import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.mongodb.Validator;
 import eu.koboo.en2do.mongodb.exception.RepositoryMethodException;
 import eu.koboo.en2do.mongodb.exception.methods.*;
+import eu.koboo.en2do.mongodb.mapping.EntityMapping;
+import eu.koboo.en2do.mongodb.mapping.FieldMapping;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedFilter;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
 import eu.koboo.en2do.mongodb.methods.predefined.PredefinedMethodRegistry;
@@ -21,14 +23,14 @@ import eu.koboo.en2do.utility.parse.ParseUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public final class MethodIndexer<E, ID, R extends Repository<E, ID>> {
 
-    final RepositoryIndexer<E, ID, R> repositoryIndexer;
+    final EntityMapping<E> entityMapping;
+    final List<FieldMapping> fieldsByDescendingJavaNameLength;
     final Class<R> repositoryClass;
     final Class<E> entityClass;
     final Method method;
@@ -49,7 +51,12 @@ public final class MethodIndexer<E, ID, R extends Repository<E, ID>> {
     public MethodIndexer(PredefinedMethodRegistry predefinedMethodRegistry,
                          RepositoryIndexer<E, ID, R> repositoryIndexer,
                          Method method) {
-        this.repositoryIndexer = repositoryIndexer;
+        this.entityMapping = repositoryIndexer.getEntityMapping();
+        this.fieldsByDescendingJavaNameLength = entityMapping.getFieldsByJavaName().values().stream()
+            .sorted(Comparator.comparingInt((FieldMapping field) -> field.getJavaName().length())
+                .reversed()
+                .thenComparing(FieldMapping::getJavaName))
+            .toList();
         this.repositoryClass = repositoryIndexer.getRepositoryClass();
         this.entityClass = repositoryIndexer.getEntityClass();
         this.method = method;
@@ -163,37 +170,25 @@ public final class MethodIndexer<E, ID, R extends Repository<E, ID>> {
     }
 
     private String parseNextBsonKey() {
-        String bsonFilterKey = null;
-        // Check if we can find any nested fields
         for (NestedBsonKey nestedBsonKey : nestedBsonKeySet) {
             String loweredKey = nestedBsonKey.id().toLowerCase(Locale.ROOT);
             if (!parsableLoweredName.startsWith(loweredKey)) {
                 continue;
             }
-            parsableLoweredName = parsableLoweredName.replaceFirst(loweredKey, "");
-            bsonFilterKey = nestedBsonKey.bson();
-            break;
+            parsableLoweredName = parsableLoweredName.substring(loweredKey.length());
+            return nestedBsonKey.bson();
         }
 
-        // Check if we can find any direct entity fields
-        Map<String, Field> bsonToFieldMap = repositoryIndexer.getBsonToFieldMap();
-        for (String bsonFieldKey : bsonToFieldMap.keySet()) {
-            Field field = bsonToFieldMap.get(bsonFieldKey);
-            String fieldName = field.getName();
-            String loweredFieldName = fieldName.toLowerCase(Locale.ROOT);
+        for (FieldMapping field : fieldsByDescendingJavaNameLength) {
+            String loweredFieldName = field.getJavaName().toLowerCase(Locale.ROOT);
             if (!parsableLoweredName.startsWith(loweredFieldName)) {
                 continue;
             }
-            parsableLoweredName = parsableLoweredName.replaceFirst(loweredFieldName, "");
-            bsonFilterKey = bsonFieldKey;
-            break;
+            parsableLoweredName = parsableLoweredName.substring(loweredFieldName.length());
+            return field.getBsonName();
         }
 
-        // Check if we found any key to filter with in bson.
-        if (bsonFilterKey == null) {
-            throw new MethodFieldNotFoundException(repositoryClass, method, parsableLoweredName);
-        }
-        return bsonFilterKey;
+        throw new MethodFieldNotFoundException(repositoryClass, method, parsableLoweredName);
     }
 
     private boolean parseNextNegateFilter() {
@@ -233,10 +228,6 @@ public final class MethodIndexer<E, ID, R extends Repository<E, ID>> {
         return FilterOperator.EQUALS;
     }
 
-    private Field parseFieldByBsonKey(String bsonKey) {
-        return repositoryIndexer.getBsonToFieldMap().get(bsonKey);
-    }
-
     private List<IndexedFilter> parseFilters() {
         parsableLoweredName = parsableMethodName.toLowerCase(Locale.ROOT);
 
@@ -263,7 +254,7 @@ public final class MethodIndexer<E, ID, R extends Repository<E, ID>> {
                 throw new MethodDuplicatedChainException(repositoryClass, method);
             }
 
-            Field directEntityField = parseFieldByBsonKey(bsonFilterKey);
+            FieldMapping directEntityField = entityMapping.findByBsonName(bsonFilterKey);
             if (directEntityField != null) {
                 Validator.validateParameterTypes(repositoryClass, method, directEntityField, filterOperator, nextParameterIndex);
             }

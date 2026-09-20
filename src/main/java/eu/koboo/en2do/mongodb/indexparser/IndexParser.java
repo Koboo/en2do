@@ -5,11 +5,10 @@ import eu.koboo.en2do.mongodb.indexparser.indices.CompoundIndicesParser;
 import eu.koboo.en2do.mongodb.indexparser.indices.GeoIndicesParser;
 import eu.koboo.en2do.mongodb.indexparser.indices.IndicesParser;
 import eu.koboo.en2do.mongodb.indexparser.indices.TimeToLiveIndicesParser;
-import eu.koboo.en2do.utility.reflection.FieldUtils;
+import eu.koboo.en2do.mongodb.mapping.EntityMapping;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
-import java.lang.reflect.Field;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -29,10 +28,9 @@ public final class IndexParser {
         indicesParserRegistry.clear();
     }
 
-    public void parseIndices(Class<?> repositoryClass, Class<?> entityClass, MongoCollection<?> collection) {
-        Set<Field> entityFieldSet = FieldUtils.collectFields(entityClass);
+    public void parseIndices(Class<?> repositoryClass, EntityMapping<?> entityMapping, MongoCollection<?> collection) {
         for (IndicesParser indicesParser : indicesParserRegistry) {
-            indicesParser.parse(repositoryClass, entityClass, collection, entityFieldSet);
+            indicesParser.parse(repositoryClass, entityMapping, collection);
         }
     }
 }

@@ -71,13 +71,6 @@ public final class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                              Object[] args) {
         String bsonFilterFieldKey = filter.getBsonFilterFieldKey();
 
-        // Check if the id field of the entity is used.
-        // We need to convert the actual field name to mongodb's "_id" of documents
-        // to be able to filter the id field.
-        if (bsonFilterFieldKey.equalsIgnoreCase(repositoryData.getEntityUniqueIdField().getName())) {
-            bsonFilterFieldKey = "_id";
-        }
-
         Bson retFilter = null;
         switch (filter.getOperator()) {
             case EQUALS:

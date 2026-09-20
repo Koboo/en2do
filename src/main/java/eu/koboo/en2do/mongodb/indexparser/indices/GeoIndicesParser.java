@@ -3,27 +3,16 @@ package eu.koboo.en2do.mongodb.indexparser.indices;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.geojson.Geometry;
+import eu.koboo.en2do.mongodb.mapping.EntityMapping;
+import eu.koboo.en2do.mongodb.mapping.FieldMapping;
 import eu.koboo.en2do.repository.entity.compound.GeoIndex;
-import eu.koboo.en2do.utility.parse.ParseUtils;
 import org.bson.conversions.Bson;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Set;
 
 public final class GeoIndicesParser implements IndicesParser {
 
     @Override
-    public void parse(Class<?> repositoryClass, Class<?> entityClass, MongoCollection<?> entityCollection,
-                      Set<Field> entityFieldSet) {
-        for (Field field : entityFieldSet) {
-            int modifiers = field.getModifiers();
-            if (Modifier.isStatic(modifiers)
-                || Modifier.isFinal(modifiers)
-                || Modifier.isTransient(modifiers)) {
-                continue;
-            }
-
+    public void parse(Class<?> repositoryClass, EntityMapping<?> entityMapping, MongoCollection<?> entityCollection) {
+        for (FieldMapping field : entityMapping.getFieldsByJavaName().values()) {
             if (!Geometry.class.isAssignableFrom(field.getType())) {
                 continue;
             }
@@ -31,12 +20,12 @@ public final class GeoIndicesParser implements IndicesParser {
             if (geoIndex == null) {
                 continue;
             }
-            String fieldName = ParseUtils.parseBsonName(field);
+            String bsonName = field.getBsonName();
             Bson indexBson;
             if (geoIndex.sphere()) {
-                indexBson = Indexes.geo2dsphere(fieldName);
+                indexBson = Indexes.geo2dsphere(bsonName);
             } else {
-                indexBson = Indexes.geo2d(fieldName);
+                indexBson = Indexes.geo2d(bsonName);
             }
             entityCollection.createIndex(indexBson);
         }

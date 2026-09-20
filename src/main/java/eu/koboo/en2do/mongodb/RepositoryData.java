@@ -8,6 +8,7 @@ import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidPageException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidSortLimitException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidSortSkipException;
 import eu.koboo.en2do.mongodb.indexer.RepositoryIndexer;
+import eu.koboo.en2do.mongodb.mapping.EntityMapping;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.methods.fields.FieldUpdate;
@@ -32,13 +33,11 @@ import java.util.UUID;
 public final class RepositoryData<E, ID, R extends Repository<E, ID>> {
 
     MongoManager mongoManager;
-    RepositoryIndexer<E, ID, R> indexer;
+    EntityMapping<E> entityMapping;
     String collectionName;
     MongoCollection<E> entityCollection;
     Class<R> repositoryClass;
-    Class<E> entityClass;
     Class<ID> entityUniqueIdClass;
-    Field entityUniqueIdField;
 
     @Getter(AccessLevel.NONE)
     Map<String, IndexedMethod<E, ID, R>> dynamicMethodRegistry;
@@ -47,17 +46,23 @@ public final class RepositoryData<E, ID, R extends Repository<E, ID>> {
                           RepositoryIndexer<E, ID, R> indexer,
                           MongoCollection<E> entityCollection) {
         this.mongoManager = mongoManager;
-        this.indexer = indexer;
+        this.entityMapping = indexer.getEntityMapping();
         this.collectionName = indexer.getCollectionName();
         this.entityCollection = entityCollection;
 
         this.repositoryClass = indexer.getRepositoryClass();
-        this.entityClass = indexer.getEntityClass();
 
         this.entityUniqueIdClass = indexer.getIdClass();
-        this.entityUniqueIdField = indexer.getIdField();
 
         this.dynamicMethodRegistry = new HashMap<>();
+    }
+
+    public Class<E> getEntityClass() {
+        return entityMapping.getEntityClass();
+    }
+
+    public Field getEntityUniqueIdField() {
+        return entityMapping.getIdField().getField();
     }
 
     public void destroy() {

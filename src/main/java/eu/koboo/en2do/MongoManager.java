@@ -202,7 +202,7 @@ public final class MongoManager {
             }
 
             // Validation successful
-            parser.parseIndices(repositoryClass, entityClass, entityCollection);
+            parser.parseIndices(repositoryClass, repositoryData.getEntityMapping(), entityCollection);
 
             // Create dynamic repository proxy object
             ClassLoader repoClassLoader = repositoryClass.getClassLoader();

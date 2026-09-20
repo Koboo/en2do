@@ -6,29 +6,28 @@ import eu.koboo.en2do.SettingsBuilder;
 import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.mongodb.Validator;
 import eu.koboo.en2do.mongodb.exception.RepositoryException;
+import eu.koboo.en2do.mongodb.exception.RepositoryTypeException;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameDuplicateException;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameInvalidException;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameNotFoundException;
+import eu.koboo.en2do.mongodb.exception.repository.RepositoryTypeIdMismatchException;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryTypeIdNotFoundException;
+import eu.koboo.en2do.mongodb.mapping.EntityMapping;
+import eu.koboo.en2do.mongodb.mapping.EntityMappingFactory;
 import eu.koboo.en2do.mongodb.methods.predefined.PredefinedMethodRegistry;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.NameConvention;
 import eu.koboo.en2do.repository.Repository;
-import eu.koboo.en2do.repository.entity.Id;
-import eu.koboo.en2do.repository.entity.Transient;
 import eu.koboo.en2do.utility.Tuple;
-import eu.koboo.en2do.utility.parse.ParseUtils;
-import eu.koboo.en2do.utility.reflection.FieldUtils;
+import eu.koboo.en2do.utility.reflection.PrimitiveUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import org.bson.codecs.configuration.CodecRegistry;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
 import java.util.regex.Pattern;
 
 @Getter
@@ -42,13 +41,9 @@ public final class RepositoryIndexer<E, ID, R extends Repository<E, ID>> {
     CodecRegistry codecRegistry;
     PredefinedMethodRegistry predefinedMethodRegistry;
     Class<R> repositoryClass;
-    Class<E> entityClass;
+    EntityMapping<E> entityMapping;
     Class<ID> idClass;
     String collectionName;
-
-    Map<String, Field> bsonToFieldMap;
-
-    Field idField;
 
     @SuppressWarnings("unchecked")
     public RepositoryIndexer(MongoManager mongoManager,
@@ -62,16 +57,32 @@ public final class RepositoryIndexer<E, ID, R extends Repository<E, ID>> {
         this.repositoryClass = repositoryClass;
 
         Tuple<Class<?>, Class<?>> repositoryGenericTypeTuple = parseGenericTypes();
-        this.entityClass = (Class<E>) repositoryGenericTypeTuple.getFirst();
+        Class<E> entityClass = (Class<E>) repositoryGenericTypeTuple.getFirst();
         this.idClass = (Class<ID>) repositoryGenericTypeTuple.getSecond();
 
+        try {
+            this.entityMapping = EntityMappingFactory.create(entityClass);
+        } catch (IllegalArgumentException e) {
+            throw new RepositoryTypeException("Invalid entity mapping.", repositoryClass, entityClass, e);
+        }
+        if (entityMapping.getIdField() == null) {
+            throw new RepositoryTypeIdNotFoundException(repositoryClass, entityClass);
+        }
+        Class<?> fieldIdClass = PrimitiveUtils.wrapperOf(entityMapping.getIdField().getType());
+        if (!idClass.equals(fieldIdClass)) {
+            throw new RepositoryTypeIdMismatchException(repositoryClass, entityClass, idClass, fieldIdClass);
+        }
+
         this.collectionName = parseFullCollectionName();
+        Validator.validateCompatibility(codecRegistry, repositoryClass, entityMapping);
+    }
 
-        this.bsonToFieldMap = parseBsonToFieldMapLengthSorted();
+    public Class<E> getEntityClass() {
+        return entityMapping.getEntityClass();
+    }
 
-        this.idField = parseIdField();
-
-        Validator.validateCompatibility(codecRegistry, repositoryClass, entityClass);
+    public Field getIdField() {
+        return entityMapping.getIdField().getField();
     }
 
     private Tuple<Class<?>, Class<?>> parseGenericTypes() {
@@ -97,7 +108,7 @@ public final class RepositoryIndexer<E, ID, R extends Repository<E, ID>> {
     }
 
     private Collection parseCollectionAnnotation() {
-        Collection collectionAnnotation = entityClass.getAnnotation(Collection.class);
+        Collection collectionAnnotation = getEntityClass().getAnnotation(Collection.class);
         if (collectionAnnotation != null) {
             return collectionAnnotation;
         }
@@ -151,53 +162,6 @@ public final class RepositoryIndexer<E, ID, R extends Repository<E, ID>> {
         }
 
         return parsedCollectionName;
-    }
-
-    private Map<String, Field> parseBsonToFieldMapLengthSorted() {
-        Set<Field> entityFieldSet = FieldUtils.collectFields(entityClass);
-
-        // Create list of all entity fields with their
-        // respective bson names and related them to the Field object.
-        List<String> fieldBsonList = new LinkedList<>();
-        Map<String, Field> unsortedFieldMap = new HashMap<>();
-        for (Field field : entityFieldSet) {
-            String bsonName = ParseUtils.parseBsonName(field);
-            fieldBsonList.add(bsonName);
-            unsortedFieldMap.put(bsonName, field);
-        }
-
-        // Sorting the list by length and putting them back into a linked map.
-        fieldBsonList.sort(Comparator.comparingInt(String::length));
-        Collections.reverse(fieldBsonList);
-        Map<String, Field> sortedFieldMap = new LinkedHashMap<>();
-        for (String bsonName : fieldBsonList) {
-            sortedFieldMap.put(bsonName, unsortedFieldMap.get(bsonName));
-        }
-
-        fieldBsonList.clear();
-        unsortedFieldMap.clear();
-
-        return sortedFieldMap;
-    }
-
-    private Field parseIdField() {
-        // Get the field of the uniqueId of the entity.
-        for (Field field : bsonToFieldMap.values()) {
-            int modifiers = field.getModifiers();
-            if (Modifier.isFinal(modifiers)
-                || Modifier.isStatic(modifiers)
-                || Modifier.isTransient(modifiers)
-                || field.isAnnotationPresent(Transient.class)) {
-                continue;
-            }
-            // Check for @Id annotation to find unique identifier of entity
-            if (!field.isAnnotationPresent(Id.class)) {
-                continue;
-            }
-            field.setAccessible(true);
-            return field;
-        }
-        throw new RepositoryTypeIdNotFoundException(repositoryClass, entityClass);
     }
 
     public RepositoryData<E, ID, R> index(MongoCollection<E> entityCollection) {
