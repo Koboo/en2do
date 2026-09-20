@@ -208,13 +208,8 @@ public final class MongoManager {
                 entityCollection.dropIndexes();
             }
 
+            // Validation successful
             parser.parseIndices(repositoryClass, entityClass, entityCollection);
-
-            ///////////////////////////
-            //                       //
-            // Validation successful //
-            //                       //
-            ///////////////////////////
 
             // Create dynamic repository proxy object
             ClassLoader repoClassLoader = repositoryClass.getClassLoader();
