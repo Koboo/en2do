@@ -1,4 +1,4 @@
-package eu.koboo.en2do.mongodb.codec.map;
+package eu.koboo.en2do.mongodb.codec.types;
 
 import eu.koboo.en2do.MongoManager;
 import lombok.AccessLevel;

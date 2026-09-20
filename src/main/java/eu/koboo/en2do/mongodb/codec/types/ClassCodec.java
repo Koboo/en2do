@@ -1,4 +1,4 @@
-package eu.koboo.en2do.mongodb.codec.lang;
+package eu.koboo.en2do.mongodb.codec.types;
 
 import org.bson.BsonInvalidOperationException;
 import org.bson.BsonReader;
