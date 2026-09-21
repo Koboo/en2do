@@ -20,7 +20,7 @@ dependencies {
 
     // Eliminate boilerplate code
     // https://central.sonatype.com/artifact/org.projectlombok/lombok
-    def lombokVersion = "1.18.46"
+    def lombokVersion = "1.18.48"
     compileOnly("org.projectlombok:lombok:$lombokVersion")
     annotationProcessor("org.projectlombok:lombok:$lombokVersion")
     testImplementation("org.projectlombok:lombok:$lombokVersion")
