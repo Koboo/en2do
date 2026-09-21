@@ -6,7 +6,7 @@ import eu.koboo.en2do.repository.Repository;
 
 import java.lang.reflect.Method;
 
-public class MethodGetClass extends GlobalPredefinedMethod {
+public final class MethodGetClass extends GlobalPredefinedMethod {
 
     public MethodGetClass() {
         super("getClass");

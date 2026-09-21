@@ -7,7 +7,7 @@ import org.bson.conversions.Bson;
 
 import java.lang.reflect.Method;
 
-public class MethodExists extends GlobalPredefinedMethod {
+public final class MethodExists extends GlobalPredefinedMethod {
 
     public MethodExists() {
         super("exists");

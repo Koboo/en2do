@@ -7,7 +7,7 @@ import eu.koboo.en2do.repository.Repository;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-public class MethodSetUniqueId extends GlobalPredefinedMethod {
+public final class MethodSetUniqueId extends GlobalPredefinedMethod {
 
     public MethodSetUniqueId() {
         super("setUniqueId");

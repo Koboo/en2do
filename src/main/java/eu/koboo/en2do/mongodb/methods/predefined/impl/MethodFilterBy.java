@@ -9,7 +9,7 @@ import org.bson.conversions.Bson;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
-public class MethodFilterBy extends GlobalPredefinedMethod {
+public final class MethodFilterBy extends GlobalPredefinedMethod {
 
     public MethodFilterBy() {
         super("filterBy");
@@ -19,10 +19,9 @@ public class MethodFilterBy extends GlobalPredefinedMethod {
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method, Object[] arguments) {
         Object filterArg = arguments[0];
-        if (!(filterArg instanceof Bson)) {
+        if (!(filterArg instanceof Bson bsonFilter)) {
             throw new IllegalArgumentException();
         }
-        Bson bsonFilter = (Bson) filterArg;
         FindIterable<E> findIterable = repositoryData.createFindIterableBase(bsonFilter, methodName);
         return findIterable.into(new ArrayList<>());
     }

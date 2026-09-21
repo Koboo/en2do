@@ -6,7 +6,7 @@ import eu.koboo.en2do.repository.Repository;
 
 import java.lang.reflect.Method;
 
-public class MethodToString extends GlobalPredefinedMethod {
+public final class MethodToString extends GlobalPredefinedMethod {
 
     public MethodToString() {
         super("toString");

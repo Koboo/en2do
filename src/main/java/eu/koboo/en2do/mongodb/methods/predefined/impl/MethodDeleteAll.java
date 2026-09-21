@@ -8,7 +8,7 @@ import org.bson.conversions.Bson;
 
 import java.lang.reflect.Method;
 
-public class MethodDeleteAll extends GlobalPredefinedMethod {
+public final class MethodDeleteAll extends GlobalPredefinedMethod {
 
     public MethodDeleteAll() {
         super("deleteAll");

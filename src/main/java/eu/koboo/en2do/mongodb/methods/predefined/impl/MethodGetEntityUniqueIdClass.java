@@ -6,7 +6,7 @@ import eu.koboo.en2do.repository.Repository;
 
 import java.lang.reflect.Method;
 
-public class MethodGetEntityUniqueIdClass extends GlobalPredefinedMethod {
+public final class MethodGetEntityUniqueIdClass extends GlobalPredefinedMethod {
 
     public MethodGetEntityUniqueIdClass() {
         super("getEntityUniqueIdClass");

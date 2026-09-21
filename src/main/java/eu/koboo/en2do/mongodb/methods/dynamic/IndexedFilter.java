@@ -12,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Getter
-public class IndexedFilter {
+public final class IndexedFilter {
 
     String bsonFilterFieldKey;
     boolean notFilter;

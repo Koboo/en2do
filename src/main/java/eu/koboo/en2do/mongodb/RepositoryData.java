@@ -8,6 +8,7 @@ import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidPageException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidSortLimitException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidSortSkipException;
 import eu.koboo.en2do.mongodb.indexer.RepositoryIndexer;
+import eu.koboo.en2do.mongodb.mapping.EntityMapping;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.methods.fields.FieldUpdate;
@@ -29,16 +30,14 @@ import java.util.UUID;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Getter
-public class RepositoryData<E, ID, R extends Repository<E, ID>> {
+public final class RepositoryData<E, ID, R extends Repository<E, ID>> {
 
     MongoManager mongoManager;
-    RepositoryIndexer<E, ID, R> indexer;
+    EntityMapping<E> entityMapping;
     String collectionName;
     MongoCollection<E> entityCollection;
     Class<R> repositoryClass;
-    Class<E> entityClass;
     Class<ID> entityUniqueIdClass;
-    Field entityUniqueIdField;
 
     @Getter(AccessLevel.NONE)
     Map<String, IndexedMethod<E, ID, R>> dynamicMethodRegistry;
@@ -47,17 +46,23 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
                           RepositoryIndexer<E, ID, R> indexer,
                           MongoCollection<E> entityCollection) {
         this.mongoManager = mongoManager;
-        this.indexer = indexer;
+        this.entityMapping = indexer.getEntityMapping();
         this.collectionName = indexer.getCollectionName();
         this.entityCollection = entityCollection;
 
         this.repositoryClass = indexer.getRepositoryClass();
-        this.entityClass = indexer.getEntityClass();
 
         this.entityUniqueIdClass = indexer.getIdClass();
-        this.entityUniqueIdField = indexer.getIdField();
 
         this.dynamicMethodRegistry = new HashMap<>();
+    }
+
+    public Class<E> getEntityClass() {
+        return entityMapping.getEntityClass();
+    }
+
+    public Field getEntityUniqueIdField() {
+        return entityMapping.getIdField().getField();
     }
 
     public void destroy() {
@@ -101,10 +106,9 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             return findIterable;
         }
         Object lastParamObject = args == null ? null : args[args.length - 1];
-        if (!(lastParamObject instanceof Sort)) {
+        if (!(lastParamObject instanceof Sort sortOptions)) {
             return findIterable;
         }
-        Sort sortOptions = (Sort) lastParamObject;
         int limit = sortOptions.getLimit();
         int skip = sortOptions.getSkip();
         String fieldName = sortOptions.getFieldName();
@@ -121,10 +125,9 @@ public class RepositoryData<E, ID, R extends Repository<E, ID>> {
             return findIterable;
         }
         Object parameterObject = args[args.length - 1];
-        if (!(parameterObject instanceof Pagination)) {
+        if (!(parameterObject instanceof Pagination pagination)) {
             return findIterable;
         }
-        Pagination pagination = (Pagination) parameterObject;
 
         // We do not allow pages lower or equal to zero. The results
         // would just be empty, so we throw an exception to not allow that.

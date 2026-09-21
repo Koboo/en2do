@@ -11,7 +11,7 @@ import org.bson.conversions.Bson;
 
 import java.lang.reflect.Method;
 
-public class MethodUpdateAllFields extends GlobalPredefinedMethod {
+public final class MethodUpdateAllFields extends GlobalPredefinedMethod {
 
     public MethodUpdateAllFields() {
         super("updateAllFields");

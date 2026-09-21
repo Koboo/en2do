@@ -26,7 +26,7 @@ import java.util.concurrent.ExecutorService;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @AllArgsConstructor
-public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> implements InvocationHandler {
+public final class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> implements InvocationHandler {
 
     RepositoryData<E, ID, R> repositoryData;
     ExecutorService executorService;
@@ -97,8 +97,10 @@ public class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID>> imp
                 // "First" = 1 / first entity
                 AmountType amountType = indexedMethod.getAmountType();
                 if (amountType == null) {
-                    throw new ReportException("Your find method lacks of an amount specification.\n" +
-                        "This is a very rare case, this should already be checked on start validation.\n");
+                    throw new ReportException("""
+                        Your find method lacks of an amount specification.
+                        This is a very rare case, this should already be checked on start validation.
+                        """);
                 }
                 long entityAmount = indexedMethod.getEntityAmount();
                 switch (amountType) {

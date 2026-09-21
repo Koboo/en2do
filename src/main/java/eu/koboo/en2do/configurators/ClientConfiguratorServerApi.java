@@ -7,18 +7,18 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-@RequiredArgsConstructor
 @SuppressWarnings("unused")
+@RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public final class ClientConfiguratorServerApi implements ClientConfigurator {
 
     ServerApi serverApi;
 
     @Override
-    public void configure(MongoClientSettings.Builder settingsBuilder) {
+    public void configure(MongoClientSettings.Builder clientSettingsBuilder) {
         if (serverApi == null) {
             throw new NullPointerException("serverApi is null");
         }
-        settingsBuilder.serverApi(serverApi);
+        clientSettingsBuilder.serverApi(serverApi);
     }
 }

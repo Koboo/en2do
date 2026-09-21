@@ -1,13 +1,9 @@
 package eu.koboo.en2do.utility.parse;
 
-import com.mongodb.ConnectionString;
-import eu.koboo.en2do.SettingsBuilder;
-import eu.koboo.en2do.repository.entity.TransformField;
 import eu.koboo.en2do.utility.reflection.PrimitiveUtils;
 import lombok.experimental.UtilityClass;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -17,19 +13,9 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.regex.Pattern;
 
 @UtilityClass
 public class ParseUtils {
-
-    private static final Pattern COLLECTION_REGEX_NAME = Pattern.compile("^[A-Za-z0-9_]+$");
-
-    public SettingsBuilder parseSettingsBuilder(SettingsBuilder settingsBuilder) {
-        if (settingsBuilder == null) {
-            return new SettingsBuilder();
-        }
-        return settingsBuilder;
-    }
 
     public ExecutorService parseExecutorService(ExecutorService executorService) {
         if (executorService == null) {
@@ -37,55 +23,6 @@ public class ParseUtils {
             return Executors.newFixedThreadPool(defaultThreadAmount);
         }
         return executorService;
-    }
-
-    public ConnectionString parseConnectionString(String connectString) {
-        if (connectString != null && !connectString.isEmpty()) {
-            return new ConnectionString(connectString);
-        }
-        // If no connection string is given, try loading it from the default sources e.g.:
-        //  - Resource files,
-        //  - System properties
-        //  - Environmental variables.
-        // See the Credentials class for information about the key of the property.
-        // The property can differ in any string source.
-
-        connectString = ConnectionStringUtils.fromFile();
-        if (connectString != null && !connectString.isEmpty()) {
-            return new ConnectionString(connectString);
-        }
-
-        connectString = ConnectionStringUtils.fromResource();
-        if (connectString != null && !connectString.isEmpty()) {
-            return new ConnectionString(connectString);
-        }
-
-        connectString = ConnectionStringUtils.fromSystemProperties();
-        if (connectString != null && !connectString.isEmpty()) {
-            return new ConnectionString(connectString);
-        }
-
-        connectString = ConnectionStringUtils.fromSystemEnvVars();
-        if (connectString != null && !connectString.isEmpty()) {
-            return new ConnectionString(connectString);
-        }
-        throw new IllegalStateException("Could not resolve any connection string to connect to.");
-    }
-
-    public Class<?> parseValidatableReturnType(Method method) {
-        ParameterizedType parameterizedType = decapsulateFuture(method);
-        Class<?> entityTypeClass;
-        if (parameterizedType == null) {
-            entityTypeClass = method.getReturnType();
-        } else {
-            entityTypeClass = (Class<?>) parameterizedType.getActualTypeArguments()[0];
-        }
-        return PrimitiveUtils.wrapperOf(entityTypeClass);
-    }
-
-    public boolean isReturnTypeOfCollection(Method method) {
-        ParameterizedType parameterizedType = decapsulateFuture(method);
-        return parameterizedType != null;
     }
 
     public ParameterizedType decapsulateFuture(Method method) {
@@ -104,12 +41,23 @@ public class ParseUtils {
         return (ParameterizedType) innerFutureType;
     }
 
-    public String parseBsonName(Field field) {
-        TransformField transformField = field.getAnnotation(TransformField.class);
-        if (transformField != null && !transformField.value().trim().equalsIgnoreCase("")) {
-            return transformField.value();
+    public Class<?> parseValidatableReturnType(Method method) {
+        // Need to parse these 2 return types:
+        // - "boolean exists(...)"
+        // - "CompletableFuture<Boolean> exists(...)"
+        ParameterizedType parameterizedType = decapsulateFuture(method);
+        Class<?> entityTypeClass;
+        if (parameterizedType == null) {
+            entityTypeClass = method.getReturnType();
+        } else {
+            entityTypeClass = (Class<?>) parameterizedType.getActualTypeArguments()[0];
         }
-        return field.getName();
+        return PrimitiveUtils.wrapperOf(entityTypeClass);
+    }
+
+    public boolean isReturnTypeOfCollection(Method method) {
+        ParameterizedType parameterizedType = decapsulateFuture(method);
+        return parameterizedType != null;
     }
 
     /**

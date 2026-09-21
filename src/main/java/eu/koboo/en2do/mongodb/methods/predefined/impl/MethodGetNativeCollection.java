@@ -6,7 +6,7 @@ import eu.koboo.en2do.repository.Repository;
 
 import java.lang.reflect.Method;
 
-public class MethodGetNativeCollection extends GlobalPredefinedMethod {
+public final class MethodGetNativeCollection extends GlobalPredefinedMethod {
 
     public MethodGetNativeCollection() {
         super("getNativeCollection");

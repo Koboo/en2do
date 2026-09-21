@@ -10,7 +10,7 @@ import org.bson.conversions.Bson;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
-public class MethodDeleteManyById extends GlobalPredefinedMethod {
+public final class MethodDeleteManyById extends GlobalPredefinedMethod {
 
     public MethodDeleteManyById() {
         super("deleteManyById");

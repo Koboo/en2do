@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class PredefinedMethodRegistry {
+public final class PredefinedMethodRegistry {
 
     Map<String, GlobalPredefinedMethod> predefinedMethodMap;
 

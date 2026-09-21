@@ -9,8 +9,10 @@ import com.mongodb.client.MongoDatabase;
 import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.mongodb.RepositoryInvocationHandler;
 import eu.koboo.en2do.mongodb.codec.InternalPropertyCodecProvider;
-import eu.koboo.en2do.mongodb.convention.AnnotationConvention;
+import eu.koboo.en2do.mongodb.convention.IdConvention;
 import eu.koboo.en2do.mongodb.convention.MethodMappingConvention;
+import eu.koboo.en2do.mongodb.convention.TransformFieldConvention;
+import eu.koboo.en2do.mongodb.convention.TransientConvention;
 import eu.koboo.en2do.mongodb.indexer.MethodIndexer;
 import eu.koboo.en2do.mongodb.indexer.RepositoryIndexer;
 import eu.koboo.en2do.mongodb.indexparser.IndexParser;
@@ -42,7 +44,6 @@ import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@SuppressWarnings("unused")
 public final class MongoManager {
 
     @Getter
@@ -54,7 +55,6 @@ public final class MongoManager {
     PredefinedMethodRegistry predefinedMethodRegistry;
     ExecutorService executorService;
 
-    InternalPropertyCodecProvider internalPropertyCodecProvider;
     CodecRegistry codecRegistry;
 
     @Getter
@@ -63,18 +63,28 @@ public final class MongoManager {
     @Getter
     MongoDatabase mongoDatabase;
 
-    public MongoManager(String connectString, ExecutorService executorService, SettingsBuilder builder) {
-        this.settingsBuilder = ParseUtils.parseSettingsBuilder(builder);
-        applyLoggerLevel();
+    public MongoManager(SettingsBuilder builder, ExecutorService executorService) {
+        if (builder == null) {
+            throw new NullPointerException("SettingsBuilder cannot be null.");
+        }
+        settingsBuilder = builder;
 
-        this.parser = new IndexParser();
-        this.repositoryDataByClassMap = new ConcurrentHashMap<>();
-        this.repositoryByClassRegistry = new ConcurrentHashMap<>();
-        this.predefinedMethodRegistry = new PredefinedMethodRegistry();
+        parser = new IndexParser();
+        repositoryDataByClassMap = new ConcurrentHashMap<>();
+        repositoryByClassRegistry = new ConcurrentHashMap<>();
+        predefinedMethodRegistry = new PredefinedMethodRegistry();
         this.executorService = ParseUtils.parseExecutorService(executorService);
 
-        internalPropertyCodecProvider = new InternalPropertyCodecProvider(this);
+        // Registering user-provided codecs from SettingsBuilder
+        InternalPropertyCodecProvider internalPropertyCodecProvider = new InternalPropertyCodecProvider();
+        Set<Codec<?>> codecSet = settingsBuilder.getCodecSet();
+        if (codecSet != null && !codecSet.isEmpty()) {
+            for (Codec<?> codec : codecSet) {
+                internalPropertyCodecProvider.registerCodec(codec);
+            }
+        }
 
+        // Building the native mongodb CodecRegistry
         codecRegistry = fromRegistries(
             MongoClientSettings.getDefaultCodecRegistry(),
             fromProviders(PojoCodecProvider.builder()
@@ -84,24 +94,33 @@ public final class MongoManager {
                     Conventions.ANNOTATION_CONVENTION,
                     Conventions.SET_PRIVATE_FIELDS_CONVENTION,
                     Conventions.USE_GETTERS_FOR_SETTERS,
-                    new AnnotationConvention(),
-                    new MethodMappingConvention(this)
+                    new TransientConvention(),
+                    new TransformFieldConvention(),
+                    new IdConvention(),
+                    new MethodMappingConvention(settingsBuilder.isEnableMethodProperties())
                 ))
                 .build())
         );
 
-        ConnectionString connectionString = ParseUtils.parseConnectionString(connectString);
+        // Building and validating the given connection string.
+        String settingsConnectionString = settingsBuilder.getConnectionString();
+        if (settingsConnectionString == null || settingsConnectionString.isEmpty()) {
+            throw new NullPointerException("connectionString is null or empty!");
+        }
+        ConnectionString connectionString = new ConnectionString(settingsConnectionString);
         String database = connectionString.getDatabase();
         if (database == null || database.isEmpty()) {
-            throw new NullPointerException("database is null or empty in your connection string!");
+            throw new NullPointerException("No database provided in connectionString!");
         }
 
+        // Prebuild the native client settings.
         MongoClientSettings.Builder clientSettingsBuilder = MongoClientSettings.builder()
             .applicationName("en2do-client")
             .applyConnectionString(connectionString)
             .uuidRepresentation(UuidRepresentation.STANDARD)
             .codecRegistry(codecRegistry);
 
+        // Apply the user-provided client configurators
         Set<ClientConfigurator> clientConfiguratorSet = settingsBuilder.getClientConfiguratorSet();
         if (clientConfiguratorSet != null && !clientConfiguratorSet.isEmpty()) {
             for (ClientConfigurator clientConfigurator : clientConfiguratorSet) {
@@ -109,35 +128,22 @@ public final class MongoManager {
             }
         }
 
-        MongoClientSettings clientSettings = clientSettingsBuilder.build();
-
-        mongoClient = MongoClients.create(clientSettings);
+        // Build the actual mongodb client and database
+        mongoClient = MongoClients.create(clientSettingsBuilder.build());
         mongoDatabase = mongoClient.getDatabase(database);
     }
 
-    public MongoManager(String connectString, SettingsBuilder settingsBuilder) {
-        this(connectString, null, settingsBuilder);
-    }
-
     public MongoManager(SettingsBuilder settingsBuilder) {
-        this(null, null, settingsBuilder);
-    }
-
-    public MongoManager(String connectString) {
-        this(connectString, null, null);
+        this(settingsBuilder, null);
     }
 
     public MongoManager() {
-        this(null, null, null);
+        this(new SettingsBuilder(), null);
     }
 
     public void close() {
-        close(true);
-    }
-
-    public void close(boolean shutdownExecutorService) {
         try {
-            if (executorService != null && shutdownExecutorService) {
+            if (executorService != null) {
                 executorService.shutdown();
             }
             repositoryByClassRegistry.clear();
@@ -199,13 +205,8 @@ public final class MongoManager {
                 entityCollection.dropIndexes();
             }
 
-            parser.parseIndices(repositoryClass, entityClass, entityCollection);
-
-            ///////////////////////////
-            //                       //
-            // Validation successful //
-            //                       //
-            ///////////////////////////
+            // Validation successful
+            parser.parseIndices(repositoryClass, repositoryData.getEntityMapping(), entityCollection);
 
             // Create dynamic repository proxy object
             ClassLoader repoClassLoader = repositoryClass.getClassLoader();
@@ -222,27 +223,25 @@ public final class MongoManager {
         }
     }
 
-    public <T> MongoManager registerCodec(Codec<T> typeCodec) {
-        internalPropertyCodecProvider.registerCodec(typeCodec.getEncoderClass(), typeCodec);
-        return this;
-    }
-
-    public MongoManager applySettings(SettingsBuilder newBuilder) {
-        settingsBuilder.merge(newBuilder);
-        applyLoggerLevel();
-        return this;
-    }
-
+    /**
+     * @return Unmodifiable {@link List} with all
+     * registered and created {@link Repository} of this {@link MongoManager}
+     */
     public Set<Repository<?, ?>> getAllRepositories() {
         return Set.copyOf(repositoryByClassRegistry.values());
     }
 
-    private void applyLoggerLevel() {
-        Level loggerLevel = settingsBuilder.getMongoLoggerLevel();
-        if (loggerLevel == null) {
-            return;
-        }
-        Logger.getLogger("org.mongodb").setLevel(loggerLevel);
-        Logger.getLogger("com.mongodb").setLevel(loggerLevel);
+    /**
+     * Defines the logger level for the mongodb loggers
+     * with the following package prefixes:
+     * - "org.mongodb"
+     * - "com.mongodb"
+     * If you want to customize logging even more, look into the mongodb logging documentation:
+     * <a href="https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/logging/">Click here</a>
+     */
+    public static void updateLoggingLevel(Level level) {
+        // Applying loggerLevel to mongo db logger
+        Logger.getLogger("org.mongodb").setLevel(level);
+        Logger.getLogger("com.mongodb").setLevel(level);
     }
 }

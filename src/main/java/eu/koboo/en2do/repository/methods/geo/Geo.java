@@ -8,7 +8,7 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @ToString
-public class Geo {
+public final class Geo {
 
     /**
      * Use this method to create a new Geo object

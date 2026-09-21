@@ -8,7 +8,7 @@ import eu.koboo.en2do.repository.Repository;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
-public class MethodFindAll extends GlobalPredefinedMethod {
+public final class MethodFindAll extends GlobalPredefinedMethod {
 
     public MethodFindAll() {
         super("findAll");

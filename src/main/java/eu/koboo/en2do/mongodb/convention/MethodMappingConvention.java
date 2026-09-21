@@ -1,52 +1,36 @@
 package eu.koboo.en2do.mongodb.convention;
 
-import eu.koboo.en2do.MongoManager;
-import eu.koboo.en2do.utility.reflection.FieldUtils;
+import eu.koboo.en2do.mongodb.mapping.EntityMapping;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.bson.codecs.pojo.ClassModelBuilder;
-import org.bson.codecs.pojo.Convention;
 import org.bson.codecs.pojo.PropertyModelBuilder;
 
-import java.lang.reflect.Field;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * This convention implementation disables the saving of methods
- * which start with "get*" or "set*". MongoDB Pojo codec thinks that these methods
- * are property read or write methods, but most of the time you don't want to save them.
+ * Removes method-only properties unless they are explicitly enabled.
  */
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-public class MethodMappingConvention implements Convention {
+public final class MethodMappingConvention extends EntityMappingConvention {
 
-    MongoManager mongoManager;
+    boolean enableMethodProperties;
 
-    /**
-     * @param classModelBuilder the ClassModelBuilder to apply the convention to
-     * @see Convention
-     */
     @Override
-    public void apply(ClassModelBuilder<?> classModelBuilder) {
-        // If the setting is enabled, we don't need to remove the method properties
-        // from the class model builder.
-        // This convention just checks if it can find any
-        // field by the given property name and if so, it removes it from writing it to the database.
-        if (mongoManager.getSettingsBuilder().isEnableMethodProperties()) {
+    protected void apply(ClassModelBuilder<?> classModelBuilder, EntityMapping<?> entityMapping) {
+        if (enableMethodProperties) {
             return;
         }
-        Class<?> entityClass = classModelBuilder.getType();
-        Set<Field> fieldSet = FieldUtils.collectFields(entityClass);
+
         Set<PropertyModelBuilder<?>> removableProperties = new LinkedHashSet<>();
-        for (PropertyModelBuilder<?> propertyModelBuilder : classModelBuilder.getPropertyModelBuilders()) {
-            String propertyName = propertyModelBuilder.getName();
-            Field field = FieldUtils.findFieldByName(propertyName, fieldSet);
-            if (field != null) {
+        for (PropertyModelBuilder<?> property : classModelBuilder.getPropertyModelBuilders()) {
+            if (entityMapping.findByJavaName(property.getName()) != null) {
                 continue;
             }
-            removableProperties.add(propertyModelBuilder);
+            removableProperties.add(property);
         }
         for (PropertyModelBuilder<?> property : removableProperties) {
             classModelBuilder.removeProperty(property.getName());

@@ -9,7 +9,7 @@ import org.bson.conversions.Bson;
 
 import java.lang.reflect.Method;
 
-public class MethodDeleteById extends GlobalPredefinedMethod {
+public final class MethodDeleteById extends GlobalPredefinedMethod {
 
     public MethodDeleteById() {
         super("deleteById");

@@ -7,6 +7,7 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,11 +32,8 @@ public class EntityUtils {
         try {
             BeanInfo fromBean = Introspector.getBeanInfo(fromClass);
             BeanInfo toBean = Introspector.getBeanInfo(toClass);
-
             PropertyDescriptor[] toPropDecArray = toBean.getPropertyDescriptors();
-            List<PropertyDescriptor> fromPropDescList = Arrays.asList(fromBean
-                .getPropertyDescriptors());
-
+            List<PropertyDescriptor> fromPropDescList = List.of(fromBean.getPropertyDescriptors());
             for (PropertyDescriptor toPropDesc : toPropDecArray) {
                 int fromPropDescIndex = fromPropDescList.indexOf(toPropDesc);
                 if (fromPropDescIndex == -1) {
@@ -48,14 +46,19 @@ public class EntityUtils {
                 if (fromPropDesc.getDisplayName().equals("class")) {
                     continue;
                 }
-                if (toPropDesc.getWriteMethod() == null) {
+                Method writeMethod = toPropDesc.getWriteMethod();
+                if (writeMethod == null) {
                     continue;
                 }
-                toPropDesc.getWriteMethod().invoke(to, fromPropDesc.getReadMethod().invoke(from));
+                Method readMethod = fromPropDesc.getReadMethod();
+                if (readMethod == null) {
+                    continue;
+                }
+                writeMethod.invoke(to, readMethod.invoke(from));
             }
         } catch (IntrospectionException | InvocationTargetException | IllegalAccessException |
                  IllegalArgumentException e) {
-            throw new RuntimeException("Couldn't copy-clone properties: ", e);
+            throw new RuntimeException("Couldn't copy clone properties. ", e);
         }
     }
 }

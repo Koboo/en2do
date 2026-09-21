@@ -6,7 +6,7 @@ import eu.koboo.en2do.repository.Repository;
 
 import java.lang.reflect.Method;
 
-public class MethodEquals extends GlobalPredefinedMethod {
+public final class MethodEquals extends GlobalPredefinedMethod {
 
     public MethodEquals() {
         super("equals");
@@ -19,10 +19,9 @@ public class MethodEquals extends GlobalPredefinedMethod {
             return false;
         }
         Object object = arguments[0];
-        if (!(object instanceof Repository<?, ?>)) {
+        if (!(object instanceof Repository<?, ?> repository)) {
             return false;
         }
-        Repository<?, ?> repository = (Repository<?, ?>) object;
         return repository.getClass().getName().equalsIgnoreCase(repositoryData.getClass().getName());
     }
 }

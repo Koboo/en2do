@@ -15,7 +15,7 @@ import java.util.Collection;
 import java.util.List;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class MethodSaveAll extends GlobalPredefinedMethod {
+public final class MethodSaveAll extends GlobalPredefinedMethod {
 
     ReplaceOptions replaceOptions;
 
