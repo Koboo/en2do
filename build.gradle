@@ -37,7 +37,7 @@ dependencies {
 
     // SLF4j logger for test-suite
     // https://central.sonatype.com/artifact/org.slf4j/slf4j-jdk14
-    def slf4jVersion = "2.0.17"
+    def slf4jVersion = "2.0.19"
     testImplementation("org.slf4j:slf4j-jdk14:$slf4jVersion")
 }
 
