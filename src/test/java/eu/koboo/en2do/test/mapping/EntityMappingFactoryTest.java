@@ -66,6 +66,14 @@ class EntityMappingFactoryTest {
     }
 
     @Test
+    void reusesMappingForTheSameEntityClass() {
+        EntityMapping<Customer> firstMapping = EntityMappingFactory.create(Customer.class);
+        EntityMapping<Customer> secondMapping = EntityMappingFactory.create(Customer.class);
+
+        assertSame(firstMapping, secondMapping);
+    }
+
+    @Test
     void idUsesMongoNameEvenWhenTransformed() {
         EntityMapping<TransformedId> mapping = EntityMappingFactory.create(TransformedId.class);
 

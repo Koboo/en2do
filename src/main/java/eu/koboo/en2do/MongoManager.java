@@ -9,8 +9,10 @@ import com.mongodb.client.MongoDatabase;
 import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.mongodb.RepositoryInvocationHandler;
 import eu.koboo.en2do.mongodb.codec.InternalPropertyCodecProvider;
-import eu.koboo.en2do.mongodb.convention.AnnotationConvention;
+import eu.koboo.en2do.mongodb.convention.IdConvention;
 import eu.koboo.en2do.mongodb.convention.MethodMappingConvention;
+import eu.koboo.en2do.mongodb.convention.TransformFieldConvention;
+import eu.koboo.en2do.mongodb.convention.TransientConvention;
 import eu.koboo.en2do.mongodb.indexer.MethodIndexer;
 import eu.koboo.en2do.mongodb.indexer.RepositoryIndexer;
 import eu.koboo.en2do.mongodb.indexparser.IndexParser;
@@ -92,8 +94,10 @@ public final class MongoManager {
                     Conventions.ANNOTATION_CONVENTION,
                     Conventions.SET_PRIVATE_FIELDS_CONVENTION,
                     Conventions.USE_GETTERS_FOR_SETTERS,
-                    new AnnotationConvention(),
-                    new MethodMappingConvention(this)
+                    new TransientConvention(),
+                    new TransformFieldConvention(),
+                    new IdConvention(),
+                    new MethodMappingConvention(settingsBuilder.isEnableMethodProperties())
                 ))
                 .build())
         );

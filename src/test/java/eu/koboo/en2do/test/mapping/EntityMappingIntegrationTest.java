@@ -124,6 +124,7 @@ class EntityMappingIntegrationTest {
         MappedEntity entity = new MappedEntity();
         repository.setUniqueId(entity, 42);
         entity.setName("example");
+        entity.setMethodTransient("ignored");
 
         assertEquals(42, repository.getUniqueId(entity));
         assertEquals(MappedEntity.class, repository.getEntityClass());
@@ -138,6 +139,7 @@ class EntityMappingIntegrationTest {
         assertEquals("example", document.getString("long_stored_name").getValue());
         assertFalse(document.containsKey("legacy_id"));
         assertFalse(document.containsKey("ignored"));
+        assertFalse(document.containsKey("methodTransient"));
     }
 
     @Test
@@ -263,7 +265,13 @@ class EntityMappingIntegrationTest {
         String nameLong;
         @Transient
         String ignored;
+        String methodTransient;
         static String constant;
+
+        @Transient
+        public String getMethodTransient() {
+            return methodTransient;
+        }
     }
 
     @Collection("mapping_queries")

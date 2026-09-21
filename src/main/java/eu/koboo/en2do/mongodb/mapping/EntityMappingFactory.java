@@ -20,6 +20,13 @@ import java.util.Set;
 @UtilityClass
 public class EntityMappingFactory {
 
+    private static final ClassValue<EntityMapping<?>> ENTITY_MAPPING_CACHE = new ClassValue<>() {
+        @Override
+        protected EntityMapping<?> computeValue(Class<?> entityClass) {
+            return createMapping(entityClass);
+        }
+    };
+
     /**
      * Creates a mapping from an entity's fields, including inherited fields.
      * Static, synthetic, and transient fields are excluded. Persisted final fields,
@@ -37,6 +44,13 @@ public class EntityMappingFactory {
      */
     public <E> EntityMapping<E> create(Class<E> entityClass) {
         Objects.requireNonNull(entityClass, "entityClass");
+
+        @SuppressWarnings("unchecked")
+        EntityMapping<E> entityMapping = (EntityMapping<E>) ENTITY_MAPPING_CACHE.get(entityClass);
+        return entityMapping;
+    }
+
+    private EntityMapping<?> createMapping(Class<?> entityClass) {
 
         List<FieldMapping> fields = new ArrayList<>();
         Set<String> javaNames = new HashSet<>();
