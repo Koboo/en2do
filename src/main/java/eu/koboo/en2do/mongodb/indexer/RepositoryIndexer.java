@@ -2,7 +2,6 @@ package eu.koboo.en2do.mongodb.indexer;
 
 import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.MongoManager;
-import eu.koboo.en2do.SettingsBuilder;
 import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.mongodb.Validator;
 import eu.koboo.en2do.mongodb.exception.RepositoryException;
@@ -37,7 +36,6 @@ public final class RepositoryIndexer<E, ID, R extends Repository<E, ID>> {
     private static final Pattern COLLECTION_REGEX_NAME = Pattern.compile("^[A-Za-z0-9_]+$");
 
     MongoManager mongoManager;
-    SettingsBuilder settingsBuilder;
     CodecRegistry codecRegistry;
     PredefinedMethodRegistry predefinedMethodRegistry;
     Class<R> repositoryClass;
@@ -51,7 +49,6 @@ public final class RepositoryIndexer<E, ID, R extends Repository<E, ID>> {
                              PredefinedMethodRegistry predefinedMethodRegistry,
                              Class<R> repositoryClass) {
         this.mongoManager = mongoManager;
-        this.settingsBuilder = mongoManager.getSettingsBuilder();
         this.codecRegistry = codecRegistry;
         this.predefinedMethodRegistry = predefinedMethodRegistry;
         this.repositoryClass = repositoryClass;
@@ -120,7 +117,7 @@ public final class RepositoryIndexer<E, ID, R extends Repository<E, ID>> {
     }
 
     private String parseBaseCollectionName() {
-        NameConvention convention = settingsBuilder.getCollectionNameConvention();
+        NameConvention convention = mongoManager.getSettingsBuilder().getCollectionNameConvention();
         if (convention != null) {
             return convention.generate(repositoryClass);
         }
@@ -139,12 +136,12 @@ public final class RepositoryIndexer<E, ID, R extends Repository<E, ID>> {
     private String parseFullCollectionName() {
         String parsedCollectionName = parseBaseCollectionName();
 
-        String prefix = settingsBuilder.getCollectionPrefix();
+        String prefix = mongoManager.getSettingsBuilder().getCollectionPrefix();
         if (prefix != null && !prefix.trim().equalsIgnoreCase("")) {
             parsedCollectionName = prefix + parsedCollectionName;
         }
 
-        String suffix = settingsBuilder.getCollectionSuffix();
+        String suffix = mongoManager.getSettingsBuilder().getCollectionSuffix();
         if (suffix != null && !suffix.trim().equalsIgnoreCase("")) {
             parsedCollectionName = parsedCollectionName + suffix;
         }
