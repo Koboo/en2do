@@ -14,7 +14,7 @@ repositories {
 dependencies {
     // The mongodb driver itself
     // https://central.sonatype.com/artifact/org.mongodb/mongodb-driver-sync
-    def mongoDriverVersion = "5.11.0"
+    def mongoDriverVersion = "5.12.0"
     api("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
     testImplementation("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
 
