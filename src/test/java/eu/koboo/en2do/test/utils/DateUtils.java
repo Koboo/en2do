@@ -14,10 +14,7 @@ import java.util.concurrent.TimeUnit;
  * A utility class for working with "java.util.Date".
  */
 @UtilityClass
-@SuppressWarnings("unused")
 public class DateUtils {
-
-    /* LocalDateTime */
 
     public LocalDateTime dateToLocalDateTime(Date date) {
         return dateToLocalDateTime(date, ZoneId.systemDefault());
