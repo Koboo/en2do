@@ -37,8 +37,7 @@ public class DateUtils {
     }
 
     public Date localDateTimeToDate(LocalDateTime localDateTime, ZoneId zoneId) {
-        return Date.from(localDateTime.atZone(zoneId)
-            .toInstant());
+        return Date.from(localDateTime.atZone(zoneId).toInstant());
     }
 
     public LocalTime dateToLocalTime(Date date) {
