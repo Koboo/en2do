@@ -41,8 +41,6 @@ public class DateUtils {
             .toInstant());
     }
 
-    /* LocalTime */
-
     public LocalTime dateToLocalTime(Date date) {
         return dateToLocalTime(date, ZoneId.systemDefault());
     }
@@ -67,8 +65,6 @@ public class DateUtils {
         return Date.from(localTime.atDate(LocalDate.now()).atZone(zoneId).toInstant());
     }
 
-    /* LocalDate */
-
     public LocalDate dateToLocalDate(Date date) {
         return dateToLocalDate(date, ZoneId.systemDefault());
     }
@@ -85,8 +81,6 @@ public class DateUtils {
         return Date.from(localDateTime.atStartOfDay(zoneId).toInstant());
     }
 
-    /* java.util.Date */
-
     public Date plus(Date date, long time, TimeUnit unit) {
         long millis = date.getTime();
         millis += unit.toMillis(time);
@@ -97,28 +91,28 @@ public class DateUtils {
         return plus(new Date(), time, unit);
     }
 
-    public Date plusMillis(Date date, long time) {
-        return plus(date, time, TimeUnit.MILLISECONDS);
+    public Date plusMillis(Date date, long millis) {
+        return plus(date, millis, TimeUnit.MILLISECONDS);
     }
 
-    public Date plusSeconds(Date date, long time) {
-        return plus(date, time, TimeUnit.SECONDS);
+    public Date plusSeconds(Date date, long seconds) {
+        return plus(date, seconds, TimeUnit.SECONDS);
     }
 
-    public Date plusMinutes(Date date, long time) {
-        return plus(date, time, TimeUnit.MINUTES);
+    public Date plusMinutes(Date date, long minutes) {
+        return plus(date, minutes, TimeUnit.MINUTES);
     }
 
-    public Date plusHours(Date date, long time) {
-        return plus(date, time, TimeUnit.HOURS);
+    public Date plusHours(Date date, long hours) {
+        return plus(date, hours, TimeUnit.HOURS);
     }
 
-    public Date plusDays(Date date, long time) {
-        return plus(date, time, TimeUnit.DAYS);
+    public Date plusDays(Date date, long days) {
+        return plus(date, days, TimeUnit.DAYS);
     }
 
-    public Date plusWeeks(Date date, long time) {
-        return plus(date, time * 7, TimeUnit.DAYS);
+    public Date plusWeeks(Date date, long weeks) {
+        return plus(date, weeks * 7, TimeUnit.DAYS);
     }
 
     public Date minus(Date date, long time, TimeUnit unit) {
@@ -131,27 +125,27 @@ public class DateUtils {
         return minus(new Date(), time, unit);
     }
 
-    public Date minusMillis(Date date, long time) {
-        return minus(date, time, TimeUnit.MILLISECONDS);
+    public Date minusMillis(Date date, long millis) {
+        return minus(date, millis, TimeUnit.MILLISECONDS);
     }
 
-    public Date minusSeconds(Date date, long time) {
-        return minus(date, time, TimeUnit.SECONDS);
+    public Date minusSeconds(Date date, long seconds) {
+        return minus(date, seconds, TimeUnit.SECONDS);
     }
 
-    public Date minusMinutes(Date date, long time) {
-        return minus(date, time, TimeUnit.MINUTES);
+    public Date minusMinutes(Date date, long minutes) {
+        return minus(date, minutes, TimeUnit.MINUTES);
     }
 
-    public Date minusHours(Date date, long time) {
-        return minus(date, time, TimeUnit.HOURS);
+    public Date minusHours(Date date, long hours) {
+        return minus(date, hours, TimeUnit.HOURS);
     }
 
-    public Date minusDays(Date date, long time) {
-        return minus(date, time, TimeUnit.DAYS);
+    public Date minusDays(Date date, long days) {
+        return minus(date, days, TimeUnit.DAYS);
     }
 
-    public Date minusWeeks(Date date, long time) {
-        return minus(date, time * 7, TimeUnit.DAYS);
+    public Date minusWeeks(Date date, long weeks) {
+        return minus(date, weeks * 7, TimeUnit.DAYS);
     }
 }
