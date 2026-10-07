@@ -5,7 +5,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class PrimitiveUtils {
 
-    public Class<?> wrapperOf(Class<?> primitiveClass) {
+    public Class<?> toWrapper(Class<?> primitiveClass) {
         if (primitiveClass.equals(int.class)) {
             return Integer.class;
         }
@@ -57,9 +57,6 @@ public class PrimitiveUtils {
         if (primitiveClass.equals(void.class)) {
             return Void.class;
         }
-        if (!primitiveClass.isPrimitive()) {
-            return primitiveClass;
-        }
-        return null;
+        return primitiveClass;
     }
 }

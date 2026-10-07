@@ -162,7 +162,7 @@ public class Validator {
                                        int currentParameterIndex) {
         int operatorParameterCount = filterOperator.getExpectedParameterCount();
         Class<?> fieldClass = field.getType();
-        fieldClass = PrimitiveUtils.wrapperOf(fieldClass);
+        fieldClass = PrimitiveUtils.toWrapper(fieldClass);
         for (int i = 0; i < filterOperator.getExpectedParameterCount(); i++) {
             int paramIndex = currentParameterIndex + i;
             Class<?> paramClass = method.getParameters()[paramIndex].getType();
@@ -171,7 +171,7 @@ public class Validator {
                     (paramIndex + operatorParameterCount),
                     method.getParameterCount());
             }
-            paramClass = PrimitiveUtils.wrapperOf(paramClass);
+            paramClass = PrimitiveUtils.toWrapper(paramClass);
 
             // Special checks for some operators
             switch (filterOperator) {
