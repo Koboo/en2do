@@ -87,7 +87,7 @@ public final class RepositoryData<E, ID, R extends Repository<E, ID>> {
             return findIterable;
         }
         Object lastParameter;
-        if(args == null) {
+        if (args == null) {
             lastParameter = null;
         } else {
             lastParameter = args[args.length - 1];

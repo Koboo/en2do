@@ -70,7 +70,7 @@ public final class QueryOptions {
      * @return this object
      */
     public QueryOptions limit(int limit) {
-        if(limit < 0) {
+        if (limit < 0) {
             throw new IllegalArgumentException("limit can not be negative.");
         }
         this.limit = limit;
@@ -84,7 +84,7 @@ public final class QueryOptions {
      * @return this object
      */
     public QueryOptions skip(int skip) {
-        if(skip < 0) {
+        if (skip < 0) {
             throw new IllegalArgumentException("skip can not be negative.");
         }
         this.skip = skip;

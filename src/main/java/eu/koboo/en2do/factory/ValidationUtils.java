@@ -47,11 +47,11 @@ public class ValidationUtils {
     /**
      * Validates codec and accessor compatibility using the resolved entity mapping.
      *
-     * @param codecRegistry   The codecRegistry to look for a codec
-     * @param mapping         The resolved mapping to validate
+     * @param codecRegistry The codecRegistry to look for a codec
+     * @param mapping       The resolved mapping to validate
      */
     public void validate(CodecRegistry codecRegistry, RepositoryMapping mapping) {
-        if(mapping == null) {
+        if (mapping == null) {
             throw new NullPointerException("mapping is null");
         }
         Class<?> entityClass = mapping.getEntityClass();

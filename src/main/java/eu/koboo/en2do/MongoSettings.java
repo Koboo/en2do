@@ -2,7 +2,6 @@ package eu.koboo.en2do;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
-import eu.koboo.en2do.factory.RepositoryFactory;
 import eu.koboo.en2do.mongodb.codec.InternalPropertyCodecProvider;
 import eu.koboo.en2do.mongodb.convention.IdConvention;
 import eu.koboo.en2do.mongodb.convention.MethodMappingConvention;

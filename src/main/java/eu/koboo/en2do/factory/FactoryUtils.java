@@ -1,16 +1,12 @@
 package eu.koboo.en2do.factory;
 
 import eu.koboo.en2do.MongoSettings;
-import eu.koboo.en2do.mongodb.exception.RepositoryException;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameInvalidException;
 import eu.koboo.en2do.mongodb.exception.repository.RepositoryNameNotFoundException;
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.NameConvention;
-import eu.koboo.en2do.repository.Repository;
 import lombok.experimental.UtilityClass;
 
-import java.lang.reflect.ParameterizedType;
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
 @UtilityClass
@@ -19,24 +15,24 @@ class FactoryUtils {
     private static final Pattern COLLECTION_REGEX_NAME = Pattern.compile("^[A-Za-z0-9_]+$");
 
     static String parseRepositoryName(Class<?> repositoryClass,
-                               MongoSettings mongoSettings) {
+                                      MongoSettings mongoSettings) {
         NameConvention nameConvention = mongoSettings.collectionNameConvention();
         String baseName = null;
         if (nameConvention != null) {
             baseName = nameConvention.generate(repositoryClass);
         }
         Collection collectionAnnotation = repositoryClass.getAnnotation(Collection.class);
-        if(collectionAnnotation != null) {
+        if (collectionAnnotation != null) {
             String collectionName = collectionAnnotation.value();
-            if(!collectionName.isEmpty()) {
+            if (!collectionName.isEmpty()) {
                 baseName = collectionAnnotation.value();
             }
         }
-        if(baseName == null) {
+        if (baseName == null) {
             baseName = NameConvention.SNAKE_CASE.generate(repositoryClass);
         }
         baseName = baseName.trim();
-        if(baseName.isEmpty()) {
+        if (baseName.isEmpty()) {
             throw new RepositoryNameNotFoundException(repositoryClass);
         }
 

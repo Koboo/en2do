@@ -14,7 +14,7 @@ public class RepositoryMappingFactory {
     };
 
     public RepositoryMapping create(Class<?> repositoryClass) {
-        if(repositoryClass == null) {
+        if (repositoryClass == null) {
             throw new NullPointerException("repositoryClass is null");
         }
         return MAPPING_CACHE.get(repositoryClass);

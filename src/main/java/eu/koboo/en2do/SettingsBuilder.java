@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import org.bson.codecs.Codec;
 
-import javax.print.attribute.HashAttributeSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -84,17 +83,17 @@ public final class SettingsBuilder {
      * The repositories still need @Collection, but you can leave it empty.
      * Examples:
      * - {@link NameConvention#CAMEL_CASE_LOWER}
-     *   > CustomerRepository -> "customerRepository"
+     * > CustomerRepository -> "customerRepository"
      * - {@link NameConvention#CAMEL_CASE_UPPER}
-     *   > CustomerRepository -> "CustomerRepository"
+     * > CustomerRepository -> "CustomerRepository"
      * - {@link NameConvention#SNAKE_CASE}
-     *   > CustomerRepository -> "customer_repository"
+     * > CustomerRepository -> "customer_repository"
      * - {@link NameConvention#FLAT_CASE}
-     *   > CustomerRepository -> "customerrepository"
+     * > CustomerRepository -> "customerrepository"
      * - {@link NameConvention#MACRO_CASE}
-     *   > CustomerRepository -> "CUSTOMER_REPOSITORY"
+     * > CustomerRepository -> "CUSTOMER_REPOSITORY"
      * - {@link NameConvention#KEBAB_CASE}
-     *   > CustomerRepository -> "customer-repository"
+     * > CustomerRepository -> "customer-repository"
      */
     NameConvention collectionNameConvention = null;
 

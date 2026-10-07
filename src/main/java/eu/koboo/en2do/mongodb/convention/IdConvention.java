@@ -1,7 +1,5 @@
 package eu.koboo.en2do.mongodb.convention;
 
-import eu.koboo.en2do.MongoManager;
-import eu.koboo.en2do.factory.mapping.RepositoryMapping;
 import eu.koboo.en2do.repository.entity.Id;
 import org.bson.codecs.pojo.ClassModelBuilder;
 import org.bson.codecs.pojo.Convention;

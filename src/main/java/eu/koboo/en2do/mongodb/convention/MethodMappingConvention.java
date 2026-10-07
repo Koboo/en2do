@@ -1,7 +1,6 @@
 package eu.koboo.en2do.mongodb.convention;
 
 import eu.koboo.en2do.MongoManager;
-import eu.koboo.en2do.factory.mapping.RepositoryMapping;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

@@ -138,7 +138,7 @@ public final class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID
 
     private void executeFuture(CompletableFuture<Object> future, MethodCallable callable) {
         Executor futureExecutor;
-        if(executorService != null) {
+        if (executorService != null) {
             futureExecutor = executorService;
         } else {
             futureExecutor = future.defaultExecutor();

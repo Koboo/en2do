@@ -9,9 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.bson.conversions.Bson;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Collection;
 
 /**
  * This class is a representation of a predefined method from the repository

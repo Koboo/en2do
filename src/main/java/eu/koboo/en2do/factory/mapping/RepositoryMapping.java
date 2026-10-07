@@ -102,7 +102,7 @@ public final class RepositoryMapping {
             throw new RepositoryTypeIdNotFoundException(repositoryClass, repositoryEntityClass);
         }
         Class<?> mappingIdClass = PrimitiveUtils.toWrapper(idField.getType());
-        if(!repositoryIdClass.equals(mappingIdClass)) {
+        if (!repositoryIdClass.equals(mappingIdClass)) {
             throw new RepositoryTypeIdMismatchException(repositoryClass, repositoryEntityClass, repositoryIdClass, mappingIdClass);
         }
 

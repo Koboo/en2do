@@ -13,14 +13,14 @@ public final class TransformFieldConvention implements Convention {
     public void apply(ClassModelBuilder<?> classModelBuilder) {
         for (PropertyModelBuilder<?> modelBuilder : classModelBuilder.getPropertyModelBuilders()) {
             for (Annotation readAnnotation : modelBuilder.getReadAnnotations()) {
-                if(!(readAnnotation instanceof TransformField transformField)) {
+                if (!(readAnnotation instanceof TransformField transformField)) {
                     continue;
                 }
                 modelBuilder.readName(transformField.value());
                 break;
             }
             for (Annotation writeAnnotation : modelBuilder.getWriteAnnotations()) {
-                if(!(writeAnnotation instanceof TransformField transformField)) {
+                if (!(writeAnnotation instanceof TransformField transformField)) {
                     continue;
                 }
                 modelBuilder.writeName(transformField.value());
