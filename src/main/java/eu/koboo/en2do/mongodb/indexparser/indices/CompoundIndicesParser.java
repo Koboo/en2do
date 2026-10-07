@@ -8,6 +8,7 @@ import eu.koboo.en2do.mongodb.mapping.EntityMapping;
 import eu.koboo.en2do.mongodb.mapping.FieldMapping;
 import eu.koboo.en2do.repository.entity.compound.CompoundIndex;
 import eu.koboo.en2do.repository.entity.compound.Index;
+import eu.koboo.en2do.utility.EntityUtils;
 import eu.koboo.en2do.utility.parse.ParseUtils;
 import org.bson.conversions.Bson;
 
@@ -18,13 +19,15 @@ import java.util.Set;
 public final class CompoundIndicesParser implements IndicesParser {
 
     @Override
-    public void parse(Class<?> repositoryClass, EntityMapping<?> entityMapping, MongoCollection<?> entityCollection) {
+    public void parse(Class<?> repositoryClass,
+                      EntityMapping<?> entityMapping,
+                      MongoCollection<?> entityCollection) {
         Class<?> entityClass = entityMapping.getEntityClass();
-        Set<CompoundIndex> compoundIndexSet = ParseUtils.getAllAnnotations(entityClass, CompoundIndex.class);
+        Set<CompoundIndex> compoundIndexSet = EntityUtils.collectAnnotations(entityClass, CompoundIndex.class);
         for (CompoundIndex compoundIndex : compoundIndexSet) {
             List<Bson> indexBsonList = new ArrayList<>();
             for (Index fieldIndex : compoundIndex.value()) {
-                FieldMapping field = entityMapping.findByJavaNameIgnoreCase(fieldIndex.value());
+                FieldMapping field = entityMapping.findByJavaName(fieldIndex.value());
                 if (field == null) {
                     throw new RepositoryTypeIndexCompoundException(repositoryClass, entityClass, fieldIndex.value());
                 }

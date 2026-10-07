@@ -21,6 +21,8 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public abstract class GlobalPredefinedMethod {
 
+    private static final Bson ID_EXISTS_FILTER = Filters.exists("_id");
+
     String methodName;
 
     /**
@@ -44,55 +46,6 @@ public abstract class GlobalPredefinedMethod {
     }
 
     protected Bson createBsonIdExistsFilter() {
-        return Filters.exists("_id");
+        return ID_EXISTS_FILTER;
     }
-
-    protected <E, ID, R extends Repository<E, ID>> ID getGenericUniqueIdByEntity(RepositoryData<E, ID, R> repositoryData,
-                                                                                 Method method, E entity) throws IllegalAccessException {
-        Class<ID> entityIdClass = repositoryData.getEntityUniqueIdClass();
-        Field entityIdField = repositoryData.getEntityUniqueIdField();
-        ID uniqueId = entityIdClass.cast(entityIdField.get(entity));
-        if (uniqueId == null) {
-            Class<E> entityClass = repositoryData.getEntityClass();
-            throw new NullPointerException("UniqueId of Entity of type " + entityClass.getName() +
-                " as parameter of method " + method.getName() + " is null.");
-        }
-        return uniqueId;
-    }
-
-    protected <E, ID, R extends Repository<E, ID>> ID getGenericUniqueIdByArgument(RepositoryData<E, ID, R> repositoryData,
-                                                                                   Method method, Object argument) {
-        Class<ID> entityIdClass = repositoryData.getEntityUniqueIdClass();
-        ID uniqueId = entityIdClass.cast(argument);
-        if (uniqueId == null) {
-            Class<E> entityClass = repositoryData.getEntityClass();
-            throw new NullPointerException("UniqueId of Entity of type " + entityClass.getName() +
-                " as parameter of method " + method.getName() + " is null.");
-        }
-        return uniqueId;
-    }
-
-    protected <E, ID, R extends Repository<E, ID>> E getGenericEntity(RepositoryData<E, ID, R> repositoryData,
-                                                                      Method method, Object argument) {
-        Class<E> entityClass = repositoryData.getEntityClass();
-        E entity = entityClass.cast(argument);
-        if (entity == null) {
-            throw new NullPointerException("Entity of type " + entityClass.getName() +
-                " as parameter of method " + method.getName() + " is null.");
-        }
-        return entity;
-    }
-
-    @SuppressWarnings("unchecked")
-    protected <E, ID, R extends Repository<E, ID>> Collection<E> getEntityCollection(RepositoryData<E, ID, R> repositoryData,
-                                                                                     Method method, Object argument) {
-        Class<E> entityClass = repositoryData.getEntityClass();
-        Collection<E> entity = (Collection<E>) argument;
-        if (entity == null) {
-            throw new NullPointerException("List of Entities of type " + entityClass.getName() +
-                " as parameter of method " + method.getName() + " is null.");
-        }
-        return entity;
-    }
-
 }
