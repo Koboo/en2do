@@ -22,6 +22,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -54,7 +55,6 @@ public final class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID
             throw new MethodUnsupportedException(repositoryData.getRepositoryClass(), method);
         }
 
-
         MethodCallable methodCallable = () -> executeMethod(dynamicMethod, arguments, method, methodName);
         if (CompletableFuture.class.isAssignableFrom(method.getReturnType())) {
             CompletableFuture<Object> future = new CompletableFuture<>();
@@ -73,7 +73,7 @@ public final class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID
             throw new NullPointerException("The created filter for " + indexedMethod.getMethod().getName() + " is null!");
         }
 
-        // Switch-case the method operator to create the correct mongo query.
+        // Switch-case the method operator to create the correct mongo operation.
         final MongoCollection<E> collection = repositoryData.getEntityCollection();
 
         FindIterable<E> findIterable;
@@ -86,8 +86,7 @@ public final class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID
                 return collection.countDocuments(filter) > 0;
             case FIND:
                 findIterable = repositoryData.createFindIterableBase(filter, methodName);
-                findIterable = repositoryData.applySortObject(method, findIterable, arguments);
-                findIterable = repositoryData.applyPageObject(method, findIterable, arguments);
+                findIterable = repositoryData.applyQueryOptions(method, findIterable, arguments);
 
                 // Because it's a find method, we always got an entity-defined count.
                 // This specifically defines the number of returned entities.
@@ -136,12 +135,18 @@ public final class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID
     }
 
     private void executeFuture(CompletableFuture<Object> future, MethodCallable callable) {
+        Executor futureExecutor;
+        if(executorService != null) {
+            futureExecutor = executorService;
+        } else {
+            futureExecutor = future.defaultExecutor();
+        }
         future.completeAsync(() -> {
             try {
                 return callable.call();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        }, executorService == null ? future.defaultExecutor() : executorService);
+        }, futureExecutor);
     }
 }

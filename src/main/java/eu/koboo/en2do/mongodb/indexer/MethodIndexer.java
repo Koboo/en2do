@@ -14,12 +14,10 @@ import eu.koboo.en2do.operators.ChainType;
 import eu.koboo.en2do.operators.FilterOperator;
 import eu.koboo.en2do.operators.MethodOperator;
 import eu.koboo.en2do.repository.Repository;
+import eu.koboo.en2do.repository.methods.QueryOptions;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
-import eu.koboo.en2do.repository.methods.pagination.Pagination;
-import eu.koboo.en2do.repository.methods.sort.Sort;
 import eu.koboo.en2do.repository.methods.transform.NestedBsonKey;
 import eu.koboo.en2do.repository.methods.transform.Transform;
-import eu.koboo.en2do.utility.parse.ParseUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -52,7 +50,8 @@ public final class MethodIndexer<E, ID, R extends Repository<E, ID>> {
                          RepositoryIndexer<E, ID, R> repositoryIndexer,
                          Method method) {
         this.entityMapping = repositoryIndexer.getEntityMapping();
-        this.fieldsByDescendingJavaNameLength = entityMapping.getFieldsByJavaName().values().stream()
+        this.fieldsByDescendingJavaNameLength = entityMapping.getFieldsByJavaName()
+            .values().stream()
             .sorted(Comparator.comparingInt((FieldMapping field) -> field.getJavaName().length())
                 .reversed()
                 .thenComparing(FieldMapping::getJavaName))
@@ -72,7 +71,7 @@ public final class MethodIndexer<E, ID, R extends Repository<E, ID>> {
 
         // Check if we catch a predefined method name
         if (predefinedMethodRegistry.isPredefinedMethod(parsableMethodName)) {
-            throw new RepositoryMethodException("Override on predefined method!", repositoryClass, method);
+            throw new RepositoryMethodException("Overriding predefined method is not allowed!", repositoryClass, method);
         }
 
         this.methodOperator = parseMethodOperator();
@@ -121,7 +120,8 @@ public final class MethodIndexer<E, ID, R extends Repository<E, ID>> {
         // Couldn't find an AmountType by their respective keyword.
         // Let's try to find an AmountType by the return type. The return type
         // is already validated and can only be a single entity or a list/collection of entities.
-        if (ParseUtils.isReturnTypeOfCollection(method)) {
+        // FIXME: Remove (Legacy check was: ParseUtils.isReturnTypeOfCollection(method))
+        if (Collection.class.isAssignableFrom(method.getReturnType())) {
             return AmountType.MANY;
         }
         return AmountType.FIRST;
@@ -150,7 +150,8 @@ public final class MethodIndexer<E, ID, R extends Repository<E, ID>> {
                 return entityAmount;
             case MANY:
             case ALL:
-                // Doesn't get used anyway.
+                // If many or all is selected, we return -1.
+                // -1 is the equivalent of "as much as possible"
                 return -1;
             default:
                 // TODO: Replace with dedicated exception
@@ -285,21 +286,13 @@ public final class MethodIndexer<E, ID, R extends Repository<E, ID>> {
         int methodParameterCount = method.getParameterCount();
 
         if (methodParameterCount > 0) {
-            // Subtract 1 from parameterCount. This object could be a Sort or Pagination object.
+            // Subtract 1 from parameterCount. This object could be a QueryOptions object.
             // That means the expectedParameterCount is less than the methodParameterCount.
             int optionalExpectedParameterCount = (expectedParameterCount + 1);
             Class<?> lastParameterType = method.getParameterTypes()[methodParameterCount - 1];
-            if (lastParameterType.isAssignableFrom(Sort.class)) {
+            if (lastParameterType.isAssignableFrom(QueryOptions.class)) {
                 if (methodOperator != MethodOperator.FIND) {
-                    throw new MethodSortNotAllowedException(repositoryClass, method);
-                }
-                if (optionalExpectedParameterCount != methodParameterCount) {
-                    throw new MethodParameterCountException(repositoryClass, method, optionalExpectedParameterCount);
-                }
-            }
-            if (lastParameterType.isAssignableFrom(Pagination.class)) {
-                if (methodOperator != MethodOperator.FIND) {
-                    throw new MethodPageNotAllowedException(repositoryClass, method);
+                    throw new MethodQueryOptionsNotAllowedException(repositoryClass, method);
                 }
                 if (optionalExpectedParameterCount != methodParameterCount) {
                     throw new MethodParameterCountException(repositoryClass, method, optionalExpectedParameterCount);

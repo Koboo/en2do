@@ -28,14 +28,14 @@ public final class MethodSaveAll extends GlobalPredefinedMethod {
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method, Object[] arguments) throws Exception {
         MongoCollection<E> entityCollection = repositoryData.getEntityCollection();
-        Collection<E> entityList = getEntityCollection(repositoryData, method, arguments[0]);
+        Collection<E> entityList = repositoryData.getEntityMapping().asEntityCollection(arguments[0]);
         if (entityList.isEmpty()) {
             return true;
         }
         List<E> insertList = new ArrayList<>();
         // Iterate through entities and check if it already exists by unique identifier.
         for (E entity : entityList) {
-            ID uniqueId = getGenericUniqueIdByEntity(repositoryData, method, entity);
+            ID uniqueId = repositoryData.getEntityMapping().getIdFromEntity(entity);
             Bson idFilter = createBsonIdFilter(uniqueId);
             if (entityCollection.countDocuments(idFilter) > 0) {
                 // Entity exists, so we want to update the existing document.

@@ -19,7 +19,8 @@ public final class MethodDeleteManyById extends GlobalPredefinedMethod {
     @Override
     @SuppressWarnings("unchecked")
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
-                                                              Method method, Object[] arguments) {
+                                                              Method method,
+                                                              Object[] arguments) {
         Class<E> entityClass = repositoryData.getEntityClass();
         Collection<ID> idList = (Collection<ID>) arguments[0];
         if (idList == null) {

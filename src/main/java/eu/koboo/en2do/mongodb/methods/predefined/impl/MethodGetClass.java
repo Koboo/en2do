@@ -14,7 +14,8 @@ public final class MethodGetClass extends GlobalPredefinedMethod {
 
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
-                                                              Method method, Object[] arguments) {
+                                                              Method method,
+                                                              Object[] arguments) {
         return repositoryData.getRepositoryClass();
     }
 }

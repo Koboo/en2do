@@ -37,11 +37,10 @@ public final class PredefinedMethodRegistry {
         registerPredefinedMethod(new MethodGetNativeCollection());
         registerPredefinedMethod(new MethodGetUniqueId());
         registerPredefinedMethod(new MethodHashCode());
-        registerPredefinedMethod(new MethodPageAll());
         registerPredefinedMethod(new MethodSave());
         registerPredefinedMethod(new MethodSaveAll());
         registerPredefinedMethod(new MethodSetUniqueId());
-        registerPredefinedMethod(new MethodSortAll());
+        registerPredefinedMethod(new MethodQueryAll());
         registerPredefinedMethod(new MethodToString());
         registerPredefinedMethod(new MethodUpdateAllFields());
     }

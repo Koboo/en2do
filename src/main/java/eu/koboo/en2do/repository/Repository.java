@@ -1,9 +1,8 @@
 package eu.koboo.en2do.repository;
 
 import com.mongodb.client.MongoCollection;
+import eu.koboo.en2do.repository.methods.QueryOptions;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
-import eu.koboo.en2do.repository.methods.pagination.Pagination;
-import eu.koboo.en2do.repository.methods.sort.Sort;
 import org.bson.conversions.Bson;
 
 import java.util.Collection;
@@ -140,14 +139,6 @@ public interface Repository<E, ID> {
     void setUniqueId(E entity, ID uniqueId);
 
     /**
-     * This method applies the pagination of all entities of the repository.
-     *
-     * @param pagination The pagination, which is used to page the entities.
-     * @return A List with the paged entities.
-     */
-    List<E> pageAll(Pagination pagination);
-
-    /**
      * Saves the given entity to the database.
      * If the entity exists, the existing document is updated.
      * If the entity doesn't exist, a new document is created.
@@ -166,12 +157,12 @@ public interface Repository<E, ID> {
     boolean saveAll(Collection<E> entityList);
 
     /**
-     * This method applies the Sort object of all entities of the repository.
+     * This method applies the {@link QueryOptions} object of all entities of the repository.
      *
-     * @param sort The Sort object, which should be used to sort all entities.
+     * @param queryOptions The QueryOptions object, which should be used to sort all entities.
      * @return A List with the sorted entities.
      */
-    List<E> sortAll(Sort sort);
+    List<E> queryAll(QueryOptions queryOptions);
 
     /**
      * This method uses the UpdateBatch object to update the fields of all documents.

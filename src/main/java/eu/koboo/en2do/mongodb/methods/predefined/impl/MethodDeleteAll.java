@@ -16,7 +16,8 @@ public final class MethodDeleteAll extends GlobalPredefinedMethod {
 
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
-                                                              Method method, Object[] arguments) {
+                                                              Method method,
+                                                              Object[] arguments) {
         Bson idExistsFilter = createBsonIdExistsFilter();
         DeleteResult deleteResult = repositoryData.getEntityCollection().deleteMany(idExistsFilter);
         return deleteResult.wasAcknowledged();

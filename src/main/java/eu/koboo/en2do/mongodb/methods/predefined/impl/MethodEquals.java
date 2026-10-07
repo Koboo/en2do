@@ -14,7 +14,8 @@ public final class MethodEquals extends GlobalPredefinedMethod {
 
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
-                                                              Method method, Object[] arguments) {
+                                                              Method method,
+                                                              Object[] arguments) {
         if (arguments.length != 1) {
             return false;
         }

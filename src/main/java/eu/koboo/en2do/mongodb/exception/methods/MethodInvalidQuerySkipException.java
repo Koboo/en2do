@@ -4,9 +4,9 @@ import eu.koboo.en2do.mongodb.exception.RepositoryMethodException;
 
 import java.lang.reflect.Method;
 
-public class MethodInvalidSortSkipException extends RepositoryMethodException {
+public class MethodInvalidQuerySkipException extends RepositoryMethodException {
 
-    public MethodInvalidSortSkipException(Class<?> repoClass, Method method) {
+    public MethodInvalidQuerySkipException(Class<?> repoClass, Method method) {
         super("You're not allowed to use a skip size of less or equal to \"0\"!",
             repoClass, method);
     }
