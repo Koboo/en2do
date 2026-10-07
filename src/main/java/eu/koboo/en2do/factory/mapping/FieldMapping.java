@@ -1,4 +1,4 @@
-package eu.koboo.en2do.mongodb.mapping;
+package eu.koboo.en2do.factory.mapping;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -9,24 +9,15 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
-/**
- * Describes a persisted Java field and its resolved BSON name.
- */
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public final class FieldMapping {
 
     Field field;
+    Class<?> type;
+    String javaName;
     String bsonName;
-
-    public String getJavaName() {
-        return field.getName();
-    }
-
-    public Class<?> getType() {
-        return field.getType();
-    }
 
     public Type getGenericType() {
         return field.getGenericType();

@@ -16,6 +16,6 @@ public final class MethodGetEntityClass extends GlobalPredefinedMethod {
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method,
                                                               Object[] arguments) {
-        return repositoryData.getEntityClass();
+        return repositoryData.getMapping().typedEntityClass();
     }
 }

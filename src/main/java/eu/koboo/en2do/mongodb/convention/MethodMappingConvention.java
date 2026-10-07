@@ -1,39 +1,55 @@
 package eu.koboo.en2do.mongodb.convention;
 
-import eu.koboo.en2do.mongodb.mapping.EntityMapping;
+import eu.koboo.en2do.MongoManager;
+import eu.koboo.en2do.factory.mapping.RepositoryMapping;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.bson.codecs.pojo.ClassModelBuilder;
+import org.bson.codecs.pojo.Convention;
 import org.bson.codecs.pojo.PropertyModelBuilder;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Removes method-only properties unless they are explicitly enabled.
  */
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-public final class MethodMappingConvention extends EntityMappingConvention {
+public final class MethodMappingConvention implements Convention {
 
-    boolean enableMethodProperties;
+    MongoManager mongoManager;
 
     @Override
-    protected void apply(ClassModelBuilder<?> classModelBuilder, EntityMapping<?> entityMapping) {
-        if (enableMethodProperties) {
+    public void apply(ClassModelBuilder<?> classModelBuilder) {
+        if (mongoManager.getMongoSettings().enableMethodProperties()) {
             return;
         }
-
-        Set<PropertyModelBuilder<?>> removableProperties = new LinkedHashSet<>();
+        // We are searching for fields with the given property name.
+        // If we can't find a field, we remove the property from the database-mapping.
+        List<String> removableProperties = new ArrayList<>();
         for (PropertyModelBuilder<?> property : classModelBuilder.getPropertyModelBuilders()) {
-            if (entityMapping.findByJavaName(property.getName()) != null) {
-                continue;
+            String name = property.getName();
+            boolean fieldFound = false;
+
+            for (Class<?> clazz = classModelBuilder.getType(); clazz != null; clazz = clazz.getSuperclass()) {
+                try {
+                    clazz.getDeclaredField(name);
+                    fieldFound = true;
+                    break;
+                } catch (NoSuchFieldException ignored) {
+                    // Not a field of the type. Skip.
+                }
             }
-            removableProperties.add(property);
+
+            if (!fieldFound) {
+                removableProperties.add(name);
+            }
         }
-        for (PropertyModelBuilder<?> property : removableProperties) {
-            classModelBuilder.removeProperty(property.getName());
+
+        for (String name : removableProperties) {
+            classModelBuilder.removeProperty(name);
         }
     }
 }

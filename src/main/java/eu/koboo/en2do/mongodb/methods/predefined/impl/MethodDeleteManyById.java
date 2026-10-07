@@ -21,7 +21,7 @@ public final class MethodDeleteManyById extends GlobalPredefinedMethod {
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method,
                                                               Object[] arguments) {
-        Class<E> entityClass = repositoryData.getEntityClass();
+        Class<E> entityClass = repositoryData.getMapping().typedEntityClass();
         Collection<ID> idList = (Collection<ID>) arguments[0];
         if (idList == null) {
             throw new NullPointerException("idList of Entities of type " + entityClass.getName() +

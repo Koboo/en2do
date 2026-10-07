@@ -16,6 +16,6 @@ public final class MethodGetUniqueId extends GlobalPredefinedMethod {
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method,
                                                               Object[] arguments) throws Exception {
-        return repositoryData.getEntityMapping().getIdFromEntity(arguments[0]);
+        return repositoryData.getMapping().getIdFromEntity(arguments[0]);
     }
 }

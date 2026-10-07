@@ -20,7 +20,7 @@ public final class MethodDelete extends GlobalPredefinedMethod {
                                                               Method method,
                                                               Object[] arguments) throws Exception {
         MongoCollection<E> collection = repositoryData.getEntityCollection();
-        ID uniqueId = repositoryData.getEntityMapping().getIdFromEntity(arguments[0]);
+        ID uniqueId = repositoryData.getMapping().getIdFromEntity(arguments[0]);
         Bson idFilter = createBsonIdFilter(uniqueId);
         DeleteResult result = collection.deleteOne(idFilter);
         return result.wasAcknowledged();

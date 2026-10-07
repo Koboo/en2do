@@ -17,7 +17,7 @@ public final class MethodExists extends GlobalPredefinedMethod {
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method,
                                                               Object[] arguments) throws Exception {
-        ID uniqueId = repositoryData.getEntityMapping().getIdFromEntity(arguments[0]);
+        ID uniqueId = repositoryData.getMapping().getIdFromEntity(arguments[0]);
         Bson idFilter = createBsonIdFilter(uniqueId);
         return repositoryData.getEntityCollection().countDocuments(idFilter) > 0;
     }

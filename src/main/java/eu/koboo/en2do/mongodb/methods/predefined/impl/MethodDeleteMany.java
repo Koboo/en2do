@@ -22,13 +22,13 @@ public final class MethodDeleteMany extends GlobalPredefinedMethod {
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method,
                                                               Object[] arguments) throws Exception {
-        Collection<E> entityList = repositoryData.getEntityMapping().asEntityCollection(arguments[0]);
+        Collection<E> entityList = repositoryData.getMapping().asEntityCollection(arguments[0]);
         if (entityList.isEmpty()) {
             return true;
         }
         List<ID> idList = new LinkedList<>();
         for (E entity : entityList) {
-            ID uniqueId = repositoryData.getEntityMapping().getIdFromEntity(entity);
+            ID uniqueId = repositoryData.getMapping().getIdFromEntity(entity);
             idList.add(uniqueId);
         }
         Bson idFilter = Filters.in("_id", idList);

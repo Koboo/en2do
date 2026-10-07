@@ -2,6 +2,7 @@ package eu.koboo.en2do;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
+import eu.koboo.en2do.factory.RepositoryFactory;
 import eu.koboo.en2do.mongodb.codec.InternalPropertyCodecProvider;
 import eu.koboo.en2do.mongodb.convention.IdConvention;
 import eu.koboo.en2do.mongodb.convention.MethodMappingConvention;
@@ -59,7 +60,7 @@ public record MongoSettings(
         return internalPropertyCodecProvider;
     }
 
-    public CodecRegistry createCodecRegistry() {
+    public CodecRegistry createCodecRegistry(MongoManager mongoManager) {
         return fromRegistries(
             MongoClientSettings.getDefaultCodecRegistry(),
             fromProviders(PojoCodecProvider.builder()
@@ -72,7 +73,7 @@ public record MongoSettings(
                     new TransientConvention(),
                     new TransformFieldConvention(),
                     new IdConvention(),
-                    new MethodMappingConvention(enableMethodProperties)
+                    new MethodMappingConvention(mongoManager)
                 ))
                 .build())
         );

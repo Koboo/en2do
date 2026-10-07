@@ -16,7 +16,8 @@ public final class MethodHashCode extends GlobalPredefinedMethod {
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method,
                                                               Object[] arguments) {
-        Class<R> repositoryClass = repositoryData.getRepositoryClass();
-        return repositoryClass.getName().hashCode() + repositoryData.getCollectionName().hashCode();
+        int classHash = repositoryData.getMapping().getRepositoryClass().hashCode();
+        int nameHash = repositoryData.getEntityCollection().getNamespace().getCollectionName().hashCode();
+        return classHash + nameHash;
     }
 }

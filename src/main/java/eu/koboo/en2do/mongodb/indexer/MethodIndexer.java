@@ -1,11 +1,11 @@
 package eu.koboo.en2do.mongodb.indexer;
 
+import eu.koboo.en2do.factory.ValidationUtils;
+import eu.koboo.en2do.factory.mapping.FieldMapping;
+import eu.koboo.en2do.factory.mapping.RepositoryMapping;
 import eu.koboo.en2do.mongodb.RepositoryData;
-import eu.koboo.en2do.mongodb.Validator;
 import eu.koboo.en2do.mongodb.exception.RepositoryMethodException;
 import eu.koboo.en2do.mongodb.exception.methods.*;
-import eu.koboo.en2do.mongodb.mapping.EntityMapping;
-import eu.koboo.en2do.mongodb.mapping.FieldMapping;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedFilter;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
 import eu.koboo.en2do.mongodb.methods.predefined.PredefinedMethodRegistry;
@@ -27,7 +27,7 @@ import java.util.*;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public final class MethodIndexer<E, ID, R extends Repository<E, ID>> {
 
-    final EntityMapping<E> entityMapping;
+    final RepositoryMapping mapping;
     final List<FieldMapping> fieldsByDescendingJavaNameLength;
     final Class<R> repositoryClass;
     final Class<E> entityClass;
@@ -47,17 +47,17 @@ public final class MethodIndexer<E, ID, R extends Repository<E, ID>> {
     String parsableLoweredName;
 
     public MethodIndexer(PredefinedMethodRegistry predefinedMethodRegistry,
-                         RepositoryIndexer<E, ID, R> repositoryIndexer,
+                         RepositoryMapping mapping,
                          Method method) {
-        this.entityMapping = repositoryIndexer.getEntityMapping();
-        this.fieldsByDescendingJavaNameLength = entityMapping.getFieldsByJavaName()
+        this.mapping = mapping;
+        this.fieldsByDescendingJavaNameLength = mapping.getFieldsByJavaName()
             .values().stream()
             .sorted(Comparator.comparingInt((FieldMapping field) -> field.getJavaName().length())
                 .reversed()
                 .thenComparing(FieldMapping::getJavaName))
             .toList();
-        this.repositoryClass = repositoryIndexer.getRepositoryClass();
-        this.entityClass = repositoryIndexer.getEntityClass();
+        this.repositoryClass = mapping.typedRepositoryClass();
+        this.entityClass = mapping.typedEntityClass();
         this.method = method;
 
         this.nestedBsonKeySet = parseInnerNestedBsonKeys();
@@ -255,9 +255,9 @@ public final class MethodIndexer<E, ID, R extends Repository<E, ID>> {
                 throw new MethodDuplicatedChainException(repositoryClass, method);
             }
 
-            FieldMapping directEntityField = entityMapping.findByBsonName(bsonFilterKey);
+            FieldMapping directEntityField = mapping.findByBsonName(bsonFilterKey);
             if (directEntityField != null) {
-                Validator.validateParameterTypes(repositoryClass, method, directEntityField, filterOperator, nextParameterIndex);
+                ValidationUtils.validateParameterTypes(repositoryClass, method, directEntityField, filterOperator, nextParameterIndex);
             }
 
             IndexedFilter indexedFilter = new IndexedFilter(bsonFilterKey, notFilter, filterOperator, nextParameterIndex);

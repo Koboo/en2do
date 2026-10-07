@@ -16,7 +16,6 @@ public final class MethodToString extends GlobalPredefinedMethod {
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
                                                               Method method,
                                                               Object[] arguments) {
-        Class<R> repositoryClass = repositoryData.getRepositoryClass();
-        return repositoryClass.getName();
+        return repositoryData.getMapping().getRepositoryClass().getName();
     }
 }

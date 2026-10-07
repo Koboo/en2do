@@ -4,10 +4,9 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.MongoManager;
+import eu.koboo.en2do.factory.mapping.RepositoryMapping;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidQueryLimitException;
 import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidQuerySkipException;
-import eu.koboo.en2do.mongodb.indexer.RepositoryIndexer;
-import eu.koboo.en2do.mongodb.mapping.EntityMapping;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.methods.QueryOptions;
@@ -20,7 +19,6 @@ import lombok.experimental.FieldDefaults;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,36 +29,22 @@ import java.util.UUID;
 public final class RepositoryData<E, ID, R extends Repository<E, ID>> {
 
     MongoManager mongoManager;
-    EntityMapping<E> entityMapping;
-    String collectionName;
+    RepositoryMapping mapping;
     MongoCollection<E> entityCollection;
-    Class<R> repositoryClass;
 
     @Getter(AccessLevel.NONE)
     Map<String, IndexedMethod<E, ID, R>> dynamicMethodRegistry;
 
     public RepositoryData(MongoManager mongoManager,
-                          RepositoryIndexer<E, ID, R> indexer,
+                          RepositoryMapping mapping,
                           MongoCollection<E> entityCollection) {
         this.mongoManager = mongoManager;
-        this.entityMapping = indexer.getEntityMapping();
-        this.collectionName = indexer.getCollectionName();
+        this.mapping = mapping;
         this.entityCollection = entityCollection;
-
-        this.repositoryClass = indexer.getRepositoryClass();
-
         this.dynamicMethodRegistry = new HashMap<>();
     }
 
-    public Class<E> getEntityClass() {
-        return entityMapping.getEntityClass();
-    }
-
-    public Field getEntityUniqueIdField() {
-        return entityMapping.getIdField().getField();
-    }
-
-    public void clear() {
+    public void close() {
         dynamicMethodRegistry.clear();
     }
 
@@ -72,7 +56,7 @@ public final class RepositoryData<E, ID, R extends Repository<E, ID>> {
         dynamicMethodRegistry.put(methodName, dynamicMethod);
     }
 
-    public IndexedMethod<E, ID, R> lookupDynamicMethod(String methodName) {
+    public IndexedMethod<E, ID, R> getDynamicMethod(String methodName) {
         return dynamicMethodRegistry.get(methodName);
     }
 
@@ -83,6 +67,7 @@ public final class RepositoryData<E, ID, R extends Repository<E, ID>> {
         } else {
             findIterable = entityCollection.find();
         }
+        // FIXME: SignatureUtils
         if (mongoManager.getMongoSettings().appendMethodAsComment()) {
             findIterable.comment("en2do \"" + methodName + "\"");
         }
@@ -92,6 +77,7 @@ public final class RepositoryData<E, ID, R extends Repository<E, ID>> {
     public FindIterable<E> applyQueryOptions(Method method,
                                              FindIterable<E> findIterable,
                                              Object[] args) {
+        Class<?> repositoryClass = mapping.getRepositoryClass();
         int parameterCount = method.getParameterCount();
         if (parameterCount <= 0) {
             return findIterable;
@@ -140,6 +126,7 @@ public final class RepositoryData<E, ID, R extends Repository<E, ID>> {
     }
 
     public Object getFilterableValue(Object object, boolean isMapKey) {
+        // FIXME: Ordinal or name? -> Setting
         if (object instanceof Enum<?>) {
             return ((Enum<?>) object).name();
         }

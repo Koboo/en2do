@@ -49,10 +49,11 @@ public final class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID
         // No predefined handler found, checking for dynamic methods
 
         // Get and check if any dynamic method matches the methodName
-        IndexedMethod<E, ID, R> dynamicMethod = repositoryData.lookupDynamicMethod(methodName);
+        IndexedMethod<E, ID, R> dynamicMethod = repositoryData.getDynamicMethod(methodName);
         if (dynamicMethod == null) {
+            Class<?> repositoryClass = repositoryData.getMapping().getRepositoryClass();
             // No handling found for method with this name.
-            throw new MethodUnsupportedException(repositoryData.getRepositoryClass(), method);
+            throw new MethodUnsupportedException(repositoryClass, method);
         }
 
         MethodCallable methodCallable = () -> executeMethod(dynamicMethod, arguments, method, methodName);
@@ -130,7 +131,8 @@ public final class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID
             default:
                 // Couldn't find any match method operator, but that shouldn't happen.
                 // If this exception is thrown, I forgot something to implement :D
-                throw new MethodInvalidCallException(repositoryData.getRepositoryClass(), method);
+                Class<?> repositoryClass = repositoryData.getMapping().getRepositoryClass();
+                throw new MethodInvalidCallException(repositoryClass, method);
         }
     }
 
