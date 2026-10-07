@@ -1,6 +1,6 @@
 package eu.koboo.en2do.test.customer.predefined;
 
-import eu.koboo.en2do.repository.methods.pagination.Pagination;
+import eu.koboo.en2do.repository.methods.QueryOptions;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
@@ -12,7 +12,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CustomerPageAllTest extends CustomerRepositoryTest {
+public class CustomerQueryAllTest extends CustomerRepositoryTest {
 
     @Test
     @Order(1)
@@ -38,13 +38,13 @@ public class CustomerPageAllTest extends CustomerRepositoryTest {
     @Test
     @Order(3)
     public void findCustomer() {
-        List<Customer> customerList = repository.pageAll(
-            Pagination.of(5)
-                .setPage(2)
+        List<Customer> customerList = repository.queryAll(QueryOptions.byField("customerId")
+            .limit(10)
+            .skip(5)
         );
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());
-        assertEquals(5, customerList.size());
+        assertEquals(10, customerList.size());
         for (Customer customer : customerList) {
             assertNotNull(customer);
             assertEquals(Const.FIRST_NAME, customer.getFirstName());
