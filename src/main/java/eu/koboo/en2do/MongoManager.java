@@ -8,11 +8,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import eu.koboo.en2do.mongodb.RepositoryData;
 import eu.koboo.en2do.mongodb.RepositoryInvocationHandler;
-import eu.koboo.en2do.mongodb.codec.InternalPropertyCodecProvider;
-import eu.koboo.en2do.mongodb.convention.IdConvention;
-import eu.koboo.en2do.mongodb.convention.MethodMappingConvention;
-import eu.koboo.en2do.mongodb.convention.TransformFieldConvention;
-import eu.koboo.en2do.mongodb.convention.TransientConvention;
 import eu.koboo.en2do.mongodb.indexer.MethodIndexer;
 import eu.koboo.en2do.mongodb.indexer.RepositoryIndexer;
 import eu.koboo.en2do.mongodb.indexparser.IndexParser;
@@ -20,15 +15,11 @@ import eu.koboo.en2do.mongodb.methods.predefined.PredefinedMethodRegistry;
 import eu.koboo.en2do.repository.Repository;
 import eu.koboo.en2do.repository.options.DropEntitiesOnStart;
 import eu.koboo.en2do.repository.options.DropIndexesOnStart;
-import eu.koboo.en2do.utility.parse.ParseUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import org.bson.UuidRepresentation;
-import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecRegistry;
-import org.bson.codecs.pojo.Conventions;
-import org.bson.codecs.pojo.PojoCodecProvider;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -36,24 +27,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
-import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public final class MongoManager {
 
     @Getter
-    SettingsBuilder settingsBuilder;
-    IndexParser parser;
+    MongoSettings mongoSettings;
+    IndexParser indexParser;
 
     Map<Class<?>, RepositoryData<?, ?, ?>> repositoryDataByClassMap;
     Map<Class<?>, Repository<?, ?>> repositoryByClassRegistry;
     PredefinedMethodRegistry predefinedMethodRegistry;
-    ExecutorService executorService;
 
     CodecRegistry codecRegistry;
 
@@ -63,55 +49,21 @@ public final class MongoManager {
     @Getter
     MongoDatabase mongoDatabase;
 
-    public MongoManager(SettingsBuilder builder, ExecutorService executorService) {
-        if (builder == null) {
-            throw new NullPointerException("SettingsBuilder cannot be null.");
+    public MongoManager(MongoSettings mongoSettings) {
+        if (mongoSettings == null) {
+            throw new NullPointerException("settings is null.");
         }
-        settingsBuilder = builder;
+        this.mongoSettings = mongoSettings;
 
-        parser = new IndexParser();
+        ConnectionString connectionString = mongoSettings.createConnectionString();
+        String database = mongoSettings.createDatabase(connectionString);
+
+        indexParser = new IndexParser();
         repositoryDataByClassMap = new ConcurrentHashMap<>();
         repositoryByClassRegistry = new ConcurrentHashMap<>();
         predefinedMethodRegistry = new PredefinedMethodRegistry();
-        this.executorService = ParseUtils.parseExecutorService(executorService);
 
-        // Registering user-provided codecs from SettingsBuilder
-        InternalPropertyCodecProvider internalPropertyCodecProvider = new InternalPropertyCodecProvider();
-        Set<Codec<?>> codecSet = settingsBuilder.getCodecSet();
-        if (codecSet != null && !codecSet.isEmpty()) {
-            for (Codec<?> codec : codecSet) {
-                internalPropertyCodecProvider.registerCodec(codec);
-            }
-        }
-
-        // Building the native mongodb CodecRegistry
-        codecRegistry = fromRegistries(
-            MongoClientSettings.getDefaultCodecRegistry(),
-            fromProviders(PojoCodecProvider.builder()
-                .register(internalPropertyCodecProvider)
-                .automatic(true)
-                .conventions(List.of(
-                    Conventions.ANNOTATION_CONVENTION,
-                    Conventions.SET_PRIVATE_FIELDS_CONVENTION,
-                    Conventions.USE_GETTERS_FOR_SETTERS,
-                    new TransientConvention(),
-                    new TransformFieldConvention(),
-                    new IdConvention(),
-                    new MethodMappingConvention(settingsBuilder.isEnableMethodProperties())
-                ))
-                .build())
-        );
-
-        // Building and validating the given connection string.
-        String settingsConnectionString = settingsBuilder.getConnectionString();
-        if (settingsConnectionString == null || settingsConnectionString.isEmpty()) {
-            throw new NullPointerException("connectionString is null or empty!");
-        }
-        ConnectionString connectionString = new ConnectionString(settingsConnectionString);
-        String database = connectionString.getDatabase();
-        if (database == null || database.isEmpty()) {
-            throw new NullPointerException("No database provided in connectionString!");
-        }
+        codecRegistry = mongoSettings.createCodecRegistry();
 
         // Prebuild the native client settings.
         MongoClientSettings.Builder clientSettingsBuilder = MongoClientSettings.builder()
@@ -120,42 +72,32 @@ public final class MongoManager {
             .uuidRepresentation(UuidRepresentation.STANDARD)
             .codecRegistry(codecRegistry);
 
-        // Apply the user-provided client configurators
-        Set<ClientConfigurator> clientConfiguratorSet = settingsBuilder.getClientConfiguratorSet();
-        if (clientConfiguratorSet != null && !clientConfiguratorSet.isEmpty()) {
-            for (ClientConfigurator clientConfigurator : clientConfiguratorSet) {
-                clientConfigurator.configure(clientSettingsBuilder);
-            }
-        }
+        mongoSettings.applyClientConfigurators(clientSettingsBuilder);
 
         // Build the actual mongodb client and database
         mongoClient = MongoClients.create(clientSettingsBuilder.build());
         mongoDatabase = mongoClient.getDatabase(database);
     }
 
-    public MongoManager(SettingsBuilder settingsBuilder) {
-        this(settingsBuilder, null);
-    }
-
     public MongoManager() {
-        this(new SettingsBuilder(), null);
+        this(new SettingsBuilder().build());
     }
 
     public void close() {
         try {
-            if (executorService != null) {
-                executorService.shutdown();
-            }
             repositoryByClassRegistry.clear();
-            for (RepositoryData<?, ?, ?> meta : repositoryDataByClassMap.values()) {
-                meta.destroy();
+            for (RepositoryData<?, ?, ?> data : repositoryDataByClassMap.values()) {
+                data.clear();
             }
             repositoryDataByClassMap.clear();
             if (mongoClient != null) {
                 mongoClient.close();
             }
-            if (parser != null) {
-                parser.destroy();
+            if (predefinedMethodRegistry != null) {
+                predefinedMethodRegistry.close();
+            }
+            if (indexParser != null) {
+                indexParser.close();
             }
         } catch (Exception e) {
             throw new RuntimeException("Error while closing: " + MongoManager.class, e);
@@ -206,13 +148,13 @@ public final class MongoManager {
             }
 
             // Validation successful
-            parser.parseIndices(repositoryClass, repositoryData.getEntityMapping(), entityCollection);
+            indexParser.parseIndices(repositoryClass, repositoryData.getEntityMapping(), entityCollection);
 
             // Create dynamic repository proxy object
             ClassLoader repoClassLoader = repositoryClass.getClassLoader();
             Class<?>[] interfaces = new Class[]{repositoryClass};
             Repository<E, ID> repository = (Repository<E, ID>) Proxy.newProxyInstance(repoClassLoader, interfaces,
-                new RepositoryInvocationHandler<>(repositoryData, executorService, predefinedMethodRegistry));
+                new RepositoryInvocationHandler<>(repositoryData, mongoSettings.executorService(), predefinedMethodRegistry));
 
             repositoryDataByClassMap.put(repositoryClass, repositoryData);
 

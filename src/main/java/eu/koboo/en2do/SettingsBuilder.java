@@ -9,9 +9,10 @@ import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import org.bson.codecs.Codec;
 
+import javax.print.attribute.HashAttributeSet;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
+import java.util.concurrent.ExecutorService;
 
 @SuppressWarnings("unused")
 @Getter
@@ -24,6 +25,12 @@ public final class SettingsBuilder {
      * For easier retrieval you can use {@link ConnectionString} utility class.
      */
     String connectionString = null;
+
+    /**
+     * You can provide and set this as a custom ExecutorService for
+     * asynchronous requests and executions.
+     */
+    ExecutorService executor;
 
     /**
      * Allows the usage of disk storage for find iterables.
@@ -100,12 +107,12 @@ public final class SettingsBuilder {
      * - {@link eu.koboo.en2do.configurators.ClientConfiguratorCompressors}
      * - {@link eu.koboo.en2do.configurators.ClientConfiguratorServerApi}
      */
-    Set<ClientConfigurator> clientConfiguratorSet = null;
+    final Set<ClientConfigurator> clientConfiguratorSet = new HashSet<>();
 
     /**
      * A {@link Set} of custom codecs you want to register with the {@link MongoClient}.
      */
-    Set<Codec<?>> codecSet = null;
+    final Set<Codec<?>> codecSet = new HashSet<>();
 
     /**
      * See field documentation.
@@ -123,8 +130,8 @@ public final class SettingsBuilder {
      *
      * @return This builder
      */
-    public SettingsBuilder enableMethodProperties() {
-        this.enableMethodProperties = true;
+    public SettingsBuilder executorService(ExecutorService executor) {
+        this.executor = executor;
         return this;
     }
 
@@ -135,6 +142,16 @@ public final class SettingsBuilder {
      */
     public SettingsBuilder disallowDiskUsageOnPagination() {
         this.allowDiskUse = false;
+        return this;
+    }
+
+    /**
+     * See field documentation.
+     *
+     * @return This builder
+     */
+    public SettingsBuilder enableMethodProperties() {
+        this.enableMethodProperties = true;
         return this;
     }
 
@@ -187,9 +204,6 @@ public final class SettingsBuilder {
      * @return This builder
      */
     public SettingsBuilder clientConfigurator(ClientConfigurator configurator) {
-        if (clientConfiguratorSet == null) {
-            clientConfiguratorSet = new HashSet<>();
-        }
         clientConfiguratorSet.add(configurator);
         return this;
     }
@@ -201,10 +215,22 @@ public final class SettingsBuilder {
      * @return This builder
      */
     public <T> SettingsBuilder registerCodec(Codec<T> codec) {
-        if (codecSet == null) {
-            codecSet = new HashSet<>();
-        }
         codecSet.add(codec);
         return this;
+    }
+
+    public MongoSettings build() {
+        return new MongoSettings(
+            connectionString,
+            executor,
+            allowDiskUse,
+            appendMethodAsComment,
+            enableMethodProperties,
+            collectionPrefix,
+            collectionSuffix,
+            collectionNameConvention,
+            Set.copyOf(clientConfiguratorSet),
+            Set.copyOf(codecSet)
+        );
     }
 }
