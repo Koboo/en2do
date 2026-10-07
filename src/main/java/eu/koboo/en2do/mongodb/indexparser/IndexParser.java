@@ -24,7 +24,7 @@ public final class IndexParser {
         this.indicesParserRegistry.add(new GeoIndicesParser());
     }
 
-    public void destroy() {
+    public void close() {
         indicesParserRegistry.clear();
     }
 

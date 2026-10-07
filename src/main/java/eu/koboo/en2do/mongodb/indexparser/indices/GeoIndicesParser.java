@@ -11,7 +11,9 @@ import org.bson.conversions.Bson;
 public final class GeoIndicesParser implements IndicesParser {
 
     @Override
-    public void parse(Class<?> repositoryClass, EntityMapping<?> entityMapping, MongoCollection<?> entityCollection) {
+    public void parse(Class<?> repositoryClass,
+                      EntityMapping<?> entityMapping,
+                      MongoCollection<?> entityCollection) {
         for (FieldMapping field : entityMapping.getFieldsByJavaName().values()) {
             if (!Geometry.class.isAssignableFrom(field.getType())) {
                 continue;
