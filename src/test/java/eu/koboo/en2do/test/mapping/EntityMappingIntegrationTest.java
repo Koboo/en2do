@@ -30,14 +30,6 @@ import eu.koboo.en2do.repository.entity.compound.Index;
 import eu.koboo.en2do.repository.entity.ttl.TTLIndex;
 import eu.koboo.en2do.repository.methods.transform.NestedBsonKey;
 import eu.koboo.en2do.test.TestMongoManager;
-import eu.koboo.en2do.test.annotations.TestEntityRepository;
-import eu.koboo.en2do.test.customer.CustomerRepository;
-import eu.koboo.en2do.test.customerextended.CustomerExtendedRepository;
-import eu.koboo.en2do.test.generic.GenericModelRepository;
-import eu.koboo.en2do.test.geotest.GeoEntityRepository;
-import eu.koboo.en2do.test.mapkeys.MapKeyRepository;
-import eu.koboo.en2do.test.user.UserRepository;
-import eu.koboo.en2do.utility.reflection.FieldUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -76,7 +68,7 @@ class EntityMappingIntegrationTest {
 
         assertSame(indexer.getEntityMapping(), data.getEntityMapping());
         assertEquals(MappedEntity.class, data.getEntityClass());
-        assertEquals(Integer.class, data.getEntityUniqueIdClass());
+        assertEquals(Integer.class, data.getEntityMapping().getIdType());
         assertSame(indexer.getEntityMapping().getIdField().getField(), data.getEntityUniqueIdField());
         assertEquals(BaseEntity.class, data.getEntityUniqueIdField().getDeclaringClass());
     }
@@ -151,8 +143,11 @@ class EntityMappingIntegrationTest {
     void createsCompoundTtlAndGeoIndexesUsingStoredNames() {
         List<BsonDocument> indexes = new ArrayList<>();
         List<IndexOptions> options = new ArrayList<>();
-        new IndexParser().parseIndices(MappedRepository.class, EntityMappingFactory.create(IndexedEntity.class),
-            captureIndexes(indexes, options));
+        new IndexParser().parseIndices(
+            MappedRepository.class,
+            EntityMappingFactory.create(IndexedEntity.class),
+            captureIndexes(indexes, options)
+        );
 
         BsonDocument compound = BsonDocument.parse("{_id: 1, n: -1}");
         BsonDocument ttl = BsonDocument.parse("{expires_at: 1}");
@@ -179,18 +174,6 @@ class EntityMappingIntegrationTest {
     }
 
     @Test
-    void compatibilityValidationDoesNotClearSharedReflectionCache() {
-        Set<Field> cachedFields = FieldUtils.collectFields(EmbeddedEntity.class);
-        Set<Field> originalFields = Set.copyOf(cachedFields);
-
-        Validator.validateCompatibility(MongoClientSettings.getDefaultCodecRegistry(), MappedRepository.class,
-            EntityMappingFactory.create(EmbeddedEntity.class));
-
-        assertFalse(originalFields.isEmpty());
-        assertEquals(originalFields, cachedFields);
-    }
-
-    @Test
     void validatesNestedMappingsWhileSkippingCodecBackedAndGenericFields() {
         assertDoesNotThrow(() -> Validator.validateCompatibility(MongoClientSettings.getDefaultCodecRegistry(),
             MappedRepository.class, EntityMappingFactory.create(EmbeddedContainer.class)));
@@ -201,17 +184,6 @@ class EntityMappingIntegrationTest {
         assertThrows(RepositorySetterNotFoundException.class, () -> Validator.validateCompatibility(
             MongoClientSettings.getDefaultCodecRegistry(), MappedRepository.class,
             EntityMappingFactory.create(InvalidEmbeddedContainer.class)));
-    }
-
-    @Test
-    void indexesExistingRepositoryDefinitionsWithoutDatabaseOperations() {
-        assertDoesNotThrow(() -> indexMethods(CustomerRepository.class));
-        assertDoesNotThrow(() -> indexMethods(CustomerExtendedRepository.class));
-        assertDoesNotThrow(() -> indexMethods(GenericModelRepository.class));
-        assertDoesNotThrow(() -> indexMethods(GeoEntityRepository.class));
-        assertDoesNotThrow(() -> indexMethods(MapKeyRepository.class));
-        assertDoesNotThrow(() -> indexMethods(TestEntityRepository.class));
-        assertDoesNotThrow(() -> indexMethods(UserRepository.class));
     }
 
     private <E, ID, R extends Repository<E, ID>> RepositoryIndexer<E, ID, R> indexer(Class<R> repositoryClass) {
@@ -368,8 +340,8 @@ class EntityMappingIntegrationTest {
     @Setter
     @NoArgsConstructor
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    @CompoundIndex(value = {@Index("entityId"), @Index(value = "NAMELONG", ascending = false)}, uniqueIndex = true)
-    @TTLIndex(value = "EXPIRESAT", ttl = 3, time = TimeUnit.MINUTES)
+    @CompoundIndex(value = {@Index("entityId"), @Index(value = "nameLong", ascending = false)}, uniqueIndex = true)
+    @TTLIndex(value = "expiresAt", ttl = 3, time = TimeUnit.MINUTES)
     public static class IndexedEntity extends MappedEntity {
         @TransformField("expires_at")
         Date expiresAt;

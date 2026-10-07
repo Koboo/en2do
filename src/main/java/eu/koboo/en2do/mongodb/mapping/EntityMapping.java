@@ -1,9 +1,12 @@
 package eu.koboo.en2do.mongodb.mapping;
 
+import eu.koboo.en2do.utility.reflection.PrimitiveUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
+import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -45,23 +48,48 @@ public final class EntityMapping<E> {
         return fieldsByJavaName.get(name);
     }
 
-    /**
-     * Resolves Java names used by index annotations, which allow case-insensitive names.
-     */
-    public FieldMapping findByJavaNameIgnoreCase(String name) {
-        FieldMapping exactMatch = findByJavaName(name);
-        if (exactMatch != null) {
-            return exactMatch;
-        }
-        for (FieldMapping field : fieldsByJavaName.values()) {
-            if (field.getJavaName().equalsIgnoreCase(name)) {
-                return field;
-            }
-        }
-        return null;
-    }
-
     public FieldMapping findByBsonName(String name) {
         return fieldsByBsonName.get(name);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <ID> Class<ID> getIdType() {
+        Class<?> rawIdType = idField.getType();
+        Class<?> mappedIdType = PrimitiveUtils.toWrapper(rawIdType);
+        return (Class<ID>) mappedIdType;
+    }
+
+    public E asEntity(Object object) {
+        if (object == null) {
+            throw new NullPointerException("Entity of type " + entityClass.getName() + " is null.");
+        }
+        return entityClass.cast(object);
+    }
+
+    @SuppressWarnings("unchecked")
+    public Collection<E> asEntityCollection(Object argument) {
+        if (argument == null) {
+            throw new NullPointerException("List of Entities of type " + entityClass.getName() + " is null.");
+        }
+        return (Collection<E>) argument;
+    }
+
+    public <ID> ID asEntityId(Object object) {
+        if (object == null) {
+            throw new NullPointerException("UniqueId of Entity of type " + entityClass.getName() + " is null.");
+        }
+        Class<ID> idType = getIdType();
+        return idType.cast(object);
+    }
+
+    public <ID> ID getIdFromEntity(Object object) throws Exception {
+        E entity = asEntity(object);
+        Field field = idField.getField();
+        Class<ID> idType = getIdType();
+        ID uniqueId = idType.cast(field.get(entity));
+        if (uniqueId == null) {
+            throw new NullPointerException("UniqueId of Entity of type " + entityClass.getName() + " is null.");
+        }
+        return uniqueId;
     }
 }

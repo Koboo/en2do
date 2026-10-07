@@ -3,6 +3,7 @@ package eu.koboo.en2do.mongodb.mapping;
 import eu.koboo.en2do.repository.entity.Id;
 import eu.koboo.en2do.repository.entity.TransformField;
 import eu.koboo.en2do.repository.entity.Transient;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import java.lang.reflect.Field;
@@ -22,7 +23,7 @@ public class EntityMappingFactory {
 
     private static final ClassValue<EntityMapping<?>> ENTITY_MAPPING_CACHE = new ClassValue<>() {
         @Override
-        protected EntityMapping<?> computeValue(Class<?> entityClass) {
+        protected EntityMapping<?> computeValue(@NonNull Class<?> entityClass) {
             return createMapping(entityClass);
         }
     };
@@ -42,12 +43,12 @@ public class EntityMappingFactory {
      * @return the resolved field mapping
      * @throws IllegalArgumentException if the field mapping is invalid
      */
+    @SuppressWarnings("unchecked")
     public <E> EntityMapping<E> create(Class<E> entityClass) {
-        Objects.requireNonNull(entityClass, "entityClass");
-
-        @SuppressWarnings("unchecked")
-        EntityMapping<E> entityMapping = (EntityMapping<E>) ENTITY_MAPPING_CACHE.get(entityClass);
-        return entityMapping;
+        if(entityClass == null) {
+            throw new NullPointerException("entityClass is null");
+        }
+        return (EntityMapping<E>) ENTITY_MAPPING_CACHE.get(entityClass);
     }
 
     private EntityMapping<?> createMapping(Class<?> entityClass) {
