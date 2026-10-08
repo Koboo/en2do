@@ -6,11 +6,13 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import eu.koboo.en2do.factory.RepositoryFactory;
+import eu.koboo.en2do.mongodb.codec.InternalPropertyCodecProvider;
 import eu.koboo.en2do.repository.Repository;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import org.bson.UuidRepresentation;
+import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecRegistry;
 
 import java.util.List;
@@ -23,6 +25,7 @@ import java.util.logging.Logger;
 public final class MongoManager {
 
     MongoSettings mongoSettings;
+    InternalPropertyCodecProvider codecProvider;
     MongoClient mongoClient;
     MongoDatabase mongoDatabase;
     RepositoryFactory repositoryFactory;
@@ -36,7 +39,8 @@ public final class MongoManager {
         ConnectionString connectionString = mongoSettings.createConnectionString();
         String database = mongoSettings.createDatabase(connectionString);
 
-        CodecRegistry codecRegistry = mongoSettings.createCodecRegistry(this);
+        codecProvider = mongoSettings.createInternalCodecProvider();
+        CodecRegistry codecRegistry = mongoSettings.createCodecRegistry(this, codecProvider);
 
         // Prebuild the native client settings.
         MongoClientSettings.Builder clientSettingsBuilder = MongoClientSettings.builder()
@@ -85,6 +89,11 @@ public final class MongoManager {
      */
     public Set<Repository<?, ?>> getAllRepositories() {
         return repositoryFactory.getAllRepositories();
+    }
+
+    public <T> MongoManager registerCodec(Codec<T> typeCodec) {
+        codecProvider.registerCodec(typeCodec);
+        return this;
     }
 
     /**

@@ -33,7 +33,7 @@ public record MongoSettings(
     Set<Codec<?>> codecSet
 ) {
 
-    public ConnectionString createConnectionString() {
+    ConnectionString createConnectionString() {
         // Building and validating the given connection string.
         String settingsConnectionString = connectionString;
         if (settingsConnectionString == null || settingsConnectionString.isEmpty()) {
@@ -42,7 +42,7 @@ public record MongoSettings(
         return new ConnectionString(settingsConnectionString);
     }
 
-    public String createDatabase(ConnectionString connectionString) {
+    String createDatabase(ConnectionString connectionString) {
         String database = connectionString.getDatabase();
         if (database == null || database.isEmpty()) {
             throw new NullPointerException("No database provided in connectionString!");
@@ -50,7 +50,7 @@ public record MongoSettings(
         return database;
     }
 
-    private InternalPropertyCodecProvider createInternalCodecProvider() {
+    InternalPropertyCodecProvider createInternalCodecProvider() {
         // Registering user-provided codecs from SettingsBuilder
         InternalPropertyCodecProvider internalPropertyCodecProvider = new InternalPropertyCodecProvider();
         for (Codec<?> codec : codecSet) {
@@ -59,11 +59,11 @@ public record MongoSettings(
         return internalPropertyCodecProvider;
     }
 
-    public CodecRegistry createCodecRegistry(MongoManager mongoManager) {
+    CodecRegistry createCodecRegistry(MongoManager mongoManager, InternalPropertyCodecProvider codecProvider) {
         return fromRegistries(
             MongoClientSettings.getDefaultCodecRegistry(),
             fromProviders(PojoCodecProvider.builder()
-                .register(createInternalCodecProvider())
+                .register(codecProvider)
                 .automatic(true)
                 .conventions(List.of(
                     Conventions.ANNOTATION_CONVENTION,
