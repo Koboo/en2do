@@ -2,11 +2,7 @@ package eu.koboo.en2do.test.mapkeys;
 
 import eu.koboo.en2do.mongodb.codec.types.GenericMapCodec;
 import org.bson.*;
-import org.bson.codecs.BsonDocumentCodec;
-import org.bson.codecs.DecoderContext;
-import org.bson.codecs.EncoderContext;
-import org.bson.codecs.StringCodec;
-import org.bson.codecs.UuidCodec;
+import org.bson.codecs.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
