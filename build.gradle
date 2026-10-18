@@ -1,11 +1,11 @@
 plugins {
     id('java-library')
     id('com.gradleup.shadow') version('9.6.1')
-    id('com.vanniktech.maven.publish') version('0.37.0')
+    id('com.vanniktech.maven.publish') version('0.36.0')
 }
 
 group('eu.koboo')
-version('3.3.2')
+version('3.3.0')
 
 repositories {
     mavenCentral()
@@ -13,32 +13,23 @@ repositories {
 
 dependencies {
     // The mongodb driver itself
-    // https://central.sonatype.com/artifact/org.mongodb/mongodb-driver-sync
-    def mongoDriverVersion = "5.13.0"
-    api("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
-    testImplementation("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
+    api(libs.mongoDriver)
+    testImplementation(libs.mongoDriver)
 
     // Eliminate boilerplate code
-    // https://central.sonatype.com/artifact/org.projectlombok/lombok
-    def lombokVersion = "1.18.48"
-    compileOnly("org.projectlombok:lombok:$lombokVersion")
-    annotationProcessor("org.projectlombok:lombok:$lombokVersion")
-    testImplementation("org.projectlombok:lombok:$lombokVersion")
-    testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+    testImplementation(libs.lombok)
+    testAnnotationProcessor(libs.lombok)
 
     // Test-Suite runtime
-    def jupiterVersion = "6.1.3"
-    // https://central.sonatype.com/artifact/org.junit.jupiter/junit-jupiter-engine
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
-    // https://central.sonatype.com/artifact/org.junit.jupiter/junit-jupiter-api
-    testImplementation("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
-    // https://central.sonatype.com/artifact/org.junit.platform/junit-platform-launcher
-    testImplementation("org.junit.platform:junit-platform-launcher:$jupiterVersion")
+    testImplementation(platform(libs.jupiterBom))
+    testImplementation(libs.jupiterApi)
+    testRuntimeOnly(libs.jupiterEngine)
+    testImplementation(libs.jupiterLauncher)
 
     // SLF4j logger for test-suite
-    // https://central.sonatype.com/artifact/org.slf4j/slf4j-jdk14
-    def slf4jVersion = "2.0.20"
-    testImplementation("org.slf4j:slf4j-jdk14:$slf4jVersion")
+    testImplementation(libs.slf4jJdk)
 }
 
 test {
