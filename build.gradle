@@ -1,11 +1,11 @@
 plugins {
     id('java-library')
     id('com.gradleup.shadow') version('9.6.1')
-    id('com.vanniktech.maven.publish') version('0.36.0')
+    id('com.vanniktech.maven.publish') version('0.37.0')
 }
 
 group('eu.koboo')
-version('3.3.0')
+version('3.3.1')
 
 repositories {
     mavenCentral()
@@ -14,7 +14,7 @@ repositories {
 dependencies {
     // The mongodb driver itself
     // https://central.sonatype.com/artifact/org.mongodb/mongodb-driver-sync
-    def mongoDriverVersion = "5.12.0"
+    def mongoDriverVersion = "5.13.0"
     api("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
     testImplementation("org.mongodb:mongodb-driver-sync:$mongoDriverVersion")
 
@@ -37,7 +37,7 @@ dependencies {
 
     // SLF4j logger for test-suite
     // https://central.sonatype.com/artifact/org.slf4j/slf4j-jdk14
-    def slf4jVersion = "2.0.19"
+    def slf4jVersion = "2.0.20"
     testImplementation("org.slf4j:slf4j-jdk14:$slf4jVersion")
 }
 

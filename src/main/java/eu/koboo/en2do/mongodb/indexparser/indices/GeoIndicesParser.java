@@ -3,16 +3,16 @@ package eu.koboo.en2do.mongodb.indexparser.indices;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.geojson.Geometry;
-import eu.koboo.en2do.mongodb.mapping.EntityMapping;
-import eu.koboo.en2do.mongodb.mapping.FieldMapping;
+import eu.koboo.en2do.factory.mapping.FieldMapping;
+import eu.koboo.en2do.factory.mapping.RepositoryMapping;
 import eu.koboo.en2do.repository.entity.compound.GeoIndex;
 import org.bson.conversions.Bson;
 
 public final class GeoIndicesParser implements IndicesParser {
 
     @Override
-    public void parse(Class<?> repositoryClass, EntityMapping<?> entityMapping, MongoCollection<?> entityCollection) {
-        for (FieldMapping field : entityMapping.getFieldsByJavaName().values()) {
+    public void parse(RepositoryMapping mapping, MongoCollection<?> entityCollection) {
+        for (FieldMapping field : mapping.getFieldsByJavaName().values()) {
             if (!Geometry.class.isAssignableFrom(field.getType())) {
                 continue;
             }

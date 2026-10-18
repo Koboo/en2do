@@ -2,6 +2,7 @@ package eu.koboo.en2do.test;
 
 import com.mongodb.MongoCompressor;
 import eu.koboo.en2do.MongoManager;
+import eu.koboo.en2do.MongoSettings;
 import eu.koboo.en2do.SettingsBuilder;
 import eu.koboo.en2do.configurators.ClientConfiguratorCompressors;
 import lombok.extern.slf4j.Slf4j;
@@ -22,11 +23,12 @@ public final class TestMongoManager implements TestExecutionListener {
     @Override
     public void testPlanExecutionStarted(@NonNull TestPlan testPlan) {
         log.info("Initializing MongoManager singleton instance..");
-        SettingsBuilder settingsBuilder = new SettingsBuilder()
+        MongoSettings mongoSettings = new SettingsBuilder()
             .connectionString(CONNECTION_STRING)
             .clientConfigurator(new ClientConfiguratorCompressors(Collections.singletonList(MongoCompressor.createZlibCompressor())))
-            .appendMethodNameAsQueryComment();
-        MANAGER = new MongoManager(settingsBuilder);
+            .appendMethodNameAsQueryComment()
+            .build();
+        MANAGER = new MongoManager(mongoSettings);
         assertNotNull(MANAGER);
         log.info("Finished initializing MongoManager singleton instance!");
     }

@@ -22,6 +22,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -48,12 +49,12 @@ public final class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID
         // No predefined handler found, checking for dynamic methods
 
         // Get and check if any dynamic method matches the methodName
-        IndexedMethod<E, ID, R> dynamicMethod = repositoryData.lookupDynamicMethod(methodName);
+        IndexedMethod<E, ID, R> dynamicMethod = repositoryData.getDynamicMethod(methodName);
         if (dynamicMethod == null) {
+            Class<?> repositoryClass = repositoryData.getMapping().getRepositoryClass();
             // No handling found for method with this name.
-            throw new MethodUnsupportedException(repositoryData.getRepositoryClass(), method);
+            throw new MethodUnsupportedException(repositoryClass, method);
         }
-
 
         MethodCallable methodCallable = () -> executeMethod(dynamicMethod, arguments, method, methodName);
         if (CompletableFuture.class.isAssignableFrom(method.getReturnType())) {
@@ -73,7 +74,7 @@ public final class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID
             throw new NullPointerException("The created filter for " + indexedMethod.getMethod().getName() + " is null!");
         }
 
-        // Switch-case the method operator to create the correct mongo query.
+        // Switch-case the method operator to create the correct mongo operation.
         final MongoCollection<E> collection = repositoryData.getEntityCollection();
 
         FindIterable<E> findIterable;
@@ -86,8 +87,7 @@ public final class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID
                 return collection.countDocuments(filter) > 0;
             case FIND:
                 findIterable = repositoryData.createFindIterableBase(filter, methodName);
-                findIterable = repositoryData.applySortObject(method, findIterable, arguments);
-                findIterable = repositoryData.applyPageObject(method, findIterable, arguments);
+                findIterable = repositoryData.applyQueryOptions(method, findIterable, arguments);
 
                 // Because it's a find method, we always got an entity-defined count.
                 // This specifically defines the number of returned entities.
@@ -131,17 +131,24 @@ public final class RepositoryInvocationHandler<E, ID, R extends Repository<E, ID
             default:
                 // Couldn't find any match method operator, but that shouldn't happen.
                 // If this exception is thrown, I forgot something to implement :D
-                throw new MethodInvalidCallException(repositoryData.getRepositoryClass(), method);
+                Class<?> repositoryClass = repositoryData.getMapping().getRepositoryClass();
+                throw new MethodInvalidCallException(repositoryClass, method);
         }
     }
 
     private void executeFuture(CompletableFuture<Object> future, MethodCallable callable) {
+        Executor futureExecutor;
+        if (executorService != null) {
+            futureExecutor = executorService;
+        } else {
+            futureExecutor = future.defaultExecutor();
+        }
         future.completeAsync(() -> {
             try {
                 return callable.call();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        }, executorService == null ? future.defaultExecutor() : executorService);
+        }, futureExecutor);
     }
 }

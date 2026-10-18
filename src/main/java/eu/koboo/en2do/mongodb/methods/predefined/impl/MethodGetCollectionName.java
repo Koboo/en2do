@@ -14,7 +14,8 @@ public final class MethodGetCollectionName extends GlobalPredefinedMethod {
 
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
-                                                              Method method, Object[] arguments) {
-        return repositoryData.getCollectionName();
+                                                              Method method,
+                                                              Object[] arguments) {
+        return repositoryData.getEntityCollection().getNamespace().getCollectionName();
     }
 }

@@ -14,7 +14,8 @@ public final class MethodGetEntityUniqueIdClass extends GlobalPredefinedMethod {
 
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
-                                                              Method method, Object[] arguments) {
-        return repositoryData.getEntityUniqueIdClass();
+                                                              Method method,
+                                                              Object[] arguments) {
+        return repositoryData.getMapping().typedIdClass();
     }
 }

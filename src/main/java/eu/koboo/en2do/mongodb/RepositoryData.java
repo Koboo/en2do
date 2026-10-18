@@ -4,25 +4,21 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import eu.koboo.en2do.MongoManager;
-import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidPageException;
-import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidSortLimitException;
-import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidSortSkipException;
-import eu.koboo.en2do.mongodb.indexer.RepositoryIndexer;
-import eu.koboo.en2do.mongodb.mapping.EntityMapping;
+import eu.koboo.en2do.factory.mapping.RepositoryMapping;
+import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidQueryLimitException;
+import eu.koboo.en2do.mongodb.exception.methods.MethodInvalidQuerySkipException;
 import eu.koboo.en2do.mongodb.methods.dynamic.IndexedMethod;
 import eu.koboo.en2do.repository.Repository;
+import eu.koboo.en2do.repository.methods.QueryOptions;
 import eu.koboo.en2do.repository.methods.fields.FieldUpdate;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
 import eu.koboo.en2do.repository.methods.fields.UpdateType;
-import eu.koboo.en2do.repository.methods.pagination.Pagination;
-import eu.koboo.en2do.repository.methods.sort.Sort;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,39 +29,22 @@ import java.util.UUID;
 public final class RepositoryData<E, ID, R extends Repository<E, ID>> {
 
     MongoManager mongoManager;
-    EntityMapping<E> entityMapping;
-    String collectionName;
+    RepositoryMapping mapping;
     MongoCollection<E> entityCollection;
-    Class<R> repositoryClass;
-    Class<ID> entityUniqueIdClass;
 
     @Getter(AccessLevel.NONE)
     Map<String, IndexedMethod<E, ID, R>> dynamicMethodRegistry;
 
     public RepositoryData(MongoManager mongoManager,
-                          RepositoryIndexer<E, ID, R> indexer,
+                          RepositoryMapping mapping,
                           MongoCollection<E> entityCollection) {
         this.mongoManager = mongoManager;
-        this.entityMapping = indexer.getEntityMapping();
-        this.collectionName = indexer.getCollectionName();
+        this.mapping = mapping;
         this.entityCollection = entityCollection;
-
-        this.repositoryClass = indexer.getRepositoryClass();
-
-        this.entityUniqueIdClass = indexer.getIdClass();
-
         this.dynamicMethodRegistry = new HashMap<>();
     }
 
-    public Class<E> getEntityClass() {
-        return entityMapping.getEntityClass();
-    }
-
-    public Field getEntityUniqueIdField() {
-        return entityMapping.getIdField().getField();
-    }
-
-    public void destroy() {
+    public void close() {
         dynamicMethodRegistry.clear();
     }
 
@@ -77,7 +56,7 @@ public final class RepositoryData<E, ID, R extends Repository<E, ID>> {
         dynamicMethodRegistry.put(methodName, dynamicMethod);
     }
 
-    public IndexedMethod<E, ID, R> lookupDynamicMethod(String methodName) {
+    public IndexedMethod<E, ID, R> getDynamicMethod(String methodName) {
         return dynamicMethodRegistry.get(methodName);
     }
 
@@ -88,64 +67,38 @@ public final class RepositoryData<E, ID, R extends Repository<E, ID>> {
         } else {
             findIterable = entityCollection.find();
         }
-        if (mongoManager.getSettingsBuilder().isAppendMethodAsComment()) {
+        // FIXME: SignatureUtils
+        if (mongoManager.getMongoSettings().appendMethodAsComment()) {
             findIterable.comment("en2do \"" + methodName + "\"");
         }
         return findIterable;
     }
 
-    public FindIterable<E> applySortObject(Method method,
-                                           FindIterable<E> findIterable,
-                                           Object[] args) throws Exception {
+    public FindIterable<E> applyQueryOptions(Method method,
+                                             FindIterable<E> findIterable,
+                                             Object[] args) {
+        Class<?> repositoryClass = mapping.getRepositoryClass();
         int parameterCount = method.getParameterCount();
         if (parameterCount <= 0) {
             return findIterable;
         }
         Class<?> lastParamType = method.getParameterTypes()[method.getParameterCount() - 1];
-        if (!lastParamType.isAssignableFrom(Sort.class)) {
+        if (!lastParamType.isAssignableFrom(QueryOptions.class)) {
             return findIterable;
         }
-        Object lastParamObject = args == null ? null : args[args.length - 1];
-        if (!(lastParamObject instanceof Sort sortOptions)) {
+        Object lastParameter;
+        if (args == null) {
+            lastParameter = null;
+        } else {
+            lastParameter = args[args.length - 1];
+        }
+        if (!(lastParameter instanceof QueryOptions queryOptions)) {
             return findIterable;
         }
-        int limit = sortOptions.getLimit();
-        int skip = sortOptions.getSkip();
-        String fieldName = sortOptions.getFieldName();
-        boolean ascending = sortOptions.isAscending();
-        return sort(method, findIterable, fieldName, ascending, limit, skip);
-    }
-
-    public FindIterable<E> applyPageObject(Method method,
-                                           FindIterable<E> findIterable,
-                                           Object[] args) {
-        // Check if the last parameter of the method is a Pagination object,
-        // and if so, we apply the pagination options to the findIterable.
-        if (args == null || args.length == 0) {
-            return findIterable;
-        }
-        Object parameterObject = args[args.length - 1];
-        if (!(parameterObject instanceof Pagination pagination)) {
-            return findIterable;
-        }
-
-        // We do not allow pages lower or equal to zero. The results
-        // would just be empty, so we throw an exception to not allow that.
-        if (pagination.getPage() <= 0) {
-            throw new MethodInvalidPageException(repositoryClass, method);
-        }
-
-        // Let's apply the sorting direction of the pagination object.
-        int limit = pagination.getEntitiesPerPage();
-        int skip = (int) ((pagination.getPage() - 1) * limit);
-        String fieldName = pagination.getFieldName();
-        boolean ascending = pagination.isAscending();
-
-        return sort(method, findIterable, fieldName, ascending, limit, skip);
-    }
-
-    public FindIterable<E> sort(Method method, FindIterable<E> findIterable,
-                                String fieldName, boolean ascending, int limit, int skip) {
+        int limit = queryOptions.getLimit();
+        int skip = queryOptions.getSkip();
+        String fieldName = queryOptions.getFieldName();
+        boolean ascending = queryOptions.isAscending();
         if (fieldName != null && !fieldName.isEmpty()) {
             int direction = ascending ? 1 : -1;
             findIterable = findIterable.sort(new BasicDBObject(fieldName, direction));
@@ -153,19 +106,19 @@ public final class RepositoryData<E, ID, R extends Repository<E, ID>> {
 
         if (skip != -1) {
             if (skip < 0) {
-                throw new MethodInvalidSortSkipException(repositoryClass, method);
+                throw new MethodInvalidQuerySkipException(repositoryClass, method);
             }
             findIterable = findIterable.skip(skip);
         }
 
         if (limit != -1) {
             if (limit < 0) {
-                throw new MethodInvalidSortLimitException(repositoryClass, method);
+                throw new MethodInvalidQueryLimitException(repositoryClass, method);
             }
             findIterable = findIterable.limit(limit);
         }
 
-        return findIterable.allowDiskUse(mongoManager.getSettingsBuilder().isAllowDiskUse());
+        return findIterable.allowDiskUse(mongoManager.getMongoSettings().allowDiskUse());
     }
 
     public Object getFilterableValue(Object object) {
@@ -173,6 +126,7 @@ public final class RepositoryData<E, ID, R extends Repository<E, ID>> {
     }
 
     public Object getFilterableValue(Object object, boolean isMapKey) {
+        // FIXME: Ordinal or name? -> Setting
         if (object instanceof Enum<?>) {
             return ((Enum<?>) object).name();
         }

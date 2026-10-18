@@ -2,9 +2,8 @@ package eu.koboo.en2do.test.customer;
 
 import eu.koboo.en2do.repository.Collection;
 import eu.koboo.en2do.repository.Repository;
+import eu.koboo.en2do.repository.methods.QueryOptions;
 import eu.koboo.en2do.repository.methods.fields.UpdateBatch;
-import eu.koboo.en2do.repository.methods.pagination.Pagination;
-import eu.koboo.en2do.repository.methods.sort.Sort;
 import eu.koboo.en2do.repository.methods.transform.NestedBsonKey;
 import eu.koboo.en2do.repository.methods.transform.Transform;
 
@@ -73,9 +72,7 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
 
     Customer findFirstByIdListHas(UUID id);
 
-    List<Customer> findManyByCustomerIdExists(Sort sort);
-
-    List<Customer> findManyByCustomerIdNot(int customerId, Sort sort);
+    List<Customer> findManyByCustomerIdExists(QueryOptions queryOptions);
 
     @Transform("existsByStreet")
     boolean myTransformedMethod(String street);
@@ -84,7 +81,7 @@ public interface CustomerRepository extends Repository<Customer, UUID> {
     List<Customer> myTransformedMethod2(String street);
 
     @Transform("findManyByCustomerIdNot")
-    List<Customer> paginationTest(int customerId, Pagination pagination);
+    List<Customer> paginationTest(int customerId, QueryOptions queryOptions);
 
     boolean updateFieldsByFirstName(String firstName, UpdateBatch updateBatch);
 

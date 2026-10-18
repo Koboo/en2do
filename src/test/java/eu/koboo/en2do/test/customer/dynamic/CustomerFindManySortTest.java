@@ -1,6 +1,6 @@
 package eu.koboo.en2do.test.customer.dynamic;
 
-import eu.koboo.en2do.repository.methods.sort.Sort;
+import eu.koboo.en2do.repository.methods.QueryOptions;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
@@ -39,10 +39,11 @@ public class CustomerFindManySortTest extends CustomerRepositoryTest {
     @Test
     @Order(3)
     public void findCustomer() {
-        Sort sort = Sort.byField("customerId")
-            .limit(10)
-            .skip(5);
-        List<Customer> customerList = repository.findManyByCustomerIdExists(sort);
+        List<Customer> customerList = repository.findManyByCustomerIdExists(
+            QueryOptions.byField("customerId")
+                .limit(10)
+                .skip(5)
+        );
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());
         assertEquals(10, customerList.size());

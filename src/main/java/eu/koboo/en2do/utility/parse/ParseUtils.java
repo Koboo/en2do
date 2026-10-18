@@ -3,32 +3,19 @@ package eu.koboo.en2do.utility.parse;
 import eu.koboo.en2do.utility.reflection.PrimitiveUtils;
 import lombok.experimental.UtilityClass;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @UtilityClass
 public class ParseUtils {
 
-    public ExecutorService parseExecutorService(ExecutorService executorService) {
-        if (executorService == null) {
-            int defaultThreadAmount = Runtime.getRuntime().availableProcessors() * 2;
-            return Executors.newFixedThreadPool(defaultThreadAmount);
-        }
-        return executorService;
-    }
-
     public ParameterizedType decapsulateFuture(Method method) {
         Class<?> returnType = method.getReturnType();
         if (!CompletableFuture.class.isAssignableFrom(returnType)) {
-            if (java.util.Collection.class.isAssignableFrom(returnType)) {
+            if (Collection.class.isAssignableFrom(returnType)) {
                 return (ParameterizedType) method.getGenericReturnType();
             }
             return null;
@@ -52,36 +39,6 @@ public class ParseUtils {
         } else {
             entityTypeClass = (Class<?>) parameterizedType.getActualTypeArguments()[0];
         }
-        return PrimitiveUtils.wrapperOf(entityTypeClass);
-    }
-
-    public boolean isReturnTypeOfCollection(Method method) {
-        ParameterizedType parameterizedType = decapsulateFuture(method);
-        return parameterizedType != null;
-    }
-
-    /**
-     * This method is ued to get all annotations from an entity class, using while loop,
-     * to iterate through all super-types.
-     *
-     * @param entityClass     The class, which should be scanned.
-     * @param annotationClass the searched annotation
-     * @param <E>             The generic type of the Class
-     * @param <A>             The generic type of the annotation Class
-     * @return The Set with all found annotations of type A
-     */
-    public <E, A extends Annotation> Set<A> getAllAnnotations(Class<E> entityClass,
-                                                              Class<A> annotationClass) {
-        Set<A> annotationSet = new HashSet<>();
-        Class<?> clazz = entityClass;
-        while (clazz != Object.class) {
-            A[] indexArray = clazz.getAnnotationsByType(annotationClass);
-            clazz = clazz.getSuperclass();
-            if (indexArray.length == 0) {
-                continue;
-            }
-            annotationSet.addAll(Arrays.asList(indexArray));
-        }
-        return annotationSet;
+        return PrimitiveUtils.toWrapper(entityTypeClass);
     }
 }

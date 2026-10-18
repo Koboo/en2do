@@ -1,28 +1,31 @@
 package eu.koboo.en2do.mongodb.convention;
 
-import eu.koboo.en2do.mongodb.mapping.EntityMapping;
-import eu.koboo.en2do.mongodb.mapping.FieldMapping;
+import eu.koboo.en2do.repository.entity.TransformField;
 import org.bson.codecs.pojo.ClassModelBuilder;
+import org.bson.codecs.pojo.Convention;
 import org.bson.codecs.pojo.PropertyModelBuilder;
 
-/**
- * Applies resolved BSON field names to MongoDB codec properties.
- */
-public final class TransformFieldConvention extends EntityMappingConvention {
+import java.lang.annotation.Annotation;
+
+public final class TransformFieldConvention implements Convention {
 
     @Override
-    protected void apply(ClassModelBuilder<?> classModelBuilder, EntityMapping<?> entityMapping) {
-        for (PropertyModelBuilder<?> property : classModelBuilder.getPropertyModelBuilders()) {
-            FieldMapping field = entityMapping.findByJavaName(property.getName());
-            if (field == null || field == entityMapping.getIdField()) {
-                continue;
+    public void apply(ClassModelBuilder<?> classModelBuilder) {
+        for (PropertyModelBuilder<?> modelBuilder : classModelBuilder.getPropertyModelBuilders()) {
+            for (Annotation readAnnotation : modelBuilder.getReadAnnotations()) {
+                if (!(readAnnotation instanceof TransformField transformField)) {
+                    continue;
+                }
+                modelBuilder.readName(transformField.value());
+                break;
             }
-            String bsonName = field.getBsonName();
-            if (bsonName.equals(field.getJavaName())) {
-                continue;
+            for (Annotation writeAnnotation : modelBuilder.getWriteAnnotations()) {
+                if (!(writeAnnotation instanceof TransformField transformField)) {
+                    continue;
+                }
+                modelBuilder.writeName(transformField.value());
+                break;
             }
-            property.readName(bsonName);
-            property.writeName(bsonName);
         }
     }
 }

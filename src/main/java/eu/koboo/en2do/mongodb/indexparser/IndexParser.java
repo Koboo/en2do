@@ -1,11 +1,11 @@
 package eu.koboo.en2do.mongodb.indexparser;
 
 import com.mongodb.client.MongoCollection;
+import eu.koboo.en2do.factory.mapping.RepositoryMapping;
 import eu.koboo.en2do.mongodb.indexparser.indices.CompoundIndicesParser;
 import eu.koboo.en2do.mongodb.indexparser.indices.GeoIndicesParser;
 import eu.koboo.en2do.mongodb.indexparser.indices.IndicesParser;
 import eu.koboo.en2do.mongodb.indexparser.indices.TimeToLiveIndicesParser;
-import eu.koboo.en2do.mongodb.mapping.EntityMapping;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -24,13 +24,13 @@ public final class IndexParser {
         this.indicesParserRegistry.add(new GeoIndicesParser());
     }
 
-    public void destroy() {
+    public void close() {
         indicesParserRegistry.clear();
     }
 
-    public void parseIndices(Class<?> repositoryClass, EntityMapping<?> entityMapping, MongoCollection<?> collection) {
+    public void parseIndices(RepositoryMapping mapping, MongoCollection<?> collection) {
         for (IndicesParser indicesParser : indicesParserRegistry) {
-            indicesParser.parse(repositoryClass, entityMapping, collection);
+            indicesParser.parse(mapping, collection);
         }
     }
 }

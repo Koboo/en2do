@@ -14,7 +14,8 @@ public final class MethodDrop extends GlobalPredefinedMethod {
 
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
-                                                              Method method, Object[] arguments) {
+                                                              Method method,
+                                                              Object[] arguments) {
         repositoryData.getEntityCollection().drop();
         return true;
     }

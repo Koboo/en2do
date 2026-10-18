@@ -1,6 +1,6 @@
 package eu.koboo.en2do.test.customer.dynamic;
 
-import eu.koboo.en2do.repository.methods.pagination.Pagination;
+import eu.koboo.en2do.repository.methods.QueryOptions;
 import eu.koboo.en2do.test.Const;
 import eu.koboo.en2do.test.customer.Customer;
 import eu.koboo.en2do.test.customer.CustomerRepositoryTest;
@@ -44,9 +44,8 @@ public class CustomerFindByPaginationTest extends CustomerRepositoryTest {
     public void findCustomer() {
         List<Customer> customerList = repository.paginationTest(
             CUSTOMER_ID,
-            Pagination.of(5)
-                .byField("customerId")
-                .setPage(1)
+            QueryOptions.byField("customerId")
+                .page(1, 5)
         );
         assertNotNull(customerList);
         assertFalse(customerList.isEmpty());

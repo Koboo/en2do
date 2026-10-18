@@ -15,16 +15,17 @@ public final class MethodSetUniqueId extends GlobalPredefinedMethod {
 
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
-                                                              Method method, Object[] arguments) {
-        E entity = getGenericEntity(repositoryData, method, arguments[0]);
-        ID entityId = getGenericUniqueIdByArgument(repositoryData, method, arguments[1]);
-        Field entityUniqueIdField = repositoryData.getEntityUniqueIdField();
+                                                              Method method,
+                                                              Object[] arguments) {
+        E entity = repositoryData.getMapping().asEntity(arguments[0]);
+        ID entityId = repositoryData.getMapping().asEntityId(arguments[1]);
+        Field entityUniqueIdField = repositoryData.getMapping().getIdField().getField();
         try {
             entityUniqueIdField.setAccessible(true);
             entityUniqueIdField.set(entity, entityId);
         } catch (Exception e) {
             throw new RuntimeException("Couldn't set entity unique id of type " +
-                repositoryData.getEntityClass().getName() + " in method " + method.getName() + ".", e);
+                repositoryData.getMapping().getEntityClass().getName() + " in method " + method.getName() + ".", e);
         }
         return null;
     }

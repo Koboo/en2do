@@ -111,7 +111,7 @@ public final class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 // No supported type provided, we can't do anything other than throwing exceptions.
                 if (retFilter == null) {
                     throw new MethodInvalidRegexParameterException(
-                        repositoryData.getRepositoryClass(),
+                        repositoryData.getMapping().getRepositoryClass(),
                         method,
                         value.getClass()
                     );
@@ -211,7 +211,8 @@ public final class IndexedMethod<E, ID, R extends Repository<E, ID>> {
                 );
                 break;
             default: // This filter is not supported. Throw exception.
-                throw new MethodUnsupportedFilterException(repositoryData.getRepositoryClass(), method);
+                Class<?> repositoryClass = repositoryData.getMapping().getRepositoryClass();
+                throw new MethodUnsupportedFilterException(repositoryClass, method);
         }
 
         // Applying negotiating of the filter, if needed

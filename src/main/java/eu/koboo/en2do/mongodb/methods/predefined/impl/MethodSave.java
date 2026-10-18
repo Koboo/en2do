@@ -24,9 +24,10 @@ public final class MethodSave extends GlobalPredefinedMethod {
 
     @Override
     public <E, ID, R extends Repository<E, ID>> Object handle(RepositoryData<E, ID, R> repositoryData,
-                                                              Method method, Object[] arguments) throws Exception {
-        E entity = getGenericEntity(repositoryData, method, arguments[0]);
-        ID uniqueId = getGenericUniqueIdByEntity(repositoryData, method, entity);
+                                                              Method method,
+                                                              Object[] arguments) throws Exception {
+        E entity = repositoryData.getMapping().asEntity(arguments[0]);
+        ID uniqueId = repositoryData.getMapping().getIdFromEntity(entity);
         Bson idFilter = createBsonIdFilter(uniqueId);
         MongoCollection<E> entityCollection = repositoryData.getEntityCollection();
         UpdateResult updateResult = entityCollection.replaceOne(idFilter, entity, replaceOptions);

@@ -103,8 +103,9 @@ public class ConnectionString {
     /**
      * Automatically reading the connection string from the given resource file as property
      * and reading the connection string using the given property key.
+     *
      * @param resourcePath The file resource path
-     * @param propertyKey The property key of the connection string
+     * @param propertyKey  The property key of the connection string
      * @return The read connection string
      */
     public static String fromResource(String resourcePath, String propertyKey) {
