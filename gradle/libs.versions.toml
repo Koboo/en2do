@@ -1,5 +1,5 @@
 [versions]
-mongoDriverVersion = "5.12.0"
+mongoDriverVersion = "5.13.0"
 lombokVersion = "1.18.48"
 jupiterVersion = "6.1.3"
 slf4jVersion = "2.0.19"
