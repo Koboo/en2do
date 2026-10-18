@@ -1,0 +1,19 @@
+[versions]
+mongoDriverVersion = "5.13.0"
+lombokVersion = "1.18.48"
+jupiterVersion = "6.1.3"
+slf4jVersion = "2.0.20"
+
+[libraries]
+# https://central.sonatype.com/artifact/org.mongodb/mongodb-driver-sync
+mongoDriver = { module = "org.mongodb:mongodb-driver-sync", version.ref = "mongoDriverVersion" }
+# https://central.sonatype.com/artifact/org.projectlombok/lombok
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombokVersion" }
+
+jupiterBom = { module = "org.junit:junit-bom", version.ref = "jupiterVersion" }
+jupiterApi = { module = "org.junit.jupiter:junit-jupiter-api" }
+jupiterEngine = { module = "org.junit.jupiter:junit-jupiter-engine" }
+jupiterLauncher = { module = "org.junit.platform:junit-platform-launcher" }
+
+# https://central.sonatype.com/artifact/org.slf4j/slf4j-jdk14
+slf4jJdk = { module = "org.slf4j:slf4j-jdk14", version.ref="slf4jVersion" }
